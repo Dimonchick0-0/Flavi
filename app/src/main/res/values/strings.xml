@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Flavi</string>
+    <string name="reg_btn_text">Зарегистрироваться</string>
+    <string name="auth_btn_text">Авторизоваться</string>
 </resources>
