@@ -1,4 +1,4 @@
-package com.example.flavi.ui.theme
+package com.example.flavi.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
