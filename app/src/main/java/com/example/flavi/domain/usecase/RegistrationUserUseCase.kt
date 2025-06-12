@@ -1,4 +1,6 @@
-package com.example.flavi.domain
+package com.example.flavi.domain.usecase
+
+import com.example.flavi.domain.repository.UserRepository
 
 class RegistrationUserUseCase(
     private val repository: UserRepository

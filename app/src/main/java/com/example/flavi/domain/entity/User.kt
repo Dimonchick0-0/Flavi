@@ -1,4 +1,4 @@
-package com.example.flavi.domain
+package com.example.flavi.domain.entity
 
 data class User(
     val id: Int,
