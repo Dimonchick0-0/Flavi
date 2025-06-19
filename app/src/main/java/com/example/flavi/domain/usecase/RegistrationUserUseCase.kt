@@ -5,7 +5,7 @@ import com.example.flavi.domain.repository.UserRepository
 class RegistrationUserUseCase(
     private val repository: UserRepository
 ) {
-    suspend operator fun invoke(name: String, password: String) {
-        repository.userRegister(name, password)
+    suspend operator fun invoke(name: String, password: String, email: String) {
+        repository.userRegister(name, password, email)
     }
 }
