@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "31241286202",
+    "project_id": "flavi-c1ef4",
+    "storage_bucket": "flavi-c1ef4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31241286202:android:0f5bbe9cb8551396a47b03",
+        "android_client_info": {
+          "package_name": "com.example.flavi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7aCSQFdNLpRLS05PPs7M5_8_jrlMcKSY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
