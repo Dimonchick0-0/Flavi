@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import com.example.flavi.presentation.navigation.NavGraph
+import com.example.flavi.presentation.screens.auth.AuthUser
 import com.example.flavi.presentation.screens.registration.RegistrationScreen
 import com.example.flavi.presentation.ui.theme.FlaviTheme
 import com.google.firebase.Firebase
@@ -19,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FlaviTheme {
-                RegistrationScreen()
+                NavGraph()
             }
         }
     }

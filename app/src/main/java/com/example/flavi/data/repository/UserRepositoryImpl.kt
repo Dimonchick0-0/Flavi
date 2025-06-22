@@ -3,6 +3,7 @@ package com.example.flavi.data.repository
 import android.content.Context
 import com.example.flavi.data.database.database.AppDatabase
 import com.example.flavi.data.database.entitydb.UserDbModel
+import com.example.flavi.data.database.map.toEntity
 import com.example.flavi.domain.entity.User
 import com.example.flavi.domain.repository.UserRepository
 
@@ -21,7 +22,7 @@ class UserRepositoryImpl private constructor(context: Context): UserRepository {
     }
 
     override suspend fun authUser(password: String, email: String): User {
-        TODO()
+        return userDao.getUserByPasswordAndEmail(password, email).toEntity()
     }
 
     companion object {

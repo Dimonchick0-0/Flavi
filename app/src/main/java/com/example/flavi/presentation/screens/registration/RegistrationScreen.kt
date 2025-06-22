@@ -47,7 +47,8 @@ fun RegistrationScreen(
     context: Context = LocalContext.current.applicationContext,
     viewModel: RegisterViewModel = viewModel {
         RegisterViewModel(context)
-    }
+    },
+    onRegisterClick: () -> Unit
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
     val currentState = state.value
@@ -85,7 +86,7 @@ fun RegistrationScreen(
         }
         when (currentState) {
             RegisterState.FinishedRegister -> {
-
+                onRegisterClick()
             }
 
             is RegisterState.Input -> {
