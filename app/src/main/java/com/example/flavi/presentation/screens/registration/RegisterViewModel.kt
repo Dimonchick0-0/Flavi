@@ -77,13 +77,13 @@ class RegisterViewModel(context: Context) : ViewModel() {
                             val name = previousState.name.trim()
                             val email = previousState.email.trim()
                             val password = previousState.password.trim()
-                            val bcryptHashPassword = BCrypt.withDefaults().hashToString(
-                                12,
-                                password.toCharArray()
-                            )
+//                            val bcryptHashPassword = BCrypt.withDefaults().hashToString(
+//                                12,
+//                                password.toCharArray()
+//                            )
                             registerUser(
                                 name = name,
-                                password = bcryptHashPassword,
+                                password = password,
                                 email = email
                             )
                             RegisterState.FinishedRegister

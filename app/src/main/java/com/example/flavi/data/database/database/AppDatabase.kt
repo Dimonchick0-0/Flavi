@@ -9,7 +9,7 @@ import com.example.flavi.data.database.entitydb.UserDbModel
 
 @Database(
     entities = [UserDbModel::class],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase: RoomDatabase() {
@@ -30,7 +30,10 @@ abstract class AppDatabase: RoomDatabase() {
                     context = context,
                     klass = AppDatabase::class.java,
                     name = "user.db"
-                ).build().also { instance = it }
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+                    .also { instance = it }
             }
         }
     }
