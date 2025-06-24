@@ -1,15 +1,13 @@
 package com.example.flavi.data.repository
 
-import android.content.Context
-import com.example.flavi.data.database.database.AppDatabase
+import com.example.flavi.data.database.dao.UserDao
 import com.example.flavi.data.database.entitydb.UserDbModel
 import com.example.flavi.data.database.map.toEntity
 import com.example.flavi.domain.entity.User
 import com.example.flavi.domain.repository.UserRepository
+import javax.inject.Inject
 
-class UserRepositoryImpl private constructor(context: Context): UserRepository {
-    private val appDatabase = AppDatabase.getInstance(context)
-    private val userDao = appDatabase.userDao()
+class UserRepositoryImpl @Inject constructor(private val userDao: UserDao ): UserRepository {
 
     override suspend fun userRegister(name: String, password: String, email: String) {
         val userDbModel = UserDbModel(
@@ -25,19 +23,8 @@ class UserRepositoryImpl private constructor(context: Context): UserRepository {
         return userDao.getUserByPasswordAndEmail(password, email).toEntity()
     }
 
-    companion object {
-        private val lock = Any()
-
-        private var instance: UserRepositoryImpl? = null
-
-        fun getInstance(context: Context): UserRepositoryImpl {
-            instance?.let { return it }
-
-            synchronized(lock) {
-                instance?.let { return it }
-
-                return UserRepositoryImpl(context).also { instance = it }
-            }
-        }
+    suspend fun checkUser(email: String, password: String): Boolean {
+        return userDao.checkUserByEmailAndPassword(email, password)
     }
+
 }
