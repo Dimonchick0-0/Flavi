@@ -26,6 +26,9 @@ fun NavGraph() {
             AuthUser(
                 onProfileClick = {
                     navController.navigate(FlaviScreens.ProfileScreen.route)
+                },
+                onRegisterClick = {
+                    navController.navigate(FlaviScreens.RegistrationScreen.route)
                 }
             )
         }

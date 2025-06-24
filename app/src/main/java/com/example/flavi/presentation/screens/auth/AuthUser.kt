@@ -1,9 +1,7 @@
 package com.example.flavi.presentation.screens.auth
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,34 +15,30 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.flavi.presentation.state.AuthUserState
-import com.example.flavi.presentation.ui.theme.FlaviTheme
 
 @Composable
 fun AuthUser(
     modifier: Modifier = Modifier,
-    context: Context = LocalContext.current.applicationContext,
-    viewModel: AuthUserViewModel = viewModel {
-        AuthUserViewModel(context)
-    },
-    onProfileClick: () -> Unit
+    viewModel: AuthUserViewModel = hiltViewModel(),
+    onProfileClick: () -> Unit,
+    onRegisterClick: () -> Unit
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
 
@@ -85,8 +79,13 @@ fun AuthUser(
             is AuthUserState.AuthUser -> {
                 val email = currentState.email
                 val password = currentState.password
+                val color = if (email.length < 6 && password.length < 6) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                }
                 Column(
-                    modifier = Modifier.padding(top = 100.dp, start = 55.dp)
+                    modifier = Modifier.padding(top = 80.dp, start = 55.dp)
                 ) {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
@@ -94,11 +93,18 @@ fun AuthUser(
                             onValueChange = { viewModel.updateEmail(it) },
                             label = {
                                 Text(
-                                    text = "Почта"
+                                    text = "Почта",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 14.sp
                                 )
                             },
                             maxLines = 1,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.surface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.surface,
+                                errorBorderColor = color
+                            )
                         )
                     }
                     Row(modifier = Modifier.fillMaxWidth()) {
@@ -108,22 +114,35 @@ fun AuthUser(
                             onValueChange = { viewModel.updatePassword(it) },
                             label = {
                                 Text(
-                                    text = "Пароль"
+                                    text = "Пароль",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 14.sp
                                 )
                             },
                             maxLines = 1,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.surface,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.surface,
+                                errorBorderColor = color
+                            )
                         )
                     }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 30.dp)
-                        ) {
+                    ) {
                         Button(
                             modifier = Modifier
                                 .padding(horizontal = 48.dp),
-                            onClick = { viewModel.authUser() },
+                            onClick = {
+                                if (email.isNotBlank() && password.isNotBlank()) {
+                                    viewModel.authUser()
+                                } else {
+                                    TODO() // Сделать поля ввода при ошибке
+                                }
+                            },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.background,
                                 contentColor = MaterialTheme.colorScheme.onBackground
@@ -137,7 +156,8 @@ fun AuthUser(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 16.dp),
+                            .padding(top = 16.dp, end = 50.dp)
+                            .clickable { onRegisterClick() },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(

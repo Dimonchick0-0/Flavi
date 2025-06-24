@@ -42,6 +42,10 @@ fun RowScope.RegistrationTextField(
             )
         },
         keyboardOptions = keyboardOptions,
-        leadingIcon = leadingIcon
+        leadingIcon = leadingIcon,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.surface,
+            unfocusedBorderColor = MaterialTheme.colorScheme.surface
+        )
     )
 }
