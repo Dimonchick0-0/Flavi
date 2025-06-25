@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -21,8 +22,11 @@ fun RowScope.RegistrationTextField(
     value: String,
     text: String,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    isError: Boolean = false,
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
     leadingIcon: @Composable (() -> Unit)? = null,
-    onQueryChange: (String) -> Unit
+    onQueryChange: (String) -> Unit,
 ) {
     OutlinedTextField(
         modifier = modifier
@@ -46,6 +50,8 @@ fun RowScope.RegistrationTextField(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.surface,
             unfocusedBorderColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        visualTransformation = visualTransformation,
+        isError = isError,
     )
 }

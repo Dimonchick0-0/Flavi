@@ -16,4 +16,5 @@ interface UserDao {
 
     @Query("SELECT EXISTS(SELECT * FROM userdbmodel WHERE email =:emailUser AND password =:passwordUser)")
     suspend fun checkUserByEmailAndPassword(emailUser: String, passwordUser: String): Boolean
+
 }
