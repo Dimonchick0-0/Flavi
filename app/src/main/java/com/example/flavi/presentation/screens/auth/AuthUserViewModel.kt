@@ -1,6 +1,7 @@
 package com.example.flavi.presentation.screens.auth
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.data.repository.UserRepositoryImpl
@@ -9,14 +10,17 @@ import com.example.flavi.presentation.state.AuthUserState
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.mindrot.jbcrypt.BCrypt
 import javax.inject.Inject
 
 @HiltViewModel
-class AuthUserViewModel @Inject constructor (
+class AuthUserViewModel @Inject constructor(
     private val repository: UserRepositoryImpl,
     private val authUserUseCase: AuthUserUseCase
 ) : ViewModel() {
@@ -24,6 +28,9 @@ class AuthUserViewModel @Inject constructor (
     private val _state: MutableStateFlow<AuthUserState> = MutableStateFlow(AuthUserState.AuthUser())
     val state
         get() = _state.asStateFlow()
+
+    val errorStateEmail = mutableStateOf(false)
+    val errorStatePassword = mutableStateOf(false)
 
     fun updatePassword(password: String) {
         _state.update { authState ->
@@ -38,14 +45,12 @@ class AuthUserViewModel @Inject constructor (
     fun updateEmail(email: String) {
         _state.update { authState ->
             if (authState is AuthUserState.AuthUser) {
-                Log.d("Auth", email)
                 authState.copy(email = email)
             } else {
                 authState
             }
         }
     }
-
 
     fun authUser() {
         viewModelScope.launch {

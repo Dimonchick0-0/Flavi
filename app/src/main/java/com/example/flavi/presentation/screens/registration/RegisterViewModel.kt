@@ -1,6 +1,7 @@
 package com.example.flavi.presentation.screens.registration
 
 import android.util.Log
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.domain.usecase.RegistrationUserUseCase
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.mindrot.jbcrypt.BCrypt
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,6 +25,11 @@ class RegisterViewModel @Inject constructor (
     private val _state: MutableStateFlow<RegisterState> = MutableStateFlow(RegisterState.Input())
     val state: StateFlow<RegisterState>
         get() = _state.asStateFlow()
+
+    val errorStateName = mutableStateOf(false)
+    val errorStateEmail = mutableStateOf(false)
+    val errorStatePassword = mutableStateOf(false)
+    val errorStateConfirmPassword = mutableStateOf(false)
 
     fun processCommand(registerCommand: RegisterCommand) {
         when (registerCommand) {
@@ -73,10 +80,6 @@ class RegisterViewModel @Inject constructor (
                             val name = previousState.name.trim()
                             val email = previousState.email.trim()
                             val password = previousState.password.trim()
-//                            val bcryptHashPassword = BCrypt.withDefaults().hashToString(
-//                                12,
-//                                password.toCharArray()
-//                            )
                             registerUser(
                                 name = name,
                                 password = password,
@@ -91,7 +94,6 @@ class RegisterViewModel @Inject constructor (
             }
         }
     }
-
 
     private fun registerUser(name: String, password: String, email: String) {
         val auth = Firebase.auth

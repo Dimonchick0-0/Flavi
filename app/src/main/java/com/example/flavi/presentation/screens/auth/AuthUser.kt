@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -79,7 +80,7 @@ fun AuthUser(
             is AuthUserState.AuthUser -> {
                 val email = currentState.email
                 val password = currentState.password
-                val color = if (email.length < 6 && password.length < 6) {
+                val color = if (password.length < 6) {
                     MaterialTheme.colorScheme.error
                 } else {
                     MaterialTheme.colorScheme.onSurface
@@ -90,7 +91,10 @@ fun AuthUser(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         OutlinedTextField(
                             value = email,
-                            onValueChange = { viewModel.updateEmail(it) },
+                            onValueChange = {
+                                viewModel.updateEmail(it)
+                                viewModel.errorStateEmail.value = false
+                            },
                             label = {
                                 Text(
                                     text = "Почта",
@@ -98,6 +102,7 @@ fun AuthUser(
                                     fontSize = 14.sp
                                 )
                             },
+                            isError = viewModel.errorStateEmail.value,
                             maxLines = 1,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                             colors = OutlinedTextFieldDefaults.colors(
@@ -111,7 +116,10 @@ fun AuthUser(
                         OutlinedTextField(
                             modifier = Modifier.padding(top = 35.dp),
                             value = password,
-                            onValueChange = { viewModel.updatePassword(it) },
+                            onValueChange = {
+                                viewModel.errorStatePassword.value = it.length <= 5
+                                viewModel.updatePassword(it)
+                            },
                             label = {
                                 Text(
                                     text = "Пароль",
@@ -121,11 +129,13 @@ fun AuthUser(
                             },
                             maxLines = 1,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                            isError = viewModel.errorStatePassword.value,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = MaterialTheme.colorScheme.surface,
                                 unfocusedBorderColor = MaterialTheme.colorScheme.surface,
                                 errorBorderColor = color
-                            )
+                            ),
+                            visualTransformation = PasswordVisualTransformation('*')
                         )
                     }
                     Row(
@@ -139,9 +149,16 @@ fun AuthUser(
                             onClick = {
                                 if (email.isNotBlank() && password.isNotBlank()) {
                                     viewModel.authUser()
-                                } else {
-                                    TODO() // Сделать поля ввода при ошибке
                                 }
+                                email.ifEmpty {
+                                    viewModel.errorStateEmail.value = true
+                                    color.value
+                                }
+                                password.ifEmpty {
+                                    viewModel.errorStatePassword.value = true
+                                    color.value
+                                }
+
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.background,

@@ -43,6 +43,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.material)
+    implementation(libs.jbcrypt)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
