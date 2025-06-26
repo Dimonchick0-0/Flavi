@@ -1,6 +1,5 @@
 package com.example.flavi.presentation.screens.profile
 
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
