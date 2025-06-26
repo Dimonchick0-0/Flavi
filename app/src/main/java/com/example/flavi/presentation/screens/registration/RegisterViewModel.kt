@@ -8,13 +8,13 @@ import com.example.flavi.domain.usecase.RegistrationUserUseCase
 import com.example.flavi.presentation.state.RegisterState
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import com.google.firebase.auth.userProfileChangeRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.mindrot.jbcrypt.BCrypt
 import javax.inject.Inject
 
 @HiltViewModel
@@ -107,12 +107,21 @@ class RegisterViewModel @Inject constructor (
                             password = password,
                             email = email
                         )
-                        auth.currentUser
+                        val currentUser = auth.currentUser
+                        val updateProfile = userProfileChangeRequest {
+                            displayName = name
+                        }
+                        currentUser?.updateProfile(updateProfile)?.addOnCompleteListener {
+                            if (it.isSuccessful) {
+                                Log.d("Auth", currentUser.displayName!!)
+                            }
+                        }
                     }
                 } else {
                     Log.d("RegistrationFirebase", "createUserWithEmail:success", task.exception)
                 }
             }
+
     }
 }
 

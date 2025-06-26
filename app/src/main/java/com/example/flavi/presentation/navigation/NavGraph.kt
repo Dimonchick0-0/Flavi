@@ -13,7 +13,7 @@ fun NavGraph() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = FlaviScreens.AuthScreen.route
+        startDestination = FlaviScreens.ProfileScreen.route
     ) {
         composable(FlaviScreens.RegistrationScreen.route) {
             RegistrationScreen(
