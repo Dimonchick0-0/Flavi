@@ -4,15 +4,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class ProfileViewModel: ViewModel() {
+@HiltViewModel
+class ProfileViewModel @Inject constructor() : ViewModel() {
 
-    val stateProfile = mutableStateOf("")
 
-    init {
-        val user = Firebase.auth.currentUser
-        user?.let {
-            stateProfile.value = it.email ?: "Not found"
-        }
+    fun getCurrentNameUser(): String {
+        val currentUser = Firebase.auth.currentUser
+        return currentUser?.displayName!!
+    }
+
+    fun getCurrentEmailUser(): String {
+        val currentUser = Firebase.auth.currentUser
+        return currentUser?.email!!
+    }
+
+    fun logOutOfYourAccount() {
+        Firebase.auth.signOut()
     }
 }
