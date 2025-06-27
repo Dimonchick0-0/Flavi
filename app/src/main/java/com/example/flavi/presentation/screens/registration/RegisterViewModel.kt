@@ -113,7 +113,7 @@ class RegisterViewModel @Inject constructor (
                         }
                         currentUser?.updateProfile(updateProfile)?.addOnCompleteListener {
                             if (it.isSuccessful) {
-                                Log.d("Auth", currentUser.displayName!!)
+                                Log.d("Auth", currentUser.displayName.toString())
                             }
                         }
                     }

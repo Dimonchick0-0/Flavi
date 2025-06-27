@@ -1,5 +1,6 @@
 package com.example.flavi.presentation.screens.auth
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.flavi.presentation.state.AuthUserState
+import kotlin.time.measureTime
 
 @Composable
 fun AuthUser(
@@ -148,7 +150,10 @@ fun AuthUser(
                                 .padding(horizontal = 48.dp),
                             onClick = {
                                 if (email.isNotBlank() && password.isNotBlank()) {
-                                    viewModel.authUser()
+                                    val time = measureTime {
+                                        viewModel.authUser()
+                                    }
+                                    Log.d("Auth", "$time")
                                 }
                                 email.ifEmpty {
                                     viewModel.errorStateEmail.value = true

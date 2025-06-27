@@ -4,16 +4,25 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navOptions
 import com.example.flavi.presentation.screens.auth.AuthUser
 import com.example.flavi.presentation.screens.profile.Profile
 import com.example.flavi.presentation.screens.registration.RegistrationScreen
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 
 @Composable
 fun NavGraph() {
+    val currentUser = Firebase.auth.currentUser
     val navController = rememberNavController()
+    val startDestination = if (currentUser == null) {
+        FlaviScreens.AuthScreen.route
+    } else {
+        FlaviScreens.ProfileScreen.route
+    }
     NavHost(
         navController = navController,
-        startDestination = FlaviScreens.ProfileScreen.route
+        startDestination = startDestination
     ) {
         composable(FlaviScreens.RegistrationScreen.route) {
             RegistrationScreen(
@@ -33,7 +42,18 @@ fun NavGraph() {
             )
         }
         composable(FlaviScreens.ProfileScreen.route) {
-            Profile()
+            Profile(
+                onLogOutOfAccountClick = {
+                    navController.navigate(
+                        route = FlaviScreens.AuthScreen.route,
+                        navOptions =  navOptions {
+                            popUpTo(route = FlaviScreens.ProfileScreen.route) {
+                                inclusive = true
+                            }
+                        }
+                    )
+                }
+            )
         }
     }
 }
