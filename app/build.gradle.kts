@@ -43,15 +43,12 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.material)
-    implementation(libs.jbcrypt)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
-    implementation(libs.bcrypt)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)

@@ -1,44 +1,120 @@
 package com.example.flavi.presentation.screens.profile
 
+import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Card
-import androidx.compose.material.Scaffold
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.flavi.R
 
 @Composable
 fun Profile(
     modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    onLogOutOfAccountClick: () -> Unit
 ) {
+
+    val state = viewModel.stateProfile.collectAsStateWithLifecycle()
 
     Scaffold { innerPadding ->
         Column(modifier = Modifier
             .padding(innerPadding)
             .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.onBackground)
         ) {
-            Card(
-                modifier = modifier
-                    .padding(top = 32.dp)
+            when (val currentState = state.value) {
+                is ProfileState.Initial -> {
+                    viewModel.initialUser()
+                    Card(
+                        modifier = modifier
+                            .padding(top = 32.dp, start = 8.dp, end = 8.dp)
+                            .fillMaxWidth()
+                            .size(100.dp)
+                            //Сделать цвет светло-серым
+                            .background(
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            .clip(RoundedCornerShape(8.dp))
+
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                modifier = Modifier
+                                    .clip(CircleShape)
+                                    .padding(32.dp),
+                                painter = painterResource(R.drawable.ic_launcher_foreground),
+                                contentDescription = "Аватарка"
+                            )
+                            Column(
+                                modifier = Modifier.padding(start = 16.dp)
+                            ) {
+                                Text(
+                                    text = currentState.nameUser
+                                )
+                                Text(
+                                    text = currentState.emailUser
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
                     .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    .padding(top = 16.dp)
+                ,
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column {
-                    Text(
-                        text = viewModel.getCurrentNameUser()
+                Button(
+                    onClick = {
+                        viewModel.logOutOfYourAccount()
+                        onLogOutOfAccountClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground
                     )
+                ) {
                     Text(
-                        text = viewModel.getCurrentEmailUser()
+                        text = "Выйти из аккаунта"
+                    )
+                }
+                Button(
+                    onClick = {
+                        Log.d("Auth", "Изменение профиля...")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                        contentColor = MaterialTheme.colorScheme.onBackground
+                    )
+                ) {
+                    Text(
+                        text = "Изменить профиль"
                     )
                 }
             }
