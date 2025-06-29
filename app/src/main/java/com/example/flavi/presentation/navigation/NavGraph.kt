@@ -8,60 +8,78 @@ import androidx.navigation.navOptions
 import com.example.flavi.presentation.screens.auth.AuthUser
 import com.example.flavi.presentation.screens.profile.Profile
 import com.example.flavi.presentation.screens.registration.RegistrationScreen
+import com.example.flavi.presentation.screens.searchMovie.SearchMovie
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import kotlinx.serialization.Serializable
 
 @Composable
 fun NavGraph() {
     val currentUser = Firebase.auth.currentUser
     val navController = rememberNavController()
     val startDestination = if (currentUser == null) {
-        FlaviScreens.AuthScreen.route
+        Screens.Auth
     } else {
-        FlaviScreens.ProfileScreen.route
+        Screens.SearchMovie
     }
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable(FlaviScreens.RegistrationScreen.route) {
+        composable<Screens.Register> {
             RegistrationScreen(
                 onRegisterClick = {
-                    navController.navigate(FlaviScreens.AuthScreen.route)
+                    navController.navigate(route = Screens.Auth)
                 }
             )
         }
-        composable(FlaviScreens.AuthScreen.route) {
+        composable<Screens.Auth> {
             AuthUser(
                 onProfileClick = {
-                    navController.navigate(FlaviScreens.ProfileScreen.route)
+                    navController.navigate(route = Screens.SearchMovie)
                 },
                 onRegisterClick = {
-                    navController.navigate(FlaviScreens.RegistrationScreen.route)
+                    navController.navigate(route = Screens.Register)
                 }
             )
         }
-        composable(FlaviScreens.ProfileScreen.route) {
+        composable<Screens.Profile> {
             Profile(
+                navHostController = navController,
                 onLogOutOfAccountClick = {
                     navController.navigate(
-                        route = FlaviScreens.AuthScreen.route,
+                        route = Screens.Auth,
                         navOptions =  navOptions {
-                            popUpTo(route = FlaviScreens.ProfileScreen.route) {
+                            popUpTo(route = Screens.Profile) {
                                 inclusive = true
                             }
                         }
                     )
+                },
+                goToSearchMoviesClick = {
+                    navController.navigate(Screens.SearchMovie)
                 }
+            )
+        }
+        composable<Screens.SearchMovie> {
+            SearchMovie(
+                navHostController = navController
             )
         }
     }
 }
 
-sealed class FlaviScreens(val route: String) {
-    data object RegistrationScreen: FlaviScreens("register")
+@Serializable
+sealed interface Screens {
+    @Serializable
+    object Register
 
-    data object AuthScreen: FlaviScreens("auth")
+    @Serializable
+    object Auth
 
-    data object ProfileScreen: FlaviScreens("profile")
+    @Serializable
+    object Profile
+
+    @Serializable
+    object SearchMovie
 }
