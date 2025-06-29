@@ -3,11 +3,17 @@ package com.example.flavi.data.repository
 import com.example.flavi.data.database.dao.UserDao
 import com.example.flavi.data.database.entitydb.UserDbModel
 import com.example.flavi.data.database.map.toEntity
+import com.example.flavi.data.datasource.MovieService
+import com.example.flavi.domain.entity.Movies
 import com.example.flavi.domain.entity.User
 import com.example.flavi.domain.repository.UserRepository
+import retrofit2.Response
 import javax.inject.Inject
 
-class UserRepositoryImpl @Inject constructor(private val userDao: UserDao ): UserRepository {
+class UserRepositoryImpl @Inject constructor(
+    private val userDao: UserDao,
+    private val movieService: MovieService
+    ): UserRepository {
 
     override suspend fun userRegister(name: String, password: String, email: String) {
         val userDbModel = UserDbModel(
@@ -25,6 +31,10 @@ class UserRepositoryImpl @Inject constructor(private val userDao: UserDao ): Use
 
     suspend fun checkUser(email: String, password: String): Boolean {
         return userDao.checkUserByEmailAndPassword(email, password)
+    }
+
+    override suspend fun getMovieByTitle(page: Int, limit: Int, query: String): Response<Movies> {
+        return movieService.getMovieByQuery(page, limit, query)
     }
 
 }
