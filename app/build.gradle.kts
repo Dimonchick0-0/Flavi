@@ -44,6 +44,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.compose)
+    implementation(libs.glide)
     implementation(libs.androidx.material)
     implementation (libs.retrofit)
     implementation (libs.converter.gson)
