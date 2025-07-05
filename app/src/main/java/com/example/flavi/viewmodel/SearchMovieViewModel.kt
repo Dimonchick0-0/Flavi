@@ -1,11 +1,14 @@
 package com.example.flavi.viewmodel
 
+import android.content.Context
 import android.net.ConnectivityManager
+import android.net.Network
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.datasource.PosterDTO
+import com.example.flavi.model.domain.entity.Movie
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +17,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -41,21 +45,19 @@ class SearchMovieViewModel @Inject constructor(
 
     val currentQuery = mutableStateOf("")
 
-
-
     init {
         query
             .onEach {
                 _stateSearchMovie.emit(SearchMovieState.InputQuery(it))
                 oldQuery.value = it
             }
-            .onEach {
-                it.ifEmpty {
-
-                }
-            }
             .map {
                 getMovie(it)
+            }
+            .onEach {
+                if (it.body()?.docs?.isNotFoundMovies()!!) {
+                    _stateSearchMovie.emit(SearchMovieState.NotFound)
+                }
             }
             .onEach {
                 it.body()?.let { movies ->
@@ -75,11 +77,25 @@ class SearchMovieViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    private fun List<Movie>.isNotFoundMovies(): Boolean { return this.isEmpty() }
+
+    fun processNotFoundMovie(query: String) {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.NotFound) {
+                oldQuery.value = query
+                currentQuery.value = oldQuery.value
+                state
+            } else {
+                state
+            }
+        }
+    }
+
     fun updateQuery(newQuery: String) {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.LoadMovie) {
                 oldQuery.value = newQuery
-                currentQuery.value = newQuery
+                currentQuery.value = oldQuery.value
                 state.copy(
                     id = state.id,
                     logo = state.logo,
@@ -109,7 +125,7 @@ class SearchMovieViewModel @Inject constructor(
     }
 
     private fun isOnline(): Boolean {
-        TODO() // Проверить подключение к сети
+        TODO()
     }
 
     private suspend fun getMovie(query: String): Response<Movies> {
@@ -139,6 +155,8 @@ class SearchMovieViewModel @Inject constructor(
 
 sealed interface SearchMovieState {
     data object Initial : SearchMovieState
+
+    data object NotFound: SearchMovieState
 
     data class InputQuery(
         val query: String

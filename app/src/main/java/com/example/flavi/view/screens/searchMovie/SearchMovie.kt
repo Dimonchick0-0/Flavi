@@ -3,6 +3,7 @@
 package com.example.flavi.view.screens.searchMovie
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,10 +19,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,6 +67,32 @@ fun SearchMovie(
                     viewModel.processInitial()
                 }
 
+                SearchMovieState.NotFound -> {
+                    val coroutineScope = rememberCoroutineScope()
+                    SearchMovieComponent(
+                        value = viewModel.oldQuery.value,
+                        onValueChange = {
+                            viewModel.processNotFoundMovie(query = it)
+                        },
+                        onEmitValue = {
+                            coroutineScope.launch {
+                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                            }
+                        },
+                        viewModel = viewModel
+                    )
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "не найден фильм",
+                            color = Color.Black
+                        )
+                    }
+                }
+
                 is SearchMovieState.InputQuery -> {
                     val color = if (currentState.query.isEmpty()) {
                         MaterialTheme.colorScheme.error
@@ -70,75 +100,50 @@ fun SearchMovie(
                         MaterialTheme.colorScheme.onBackground
                     }
                     val coroutineScope = rememberCoroutineScope()
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
+                    SearchMovieComponent(
                         value = currentState.query,
                         onValueChange = {
                             viewModel.processQuery(it)
                             viewModel.stateError.value = false
                             color.value
                         },
-                        placeholder = {
-                            Text(text = "Поиск фильмов...")
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                if (currentState.query.isEmpty()) {
-                                    viewModel.stateError.value = true
-                                    color.value
-                                } else {
-                                    coroutineScope.launch {
-                                        viewModel.query.emit(currentState.query)
-                                    }
+                        viewModel = viewModel,
+                        onEmitValue = {
+                            if (currentState.query.isEmpty()) {
+                                viewModel.stateError.value = true
+                                color.value
+                            } else {
+                                coroutineScope.launch {
+                                    viewModel.query.emit(currentState.query)
                                 }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Search,
-                                    contentDescription = ""
-                                )
                             }
                         },
-                        colors = TextFieldDefaults.colors(
+                        color = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
                             errorContainerColor = color
-                        ),
-                        isError = viewModel.stateError.value
+                        )
                     )
+
                 }
 
                 is SearchMovieState.LoadMovie -> {
                     val coroutineScope = rememberCoroutineScope()
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 16.dp),
+                    SearchMovieComponent(
                         value = viewModel.oldQuery.value,
                         onValueChange = {
                             viewModel.updateQuery(newQuery = it)
                         },
-                        placeholder = {
-                            Text(text = "Поиск фильмов...")
-                        },
-                        trailingIcon = {
-                            IconButton(onClick = {
-                                coroutineScope.launch {
-                                    viewModel.query.emit(value = viewModel.currentQuery.value)
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Filled.Search,
-                                    contentDescription = ""
-                                )
+                        viewModel = viewModel,
+                        onEmitValue = {
+                            coroutineScope.launch {
+                                viewModel.query.emit(value = viewModel.currentQuery.value)
                             }
                         },
-                        colors = TextFieldDefaults.colors(
+                        color = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.onBackground,
                             unfocusedContainerColor = MaterialTheme.colorScheme.onBackground
-                        ),
-                        isError = viewModel.stateError.value
+                        )
                     )
                     viewModel.processLoadMovie()
                     MovieCard(
@@ -154,6 +159,36 @@ fun SearchMovie(
 }
 
 @Composable
+private fun SearchMovieComponent(
+    value: String,
+    onValueChange: (String) -> Unit,
+    viewModel: SearchMovieViewModel,
+    onEmitValue: () -> Unit,
+    color: TextFieldColors = TextFieldDefaults.colors()
+) {
+    TextField(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 16.dp),
+        value = value,
+        onValueChange = { onValueChange(it) },
+        placeholder = {
+            Text(text = "Поиск фильмов...")
+        },
+        trailingIcon = {
+            IconButton(onClick = onEmitValue) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = ""
+                )
+            }
+        },
+        colors = color,
+        isError = viewModel.stateError.value
+    )
+}
+
+@Composable
 private fun MovieCard(
     logo: String,
     name: String,
@@ -166,8 +201,8 @@ private fun MovieCard(
         Column {
             GlideImage(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .size(150.dp),
+                    .size(150.dp)
+                    .fillMaxWidth(),
                 contentScale = ContentScale.Crop,
                 model = logo,
                 contentDescription = "Изображение фильма"
