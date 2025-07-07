@@ -5,14 +5,22 @@ package com.example.flavi.view.screens.searchMovie
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,6 +42,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.flavi.model.data.datasource.CountriesDTO
+import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.data.datasource.PosterDTO
+import com.example.flavi.model.data.datasource.RatingDTO
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.viewmodel.SearchMovieState
 import com.example.flavi.viewmodel.SearchMovieViewModel
@@ -147,10 +159,13 @@ fun SearchMovie(
                     )
                     viewModel.processLoadMovie()
                     MovieCard(
-                        logo = currentState.logo.url,
                         name = currentState.name,
+                        alternativeName = currentState.alternativeName,
                         year = currentState.year,
-                        description = currentState.description
+                        poster = currentState.posterDTO.url,
+                        rating = currentState.ratingDTO.imdb,
+                        genres = currentState.genresDTO.name,
+                        countrie = currentState.countriesDTO.name
                     )
                 }
             }
@@ -190,36 +205,59 @@ private fun SearchMovieComponent(
 
 @Composable
 private fun MovieCard(
-    logo: String,
     name: String,
+    alternativeName: String,
     year: Int,
-    description: String
+    poster: String,
+    rating: Float,
+    genres: String,
+    countrie: String
 ) {
+    val colorRating = if (rating > 5.0) Color.Green else Color.Red
     Card(
-        modifier = Modifier.padding(top = 50.dp)
+        modifier = Modifier.padding(top = 50.dp),
     ) {
-        Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             GlideImage(
                 modifier = Modifier
-                    .size(150.dp)
-                    .fillMaxWidth(),
-                contentScale = ContentScale.Crop,
-                model = logo,
-                contentDescription = "Изображение фильма"
+                    .size(100.dp)
+                    .fillMaxHeight(),
+                model = poster,
+                contentDescription = "Картинка фильма"
             )
-            Row {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = name
                 )
+                Row {
+                    Text(
+                        text = alternativeName
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = year.toString()
+                    )
+                }
+                Row {
+                    Text(
+                        text = countrie
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = genres
+                    )
+                }
+            }
+            Row {
                 Text(
-                    text = year.toString()
+                    text = rating.toString(),
+                    color = colorRating
                 )
             }
-            Text(
-                text = description,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
