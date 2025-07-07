@@ -1,17 +1,20 @@
 package com.example.flavi.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.datasource.PosterDTO
 import com.example.flavi.model.data.datasource.RatingDTO
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +32,8 @@ import kotlin.time.measureTime
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
-    private val getMovieByTitleUseCase: GetMovieByTitleUseCase
+    private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
+    @ApplicationContext context: Context
 ) : ViewModel() {
 
     val query = MutableSharedFlow<String>()
@@ -45,6 +49,7 @@ class SearchMovieViewModel @Inject constructor(
     val currentQuery = mutableStateOf("")
 
     init {
+        isOnline(context)
         query
             .onEach {
                 _stateSearchMovie.emit(SearchMovieState.InputQuery(it))
@@ -151,8 +156,8 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    private fun isOnline(): Boolean {
-        TODO()
+    private fun isOnline(context: Context): Boolean {
+        return Network(context).stateNetwork()
     }
 
     private suspend fun getMovie(query: String): Response<Movies> {
