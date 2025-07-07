@@ -1,14 +1,14 @@
 package com.example.flavi.viewmodel
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.datasource.CountriesDTO
+import com.example.flavi.model.data.datasource.GenresDTO
 import com.example.flavi.model.data.datasource.PosterDTO
-import com.example.flavi.model.domain.entity.Movie
+import com.example.flavi.model.data.datasource.RatingDTO
+import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,16 +17,15 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import javax.inject.Inject
+import kotlin.time.measureTime
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
@@ -65,10 +64,13 @@ class SearchMovieViewModel @Inject constructor(
                         _stateSearchMovie.emit(
                             SearchMovieState.LoadMovie(
                                 id = movie.id,
-                                logo = movie.poster,
                                 name = movie.name,
+                                alternativeName = movie.alternativeName,
                                 year = movie.year,
-                                description = movie.description
+                                posterDTO = movie.poster,
+                                ratingDTO = movie.rating,
+                                genresDTO = movie.genres.toGenresDTO(),
+                                countriesDTO = movie.countries.toCountrie()
                             )
                         )
                     }
@@ -77,7 +79,17 @@ class SearchMovieViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun List<Movie>.isNotFoundMovies(): Boolean { return this.isEmpty() }
+    private fun List<GenresDTO>.toGenresDTO(): GenresDTO {
+        return this.elementAt(0)
+    }
+
+    private fun List<CountriesDTO>.toCountrie(): CountriesDTO {
+        return this.elementAt(0)
+    }
+
+    private fun List<MovieCard>.isNotFoundMovies(): Boolean {
+        return this.isEmpty()
+    }
 
     fun processNotFoundMovie(query: String) {
         _stateSearchMovie.update { state ->
@@ -98,10 +110,13 @@ class SearchMovieViewModel @Inject constructor(
                 currentQuery.value = oldQuery.value
                 state.copy(
                     id = state.id,
-                    logo = state.logo,
                     name = state.name,
+                    alternativeName = state.alternativeName,
                     year = state.year,
-                    description = state.description
+                    posterDTO = state.posterDTO,
+                    ratingDTO = state.ratingDTO,
+                    genresDTO = state.genresDTO,
+                    countriesDTO = state.countriesDTO
                 )
             } else {
                 state
@@ -113,11 +128,23 @@ class SearchMovieViewModel @Inject constructor(
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.LoadMovie) {
                 val id = state.id
-                val logo = state.logo
                 val name = state.name
+                val alternativeName = state.alternativeName
                 val year = state.year
-                val description = state.description
-                state.copy(id, logo, name, year, description)
+                val poster = state.posterDTO
+                val rating = state.ratingDTO
+                val genre = state.genresDTO
+                val countrie = state.countriesDTO
+                state.copy(
+                    id = id,
+                    name = name,
+                    alternativeName = alternativeName,
+                    year = year,
+                    posterDTO = poster,
+                    ratingDTO = rating,
+                    genresDTO = genre,
+                    countriesDTO = countrie
+                )
             } else {
                 state
             }
@@ -156,7 +183,7 @@ class SearchMovieViewModel @Inject constructor(
 sealed interface SearchMovieState {
     data object Initial : SearchMovieState
 
-    data object NotFound: SearchMovieState
+    data object NotFound : SearchMovieState
 
     data class InputQuery(
         val query: String
@@ -164,9 +191,12 @@ sealed interface SearchMovieState {
 
     data class LoadMovie(
         val id: Int,
-        val logo: PosterDTO,
         val name: String,
+        val alternativeName: String,
         val year: Int,
-        val description: String
-    ): SearchMovieState
+        val posterDTO: PosterDTO,
+        val ratingDTO: RatingDTO,
+        val genresDTO: GenresDTO,
+        val countriesDTO: CountriesDTO
+    ) : SearchMovieState
 }
