@@ -16,6 +16,7 @@ import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,8 +49,10 @@ class SearchMovieViewModel @Inject constructor(
 
     val currentQuery = mutableStateOf("")
 
+    val networkState = mutableStateOf(false)
+
     init {
-        isOnline(context)
+        changeStateByConnection(context)
         query
             .onEach {
                 _stateSearchMovie.emit(SearchMovieState.InputQuery(it))
@@ -82,6 +85,7 @@ class SearchMovieViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
     }
 
     private fun List<GenresDTO>.toGenresDTO(): GenresDTO {
@@ -156,8 +160,52 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    private fun isOnline(context: Context): Boolean {
-        return Network(context).stateNetwork()
+    fun processNetworkShutdownState() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.NetworkShutdown) {
+                viewModelScope.launch {
+                    _stateSearchMovie.emit(SearchMovieState.NotFound)
+                }
+                state
+            } else {
+                state
+            }
+        }
+    }
+
+    fun processConnectToTheNetwork() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.ConnectToTheNetwork) {
+                viewModelScope.launch {
+                    _stateSearchMovie.emit(SearchMovieState.Initial)
+                }
+                state
+            } else {
+                state
+            }
+        }
+    }
+
+    private fun changeStateByConnection(context: Context) {
+        networkState.value = Network(context).stateNetwork()
+        val network = Network(context)
+        if (!networkState.value) {
+            viewModelScope.launch {
+                _stateSearchMovie.emit(SearchMovieState.NotFound)
+            }
+        }
+        network.lostNetwork {
+            networkState.value = false
+            viewModelScope.launch {
+                _stateSearchMovie.emit(SearchMovieState.NetworkShutdown)
+            }
+        }
+        network.onAvailableNetwork {
+            networkState.value = true
+            viewModelScope.launch {
+                _stateSearchMovie.emit(SearchMovieState.ConnectToTheNetwork)
+            }
+        }
     }
 
     private suspend fun getMovie(query: String): Response<Movies> {
@@ -189,6 +237,10 @@ sealed interface SearchMovieState {
     data object Initial : SearchMovieState
 
     data object NotFound : SearchMovieState
+
+    data object NetworkShutdown : SearchMovieState
+
+    data object ConnectToTheNetwork : SearchMovieState
 
     data class InputQuery(
         val query: String

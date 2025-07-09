@@ -2,6 +2,8 @@
 
 package com.example.flavi.view.screens.searchMovie
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,7 +59,8 @@ fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
     viewModel: SearchMovieViewModel = hiltViewModel(),
-    onClickToProfileUser: () -> Unit
+    onClickToProfileUser: () -> Unit,
+    context: Context = LocalContext.current
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
 
@@ -124,6 +128,7 @@ fun SearchMovie(
                             if (currentState.query.isEmpty()) {
                                 viewModel.stateError.value = true
                                 color.value
+
                             } else {
                                 coroutineScope.launch {
                                     viewModel.query.emit(currentState.query)
@@ -167,6 +172,13 @@ fun SearchMovie(
                         genres = currentState.genresDTO.name,
                         countrie = currentState.countriesDTO.name
                     )
+                }
+
+                is SearchMovieState.ConnectToTheNetwork -> {
+                    viewModel.processConnectToTheNetwork()
+                }
+                is SearchMovieState.NetworkShutdown -> {
+                    viewModel.processNetworkShutdownState()
                 }
             }
         }
