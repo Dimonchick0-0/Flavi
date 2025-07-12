@@ -60,8 +60,7 @@ fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
     viewModel: SearchMovieViewModel = hiltViewModel(),
-    onClickToProfileUser: () -> Unit,
-    context: Context = LocalContext.current
+    onClickToProfileUser: () -> Unit
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
