@@ -1,18 +1,22 @@
 package com.example.flavi.viewmodel
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.datasource.PosterDTO
 import com.example.flavi.model.data.datasource.RatingDTO
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +33,8 @@ import kotlin.time.measureTime
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
-    private val getMovieByTitleUseCase: GetMovieByTitleUseCase
+    private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
+    @ApplicationContext context: Context
 ) : ViewModel() {
 
     val query = MutableSharedFlow<String>()
@@ -44,7 +49,12 @@ class SearchMovieViewModel @Inject constructor(
 
     val currentQuery = mutableStateOf("")
 
+    private val networkState = mutableStateOf(false)
+
+    val notificationOfInternetLoss = mutableStateOf("У вас проблемы с подключением сети")
+
     init {
+        changeStateByConnection(context)
         query
             .onEach {
                 _stateSearchMovie.emit(SearchMovieState.InputQuery(it))
@@ -77,6 +87,7 @@ class SearchMovieViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+
     }
 
     private fun List<GenresDTO>.toGenresDTO(): GenresDTO {
@@ -151,8 +162,68 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    private fun isOnline(): Boolean {
-        TODO()
+    fun processNotificationOfInternetLoss() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.NotificationOfInternetLoss) {
+                state.copy(
+                    notificationOfInternetLoss.value
+                )
+            } else {
+                state
+            }
+        }
+    }
+
+    fun processNetworkShutdownState() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.NetworkShutdown) {
+                viewModelScope.launch {
+                    _stateSearchMovie.emit(
+                        SearchMovieState.NotificationOfInternetLoss(
+                            notification = notificationOfInternetLoss.value
+                        )
+                    )
+                }
+                state
+            } else {
+                state
+            }
+        }
+    }
+
+    fun processConnectToTheNetwork() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.ConnectToTheNetwork) {
+                viewModelScope.launch {
+                    _stateSearchMovie.emit(SearchMovieState.Initial)
+                }
+                state
+            } else {
+                state
+            }
+        }
+    }
+
+    private fun changeStateByConnection(context: Context) {
+        networkState.value = Network(context).stateNetwork()
+        val network = Network(context)
+        if (!networkState.value) {
+            viewModelScope.launch {
+                _stateSearchMovie.emit(SearchMovieState.NotificationOfInternetLoss(notificationOfInternetLoss.value))
+            }
+        }
+        network.lostNetwork {
+            networkState.value = false
+            viewModelScope.launch {
+                _stateSearchMovie.emit(SearchMovieState.NetworkShutdown)
+            }
+        }
+        network.onAvailableNetwork {
+            networkState.value = true
+            viewModelScope.launch {
+                _stateSearchMovie.emit(SearchMovieState.ConnectToTheNetwork)
+            }
+        }
     }
 
     private suspend fun getMovie(query: String): Response<Movies> {
@@ -184,6 +255,14 @@ sealed interface SearchMovieState {
     data object Initial : SearchMovieState
 
     data object NotFound : SearchMovieState
+
+    data object NetworkShutdown : SearchMovieState
+
+    data class NotificationOfInternetLoss(
+        val notification: String
+    ) : SearchMovieState
+
+    data object ConnectToTheNetwork : SearchMovieState
 
     data class InputQuery(
         val query: String

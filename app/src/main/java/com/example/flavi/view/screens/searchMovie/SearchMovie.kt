@@ -2,6 +2,8 @@
 
 package com.example.flavi.view.screens.searchMovie
 
+import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
@@ -35,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,10 +60,11 @@ fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
     viewModel: SearchMovieViewModel = hiltViewModel(),
-    onClickToProfileUser: () -> Unit
+    onClickToProfileUser: () -> Unit,
+    context: Context = LocalContext.current
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
-
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         bottomBar = {
             BottomNavigation.BottomNav(
@@ -80,7 +85,6 @@ fun SearchMovie(
                 }
 
                 SearchMovieState.NotFound -> {
-                    val coroutineScope = rememberCoroutineScope()
                     SearchMovieComponent(
                         value = viewModel.oldQuery.value,
                         onValueChange = {
@@ -111,7 +115,6 @@ fun SearchMovie(
                     } else {
                         MaterialTheme.colorScheme.onBackground
                     }
-                    val coroutineScope = rememberCoroutineScope()
                     SearchMovieComponent(
                         value = currentState.query,
                         onValueChange = {
@@ -124,6 +127,7 @@ fun SearchMovie(
                             if (currentState.query.isEmpty()) {
                                 viewModel.stateError.value = true
                                 color.value
+
                             } else {
                                 coroutineScope.launch {
                                     viewModel.query.emit(currentState.query)
@@ -140,7 +144,6 @@ fun SearchMovie(
                 }
 
                 is SearchMovieState.LoadMovie -> {
-                    val coroutineScope = rememberCoroutineScope()
                     SearchMovieComponent(
                         value = viewModel.oldQuery.value,
                         onValueChange = {
@@ -166,6 +169,35 @@ fun SearchMovie(
                         rating = currentState.ratingDTO.imdb,
                         genres = currentState.genresDTO.name,
                         countrie = currentState.countriesDTO.name
+                    )
+                }
+
+                is SearchMovieState.ConnectToTheNetwork -> {
+                    viewModel.processConnectToTheNetwork()
+                }
+
+                is SearchMovieState.NetworkShutdown -> {
+                    viewModel.processNetworkShutdownState()
+                }
+
+                is SearchMovieState.NotificationOfInternetLoss -> {
+                    viewModel.processNotificationOfInternetLoss()
+                    SearchMovieComponent(
+                        value = viewModel.oldQuery.value,
+                        onValueChange = {
+                            viewModel.updateQuery(it)
+                        },
+                        onEmitValue = {
+                            coroutineScope.launch {
+                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                            }
+                        },
+                        viewModel = viewModel
+                    )
+                    Spacer(modifier = Modifier.height(50.dp))
+                    Text(
+                        text = viewModel.notificationOfInternetLoss.value,
+                        color = Color.Black
                     )
                 }
             }

@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+    debugImplementation(libs.leakcanary.android)
     implementation(libs.compose)
     implementation(libs.glide)
     implementation(libs.androidx.material)
