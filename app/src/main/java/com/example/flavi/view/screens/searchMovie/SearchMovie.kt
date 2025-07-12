@@ -2,28 +2,21 @@
 
 package com.example.flavi.view.screens.searchMovie
 
-import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -37,21 +30,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.GenresDTO
-import com.example.flavi.model.data.datasource.PosterDTO
-import com.example.flavi.model.data.datasource.RatingDTO
 import com.example.flavi.view.navigation.BottomNavigation
-import com.example.flavi.viewmodel.SearchMovieState
+import com.example.flavi.view.state.SearchMovieState
 import com.example.flavi.viewmodel.SearchMovieViewModel
 import kotlinx.coroutines.launch
 
@@ -60,8 +46,7 @@ fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
     viewModel: SearchMovieViewModel = hiltViewModel(),
-    onClickToProfileUser: () -> Unit,
-    context: Context = LocalContext.current
+    onClickToProfileUser: () -> Unit
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -144,20 +129,33 @@ fun SearchMovie(
                 }
 
                 is SearchMovieState.LoadMovie -> {
+                    val color = if (viewModel.currentQuery.value.isEmpty()) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onBackground
+                    }
                     SearchMovieComponent(
                         value = viewModel.oldQuery.value,
                         onValueChange = {
                             viewModel.updateQuery(newQuery = it)
+                            viewModel.stateError.value = false
                         },
                         viewModel = viewModel,
                         onEmitValue = {
                             coroutineScope.launch {
-                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                                if (viewModel.currentQuery.value.isEmpty()) {
+                                    viewModel.stateError.value = true
+                                    color.value
+                                }
+                                if (viewModel.currentQuery.value.isNotEmpty()) {
+                                    viewModel.query.emit(value = viewModel.currentQuery.value)
+                                }
                             }
                         },
                         color = TextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onBackground
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                            errorContainerColor = color
                         )
                     )
                     viewModel.processLoadMovie()

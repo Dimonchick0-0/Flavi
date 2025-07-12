@@ -13,6 +13,7 @@ import com.example.flavi.model.data.datasource.RatingDTO
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
+import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -249,33 +251,4 @@ class SearchMovieViewModel @Inject constructor(
     fun processInitial() {
         viewModelScope.launch { _stateSearchMovie.emit(SearchMovieState.InputQuery("")) }
     }
-}
-
-sealed interface SearchMovieState {
-    data object Initial : SearchMovieState
-
-    data object NotFound : SearchMovieState
-
-    data object NetworkShutdown : SearchMovieState
-
-    data class NotificationOfInternetLoss(
-        val notification: String
-    ) : SearchMovieState
-
-    data object ConnectToTheNetwork : SearchMovieState
-
-    data class InputQuery(
-        val query: String
-    ) : SearchMovieState
-
-    data class LoadMovie(
-        val id: Int,
-        val name: String,
-        val alternativeName: String,
-        val year: Int,
-        val posterDTO: PosterDTO,
-        val ratingDTO: RatingDTO,
-        val genresDTO: GenresDTO,
-        val countriesDTO: CountriesDTO
-    ) : SearchMovieState
 }
