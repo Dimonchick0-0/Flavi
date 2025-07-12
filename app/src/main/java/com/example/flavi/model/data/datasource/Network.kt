@@ -17,7 +17,7 @@ import javax.inject.Inject
 class Network @Inject constructor (
     @ApplicationContext context: Context
 ) {
-    val connectivityManager = context.getSystemService(
+    private val connectivityManager = context.getSystemService(
         Context.CONNECTIVITY_SERVICE
     ) as ConnectivityManager
 

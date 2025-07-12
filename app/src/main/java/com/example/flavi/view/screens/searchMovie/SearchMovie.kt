@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
@@ -63,7 +64,7 @@ fun SearchMovie(
     context: Context = LocalContext.current
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
-
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         bottomBar = {
             BottomNavigation.BottomNav(
@@ -84,7 +85,6 @@ fun SearchMovie(
                 }
 
                 SearchMovieState.NotFound -> {
-                    val coroutineScope = rememberCoroutineScope()
                     SearchMovieComponent(
                         value = viewModel.oldQuery.value,
                         onValueChange = {
@@ -115,7 +115,6 @@ fun SearchMovie(
                     } else {
                         MaterialTheme.colorScheme.onBackground
                     }
-                    val coroutineScope = rememberCoroutineScope()
                     SearchMovieComponent(
                         value = currentState.query,
                         onValueChange = {
@@ -145,7 +144,6 @@ fun SearchMovie(
                 }
 
                 is SearchMovieState.LoadMovie -> {
-                    val coroutineScope = rememberCoroutineScope()
                     SearchMovieComponent(
                         value = viewModel.oldQuery.value,
                         onValueChange = {
@@ -177,8 +175,30 @@ fun SearchMovie(
                 is SearchMovieState.ConnectToTheNetwork -> {
                     viewModel.processConnectToTheNetwork()
                 }
+
                 is SearchMovieState.NetworkShutdown -> {
                     viewModel.processNetworkShutdownState()
+                }
+
+                is SearchMovieState.NotificationOfInternetLoss -> {
+                    viewModel.processNotificationOfInternetLoss()
+                    SearchMovieComponent(
+                        value = viewModel.oldQuery.value,
+                        onValueChange = {
+                            viewModel.updateQuery(it)
+                        },
+                        onEmitValue = {
+                            coroutineScope.launch {
+                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                            }
+                        },
+                        viewModel = viewModel
+                    )
+                    Spacer(modifier = Modifier.height(50.dp))
+                    Text(
+                        text = viewModel.notificationOfInternetLoss.value,
+                        color = Color.Black
+                    )
                 }
             }
         }

@@ -49,7 +49,9 @@ class SearchMovieViewModel @Inject constructor(
 
     val currentQuery = mutableStateOf("")
 
-    val networkState = mutableStateOf(false)
+    private val networkState = mutableStateOf(false)
+
+    val notificationOfInternetLoss = mutableStateOf("У вас проблемы с подключением сети")
 
     init {
         changeStateByConnection(context)
@@ -160,11 +162,27 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
+    fun processNotificationOfInternetLoss() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.NotificationOfInternetLoss) {
+                state.copy(
+                    notificationOfInternetLoss.value
+                )
+            } else {
+                state
+            }
+        }
+    }
+
     fun processNetworkShutdownState() {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.NetworkShutdown) {
                 viewModelScope.launch {
-                    _stateSearchMovie.emit(SearchMovieState.NotFound)
+                    _stateSearchMovie.emit(
+                        SearchMovieState.NotificationOfInternetLoss(
+                            notification = notificationOfInternetLoss.value
+                        )
+                    )
                 }
                 state
             } else {
@@ -191,7 +209,7 @@ class SearchMovieViewModel @Inject constructor(
         val network = Network(context)
         if (!networkState.value) {
             viewModelScope.launch {
-                _stateSearchMovie.emit(SearchMovieState.NotFound)
+                _stateSearchMovie.emit(SearchMovieState.NotificationOfInternetLoss(notificationOfInternetLoss.value))
             }
         }
         network.lostNetwork {
@@ -239,6 +257,10 @@ sealed interface SearchMovieState {
     data object NotFound : SearchMovieState
 
     data object NetworkShutdown : SearchMovieState
+
+    data class NotificationOfInternetLoss(
+        val notification: String
+    ) : SearchMovieState
 
     data object ConnectToTheNetwork : SearchMovieState
 
