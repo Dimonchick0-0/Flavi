@@ -14,9 +14,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +32,8 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,7 +88,11 @@ fun SearchMovie(
                                 viewModel.query.emit(value = viewModel.currentQuery.value)
                             }
                         },
-                        viewModel = viewModel
+                        viewModel = viewModel,
+                        color = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
+                        )
                     )
                     Column(
                         modifier = Modifier.fillMaxSize(),
@@ -243,9 +255,14 @@ private fun MovieCard(
     genres: String,
     countrie: String
 ) {
+    val expanded = remember { mutableStateOf(false) }
+    val isLike = remember { mutableStateOf(false) }
     val colorRating = if (rating > 5.0) Color.Green else Color.Red
     Card(
         modifier = Modifier.padding(top = 50.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -283,10 +300,55 @@ private fun MovieCard(
                 }
             }
             Row {
-                Text(
-                    text = rating.toString(),
-                    color = colorRating
-                )
+                Column(
+                    modifier = Modifier.width(32.dp)
+                ) {
+                    IconButton(
+                        modifier = Modifier.padding(top = 8.dp, end = 8.dp),
+                        onClick = { expanded.value = true }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = ""
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expanded.value,
+                        onDismissRequest = {
+                            expanded.value = false
+                        }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Like") },
+                            onClick = {},
+                            leadingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        isLike.value = !isLike.value
+                                    }
+                                ) {
+                                    if (isLike.value) {
+                                        Icon(
+                                            imageVector = Icons.Default.Favorite,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                    if (!isLike.value) {
+                                        Icon(
+                                            imageVector = Icons.Default.FavoriteBorder,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = rating.toString(),
+                        color = colorRating
+                    )
+                }
             }
         }
     }
