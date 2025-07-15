@@ -4,16 +4,32 @@ import com.example.flavi.model.data.database.dao.UserDao
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toEntity
 import com.example.flavi.model.data.datasource.MovieService
+import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
+import com.example.flavi.model.domain.entity.MoviesCard
 import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.repository.UserRepository
+import com.google.firebase.auth.auth
 import retrofit2.Response
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
     private val movieService: MovieService
-    ): UserRepository {
+) : UserRepository {
+
+    override suspend fun saveToFavorites(movieCard: MovieCard) {
+        val addMovieList = mutableListOf<MovieCard>()
+        addMovieList.add(movieCard)
+        val newListMovieCard = addMovieList.toList()
+        userDao.insertLikeMovieToDb(
+            userDbModel = UserDbModel(
+                movie = MoviesCard(
+                    newListMovieCard
+                )
+            )
+        )
+    }
 
     override suspend fun userRegister(name: String, password: String, email: String) {
         val userDbModel = UserDbModel(

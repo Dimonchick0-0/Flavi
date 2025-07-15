@@ -1,17 +1,16 @@
 package com.example.flavi
 
+import com.example.flavi.model.data.database.dao.UserDao
+import com.example.flavi.model.data.datasource.MovieService
+import com.example.flavi.model.data.repository.UserRepositoryImpl
+import com.example.flavi.model.domain.repository.UserRepository
 import org.junit.Test
 
 import org.junit.Assert.*
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
+import javax.inject.Inject
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 class ExampleUnitTest {
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
-    }
+
 }
