@@ -8,11 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
 import com.example.flavi.model.data.datasource.Network
-import com.example.flavi.model.data.datasource.PosterDTO
-import com.example.flavi.model.data.datasource.RatingDTO
+import com.example.flavi.model.data.repository.UserRepositoryImpl
+import com.example.flavi.model.domain.entity.Movie
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
+import com.example.flavi.model.domain.usecase.SaveToFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,20 +23,21 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import javax.inject.Inject
-import kotlin.time.measureTime
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
     private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
+    private val saveToFavoritesUseCase: SaveToFavoritesUseCase,
+    private val repositoryImpl: UserRepositoryImpl,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
@@ -75,14 +77,15 @@ class SearchMovieViewModel @Inject constructor(
                     movies.docs.forEach { movie ->
                         _stateSearchMovie.emit(
                             SearchMovieState.LoadMovie(
-                                id = movie.id,
-                                name = movie.name,
-                                alternativeName = movie.alternativeName,
-                                year = movie.year,
-                                posterDTO = movie.poster,
-                                ratingDTO = movie.rating,
-                                genresDTO = movie.genres.toGenresDTO(),
-                                countriesDTO = movie.countries.toCountrie()
+                                movie = movie
+//                                id = movie.id,
+//                                name = movie.name,
+//                                alternativeName = movie.alternativeName,
+//                                year = movie.year,
+//                                posterDTO = movie.poster,
+//                                ratingDTO = movie.rating,
+//                                genresDTO = movie.genres.toGenresDTO(),
+//                                countriesDTO = movie.countries.toCountrie()
                             )
                         )
                     }
@@ -92,12 +95,8 @@ class SearchMovieViewModel @Inject constructor(
 
     }
 
-    private fun List<GenresDTO>.toGenresDTO(): GenresDTO {
-        return this.elementAt(0)
-    }
-
-    private fun List<CountriesDTO>.toCountrie(): CountriesDTO {
-        return this.elementAt(0)
+    fun saveMovieToFavorites(movieCard: MovieCard) {
+        viewModelScope.launch(Dispatchers.IO) { saveToFavoritesUseCase(movieCard) }
     }
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
@@ -121,16 +120,17 @@ class SearchMovieViewModel @Inject constructor(
             if (state is SearchMovieState.LoadMovie) {
                 oldQuery.value = newQuery
                 currentQuery.value = oldQuery.value
-                state.copy(
-                    id = state.id,
-                    name = state.name,
-                    alternativeName = state.alternativeName,
-                    year = state.year,
-                    posterDTO = state.posterDTO,
-                    ratingDTO = state.ratingDTO,
-                    genresDTO = state.genresDTO,
-                    countriesDTO = state.countriesDTO
-                )
+                state.copy(movie = state.movie)
+//                state.copy(
+//                    id = state.id,
+//                    name = state.name,
+//                    alternativeName = state.alternativeName,
+//                    year = state.year,
+//                    posterDTO = state.posterDTO,
+//                    ratingDTO = state.ratingDTO,
+//                    genresDTO = state.genresDTO,
+//                    countriesDTO = state.countriesDTO
+//                )
             } else {
                 state
             }
@@ -140,24 +140,27 @@ class SearchMovieViewModel @Inject constructor(
     fun processLoadMovie() {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.LoadMovie) {
-                val id = state.id
-                val name = state.name
-                val alternativeName = state.alternativeName
-                val year = state.year
-                val poster = state.posterDTO
-                val rating = state.ratingDTO
-                val genre = state.genresDTO
-                val countrie = state.countriesDTO
                 state.copy(
-                    id = id,
-                    name = name,
-                    alternativeName = alternativeName,
-                    year = year,
-                    posterDTO = poster,
-                    ratingDTO = rating,
-                    genresDTO = genre,
-                    countriesDTO = countrie
+                    movie = state.movie
                 )
+//                val id = state.id
+//                val name = state.name
+//                val alternativeName = state.alternativeName
+//                val year = state.year
+//                val poster = state.posterDTO
+//                val rating = state.ratingDTO
+//                val genre = state.genresDTO
+//                val countrie = state.countriesDTO
+//                state.copy(
+//                    id = id,
+//                    name = name,
+//                    alternativeName = alternativeName,
+//                    year = year,
+//                    posterDTO = poster,
+//                    ratingDTO = rating,
+//                    genresDTO = genre,
+//                    countriesDTO = countrie
+//                )
             } else {
                 state
             }

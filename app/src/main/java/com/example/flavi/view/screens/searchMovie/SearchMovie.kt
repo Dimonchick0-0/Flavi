@@ -2,7 +2,9 @@
 
 package com.example.flavi.view.screens.searchMovie
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,6 +46,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.flavi.model.data.datasource.CountriesDTO
+import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.domain.entity.Movie
+import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.state.SearchMovieState
 import com.example.flavi.viewmodel.SearchMovieViewModel
@@ -172,13 +178,18 @@ fun SearchMovie(
                     )
                     viewModel.processLoadMovie()
                     MovieCard(
-                        name = currentState.name,
-                        alternativeName = currentState.alternativeName,
-                        year = currentState.year,
-                        poster = currentState.posterDTO.url,
-                        rating = currentState.ratingDTO.imdb,
-                        genres = currentState.genresDTO.name,
-                        countrie = currentState.countriesDTO.name
+                        movieCard = currentState.movie,
+                        onSaveMovieToFavoriteClick = {
+                            viewModel.saveMovieToFavorites(it)
+                        }
+//                        movieId = currentState.id,
+//                        name = currentState.name,
+//                        alternativeName = currentState.alternativeName,
+//                        year = currentState.year,
+//                        poster = currentState.posterDTO.url,
+//                        rating = currentState.ratingDTO.imdb,
+//                        genres = currentState.genresDTO.name,
+//                        countrie = currentState.countriesDTO.name,
                     )
                 }
 
@@ -247,19 +258,18 @@ private fun SearchMovieComponent(
 
 @Composable
 private fun MovieCard(
-    name: String,
-    alternativeName: String,
-    year: Int,
-    poster: String,
-    rating: Float,
-    genres: String,
-    countrie: String
+    movieCard: MovieCard,
+    onSaveMovieToFavoriteClick: (MovieCard) -> Unit
 ) {
     val expanded = remember { mutableStateOf(false) }
     val isLike = remember { mutableStateOf(false) }
-    val colorRating = if (rating > 5.0) Color.Green else Color.Red
+    val colorRating = if (movieCard.rating.imdb > 5.0) Color.Green else Color.Red
     Card(
-        modifier = Modifier.padding(top = 50.dp),
+        modifier = Modifier
+            .padding(top = 50.dp)
+            .clickable {
+                Log.d("Auth", movieCard.id.toString())
+            },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -271,31 +281,31 @@ private fun MovieCard(
                 modifier = Modifier
                     .size(100.dp)
                     .fillMaxHeight(),
-                model = poster,
+                model = movieCard.poster.url,
                 contentDescription = "Картинка фильма"
             )
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = name
+                    text = movieCard.name
                 )
                 Row {
                     Text(
-                        text = alternativeName
+                        text = movieCard.alternativeName
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = year.toString()
+                        text = movieCard.year.toString()
                     )
                 }
                 Row {
                     Text(
-                        text = countrie
+                        text = movieCard.countries.toCountrie().name
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = genres
+                        text = movieCard.genres.toGenresDTO().name
                     )
                 }
             }
@@ -332,6 +342,7 @@ private fun MovieCard(
                                             imageVector = Icons.Default.Favorite,
                                             contentDescription = ""
                                         )
+                                        onSaveMovieToFavoriteClick(movieCard)
                                     }
                                     if (!isLike.value) {
                                         Icon(
@@ -345,11 +356,19 @@ private fun MovieCard(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = rating.toString(),
+                        text = movieCard.rating.imdb.toString(),
                         color = colorRating
                     )
                 }
             }
         }
     }
+}
+
+private fun List<GenresDTO>.toGenresDTO(): GenresDTO {
+    return this.elementAt(0)
+}
+
+private fun List<CountriesDTO>.toCountrie(): CountriesDTO {
+    return this.elementAt(0)
 }
