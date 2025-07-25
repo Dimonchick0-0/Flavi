@@ -2,6 +2,7 @@ package com.example.flavi.view.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -10,7 +11,6 @@ import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
@@ -19,7 +19,6 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.flavi.view.screens.FlaviBottomNavigation
 
 object BottomNavigation {
 
@@ -31,7 +30,8 @@ object BottomNavigation {
     ) {
         val listNavigation = listOf(
             FlaviBottomNavigation("Поиск", Screens.SearchMovie, Icons.Filled.Search),
-            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle)
+            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle),
+            FlaviBottomNavigation("Любимое", Screens.FavoritesMovies, Icons.Default.Favorite)
         )
         NavigationBar(
             containerColor = containerColor

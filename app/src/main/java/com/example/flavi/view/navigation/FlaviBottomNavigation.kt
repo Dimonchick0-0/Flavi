@@ -1,4 +1,4 @@
-package com.example.flavi.view.screens
+package com.example.flavi.view.navigation
 
 import androidx.compose.ui.graphics.vector.ImageVector
 
