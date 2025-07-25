@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.example.flavi.view.screens.auth.AuthUser
+import com.example.flavi.view.screens.favoritesMovies.FavoritesScreen
 import com.example.flavi.view.screens.profile.Profile
 import com.example.flavi.view.screens.registration.RegistrationScreen
 import com.example.flavi.view.screens.searchMovie.SearchMovie
@@ -69,6 +70,11 @@ fun NavGraph() {
                 }
             )
         }
+        composable<Screens.FavoritesMovies> {
+            FavoritesScreen(
+                navHostController = navController
+            )
+        }
     }
 }
 
@@ -85,4 +91,7 @@ sealed interface Screens {
 
     @Serializable
     object SearchMovie
+
+    @Serializable
+    object FavoritesMovies
 }

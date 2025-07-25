@@ -5,43 +5,43 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.GenresDTO
 import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
-import com.example.flavi.model.domain.entity.Movie
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
-import com.example.flavi.model.domain.usecase.SaveToFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.internal.filterList
 import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
     private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
-    private val saveToFavoritesUseCase: SaveToFavoritesUseCase,
     private val repositoryImpl: UserRepositoryImpl,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
     val query = MutableSharedFlow<String>()
+
+    val filters = MutableSharedFlow<String>()
 
     private val _stateSearchMovie: MutableStateFlow<SearchMovieState> =
         MutableStateFlow(SearchMovieState.Initial)
@@ -65,7 +65,7 @@ class SearchMovieViewModel @Inject constructor(
                 oldQuery.value = it
             }
             .map {
-                getMovie(it)
+                getMovie(it, 1)
             }
             .onEach {
                 if (it.body()?.docs?.isNotFoundMovies()!!) {
@@ -76,27 +76,12 @@ class SearchMovieViewModel @Inject constructor(
                 it.body()?.let { movies ->
                     movies.docs.forEach { movie ->
                         _stateSearchMovie.emit(
-                            SearchMovieState.LoadMovie(
-                                movie = movie
-//                                id = movie.id,
-//                                name = movie.name,
-//                                alternativeName = movie.alternativeName,
-//                                year = movie.year,
-//                                posterDTO = movie.poster,
-//                                ratingDTO = movie.rating,
-//                                genresDTO = movie.genres.toGenresDTO(),
-//                                countriesDTO = movie.countries.toCountrie()
-                            )
+                            SearchMovieState.LoadMovie(movie = movie)
                         )
                     }
                 }
             }
             .launchIn(viewModelScope)
-
-    }
-
-    fun saveMovieToFavorites(movieCard: MovieCard) {
-        viewModelScope.launch(Dispatchers.IO) { saveToFavoritesUseCase(movieCard) }
     }
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
@@ -121,16 +106,6 @@ class SearchMovieViewModel @Inject constructor(
                 oldQuery.value = newQuery
                 currentQuery.value = oldQuery.value
                 state.copy(movie = state.movie)
-//                state.copy(
-//                    id = state.id,
-//                    name = state.name,
-//                    alternativeName = state.alternativeName,
-//                    year = state.year,
-//                    posterDTO = state.posterDTO,
-//                    ratingDTO = state.ratingDTO,
-//                    genresDTO = state.genresDTO,
-//                    countriesDTO = state.countriesDTO
-//                )
             } else {
                 state
             }
@@ -140,27 +115,7 @@ class SearchMovieViewModel @Inject constructor(
     fun processLoadMovie() {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.LoadMovie) {
-                state.copy(
-                    movie = state.movie
-                )
-//                val id = state.id
-//                val name = state.name
-//                val alternativeName = state.alternativeName
-//                val year = state.year
-//                val poster = state.posterDTO
-//                val rating = state.ratingDTO
-//                val genre = state.genresDTO
-//                val countrie = state.countriesDTO
-//                state.copy(
-//                    id = id,
-//                    name = name,
-//                    alternativeName = alternativeName,
-//                    year = year,
-//                    posterDTO = poster,
-//                    ratingDTO = rating,
-//                    genresDTO = genre,
-//                    countriesDTO = countrie
-//                )
+                state.copy(movie = state.movie)
             } else {
                 state
             }
@@ -214,7 +169,11 @@ class SearchMovieViewModel @Inject constructor(
         val network = Network(context)
         if (!networkState.value) {
             viewModelScope.launch {
-                _stateSearchMovie.emit(SearchMovieState.NotificationOfInternetLoss(notificationOfInternetLoss.value))
+                _stateSearchMovie.emit(
+                    SearchMovieState.NotificationOfInternetLoss(
+                        notificationOfInternetLoss.value
+                    )
+                )
             }
         }
         network.lostNetwork {
@@ -231,13 +190,44 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getMovie(query: String): Response<Movies> {
+    private suspend fun getMovie(query: String, limit: Int): Response<Movies> {
         return withContext(Dispatchers.Default) {
             getMovieByTitleUseCase(
                 page = 1,
-                limit = 1,
+                limit = limit,
                 query = query
             )
+        }
+    }
+
+    fun setFiltersToMovies() {
+        filters.onEach {
+            _stateSearchMovie.emit(SearchMovieState.SwitchingFiltersState(it))
+        }.launchIn(viewModelScope)
+    }
+
+    suspend fun processGetFilters(genresName: String) {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.SwitchingFiltersState) {
+                 getMovie(genresName, 10).body()?.let {
+                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(it))
+                     it
+                }
+                state.copy(filter = genresName)
+            } else {
+                state
+            }
+        }
+    }
+
+    fun processLoadMovieListWithFilters() {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.LoadListMovieWithFilters) {
+                val filterList = state.listMovie
+                state.copy(listMovie = filterList)
+            } else {
+                state
+            }
         }
     }
 

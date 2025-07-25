@@ -2,10 +2,12 @@
 
 package com.example.flavi.view.screens.searchMovie
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -25,14 +29,17 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -48,13 +56,15 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
-import com.example.flavi.model.domain.entity.Movie
+import com.example.flavi.model.domain.entity.Genres
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.state.SearchMovieState
+import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.SearchMovieViewModel
 import kotlinx.coroutines.launch
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun SearchMovie(
     modifier: Modifier = Modifier,
@@ -177,20 +187,7 @@ fun SearchMovie(
                         )
                     )
                     viewModel.processLoadMovie()
-                    MovieCard(
-                        movieCard = currentState.movie,
-                        onSaveMovieToFavoriteClick = {
-                            viewModel.saveMovieToFavorites(it)
-                        }
-//                        movieId = currentState.id,
-//                        name = currentState.name,
-//                        alternativeName = currentState.alternativeName,
-//                        year = currentState.year,
-//                        poster = currentState.posterDTO.url,
-//                        rating = currentState.ratingDTO.imdb,
-//                        genres = currentState.genresDTO.name,
-//                        countrie = currentState.countriesDTO.name,
-                    )
+                    MovieCardComponent(movieCard = currentState.movie)
                 }
 
                 is SearchMovieState.ConnectToTheNetwork -> {
@@ -221,8 +218,104 @@ fun SearchMovie(
                         color = Color.Black
                     )
                 }
+
+                is SearchMovieState.SwitchingFiltersState -> {
+                    coroutineScope.launch { viewModel.processGetFilters(currentState.filter) }
+                    SearchMovieComponent(
+                        value = viewModel.oldQuery.value,
+                        onValueChange = {
+                            viewModel.updateQuery(it)
+                            viewModel.stateError.value = false
+                        },
+                        onEmitValue = {
+                            coroutineScope.launch {
+                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                            }
+                        },
+                        viewModel = viewModel
+                    )
+                    Log.d("Auth", currentState.filter)
+                }
+
+                is SearchMovieState.LoadListMovieWithFilters -> {
+                    viewModel.processLoadMovieListWithFilters()
+                    LazyColumn {
+                        currentState.listMovie.docs.forEach {
+                            item {
+                                MovieCardComponent(movieCard = it)
+                            }
+                        }
+                    }
+
+                }
+            }
+            OpenModalBottomSheet(viewModel)
+            viewModel.setFiltersToMovies()
+        }
+    }
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun OpenModalBottomSheet(
+    viewModel: SearchMovieViewModel
+) {
+    val sheetState = rememberModalBottomSheetState()
+    val showBottomSheet = remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val listOfGenres = listOf(
+        Genres(idGenres = 0, name = "ужасы"),
+        Genres(idGenres = 1, name = "драма")
+    )
+    Button(
+        onClick = {
+            showBottomSheet.value = true
+        }) {
+        Icon(
+            imageVector = MyIcons.Settings,
+            contentDescription = ""
+        )
+        Text(
+            text = "Применить фильтры"
+        )
+    }
+    if (showBottomSheet.value) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                showBottomSheet.value = false
+            },
+            sheetState = sheetState
+        ) {
+            LazyColumn {
+                listOfGenres.forEach {
+                    item {
+                        ListGenres(
+                            modifier = Modifier.clickable {
+                                coroutineScope.launch { viewModel.filters.emit(value = it.name) }
+                            },
+                            genres = it
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun ListGenres(
+    modifier: Modifier = Modifier,
+    genres: Genres
+) {
+    Box(
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Text(
+            modifier = Modifier.padding(start = 8.dp),
+            text = genres.name,
+            fontSize = 16.sp
+        )
     }
 }
 
@@ -257,15 +350,15 @@ private fun SearchMovieComponent(
 }
 
 @Composable
-private fun MovieCard(
-    movieCard: MovieCard,
-    onSaveMovieToFavoriteClick: (MovieCard) -> Unit
+private fun MovieCardComponent(
+    modifier: Modifier = Modifier,
+    movieCard: MovieCard
 ) {
     val expanded = remember { mutableStateOf(false) }
     val isLike = remember { mutableStateOf(false) }
     val colorRating = if (movieCard.rating.imdb > 5.0) Color.Green else Color.Red
     Card(
-        modifier = Modifier
+        modifier = modifier
             .padding(top = 50.dp)
             .clickable {
                 Log.d("Auth", movieCard.id.toString())
@@ -342,7 +435,6 @@ private fun MovieCard(
                                             imageVector = Icons.Default.Favorite,
                                             contentDescription = ""
                                         )
-                                        onSaveMovieToFavoriteClick(movieCard)
                                     }
                                     if (!isLike.value) {
                                         Icon(
