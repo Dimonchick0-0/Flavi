@@ -30,8 +30,7 @@ object BottomNavigation {
     ) {
         val listNavigation = listOf(
             FlaviBottomNavigation("Поиск", Screens.SearchMovie, Icons.Filled.Search),
-            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle),
-            FlaviBottomNavigation("Любимое", Screens.FavoritesMovies, Icons.Default.Favorite)
+            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle)
         )
         NavigationBar(
             containerColor = containerColor
