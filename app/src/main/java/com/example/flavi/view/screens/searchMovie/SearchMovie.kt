@@ -5,6 +5,7 @@ package com.example.flavi.view.screens.searchMovie
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,9 +20,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
@@ -80,6 +84,10 @@ fun SearchMovie(
                 navHostController = navHostController,
                 onClickToItemNavigation = onClickToProfileUser
             )
+        },
+        floatingActionButton = {
+            FAB(viewModel = viewModel)
+
         }
     ) { innerPadding ->
         Column(
@@ -88,6 +96,7 @@ fun SearchMovie(
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.onBackground)
         ) {
+            viewModel.setFiltersToMovies()
             when (val currentState = state.value) {
                 SearchMovieState.Initial -> {
                     viewModel.processInitial()
@@ -234,7 +243,6 @@ fun SearchMovie(
                         },
                         viewModel = viewModel
                     )
-                    Log.d("Auth", currentState.filter)
                 }
 
                 is SearchMovieState.LoadListMovieWithFilters -> {
@@ -249,16 +257,48 @@ fun SearchMovie(
 
                 }
             }
-            OpenModalBottomSheet(viewModel)
-            viewModel.setFiltersToMovies()
         }
     }
 }
 
-@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+private fun AlertDialogWhenOffAInternet(
+    modifier: Modifier = Modifier,
+    viewModel: SearchMovieViewModel
+) {
+    AlertDialog(
+        modifier = modifier,
+        onDismissRequest = { viewModel.showDialog.value = false },
+        text = {
+            Text(
+                text = "У вас отключён интернет...(",
+                color = Color.Black
+            )
+        },
+        title = {
+            Text(
+                text = "Уведомление об отключении интернета",
+                color = Color.Black
+            )
+        },
+        buttons = {
+            Button(
+                onClick = {
+                    viewModel.showDialog.value = false
+                }
+            ) {
+                Text(
+                    text = "Я понял. Щас включу"
+                )
+            }
+        }
+    )
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun OpenModalBottomSheet(
+private fun FAB(
+    modifier: Modifier = Modifier,
     viewModel: SearchMovieViewModel
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -266,20 +306,36 @@ private fun OpenModalBottomSheet(
     val coroutineScope = rememberCoroutineScope()
     val listOfGenres = listOf(
         Genres(idGenres = 0, name = "ужасы"),
-        Genres(idGenres = 1, name = "драма")
+        Genres(idGenres = 1, name = "драма"),
+        Genres(idGenres = 2, name = "мелодрама")
     )
-    Button(
+    FloatingActionButton(
+        modifier = modifier,
         onClick = {
-            showBottomSheet.value = true
+            if (viewModel.networkState.value) {
+                showBottomSheet.value = true
+            }
+            if (!viewModel.networkState.value) {
+                viewModel.showDialog.value = true
+            }
         }) {
-        Icon(
-            imageVector = MyIcons.Settings,
-            contentDescription = ""
-        )
-        Text(
-            text = "Применить фильтры"
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = MyIcons.Settings,
+                contentDescription = "Фильтры для фильмов"
+            )
+            Text(
+                text = "Применить фильтры"
+            )
+        }
     }
+
+    if (viewModel.showDialog.value) {
+        AlertDialogWhenOffAInternet(viewModel = viewModel)
+    }
+
     if (showBottomSheet.value) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -291,7 +347,7 @@ private fun OpenModalBottomSheet(
                 listOfGenres.forEach {
                     item {
                         ListGenres(
-                            modifier = Modifier.clickable {
+                            onClickToElement = {
                                 coroutineScope.launch { viewModel.filters.emit(value = it.name) }
                             },
                             genres = it
@@ -306,13 +362,19 @@ private fun OpenModalBottomSheet(
 @Composable
 private fun ListGenres(
     modifier: Modifier = Modifier,
-    genres: Genres
+    genres: Genres,
+    onClickToElement: () -> Unit
 ) {
     Box(
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .padding(vertical = 8.dp)
+            .fillMaxWidth()
+            .border(width = 1.dp, color = Color.White)
+            .clickable { onClickToElement() }
     ) {
         Text(
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier
+                .padding(8.dp),
             text = genres.name,
             fontSize = 16.sp
         )
@@ -335,6 +397,16 @@ private fun SearchMovieComponent(
         onValueChange = { onValueChange(it) },
         placeholder = {
             Text(text = "Поиск фильмов...")
+        },
+        leadingIcon = {
+            IconButton(onClick = {
+                viewModel.clearQuery()
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Clear,
+                    contentDescription = "Очистить запрос"
+                )
+            }
         },
         trailingIcon = {
             IconButton(onClick = onEmitValue) {

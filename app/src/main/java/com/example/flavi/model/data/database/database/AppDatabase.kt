@@ -9,7 +9,7 @@ import com.example.flavi.model.data.database.entitydb.UserDbModel
 
 @Database(
     entities = [UserDbModel::class],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 abstract class AppDatabase: RoomDatabase() {

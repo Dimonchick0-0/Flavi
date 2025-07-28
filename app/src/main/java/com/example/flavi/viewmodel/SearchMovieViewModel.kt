@@ -3,10 +3,10 @@ package com.example.flavi.viewmodel
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.datasource.Network
-import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
@@ -14,28 +14,25 @@ import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.internal.filterList
+import leakcanary.AppWatcher
 import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
     private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
-    private val repositoryImpl: UserRepositoryImpl,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
@@ -47,13 +44,15 @@ class SearchMovieViewModel @Inject constructor(
         MutableStateFlow(SearchMovieState.Initial)
     val stateSearchMovie: StateFlow<SearchMovieState> = _stateSearchMovie.asStateFlow()
 
+    val showDialog = mutableStateOf(false)
+
     val stateError = mutableStateOf(false)
 
     val oldQuery = mutableStateOf("")
 
     val currentQuery = mutableStateOf("")
 
-    private val networkState = mutableStateOf(false)
+    val networkState = mutableStateOf(false)
 
     val notificationOfInternetLoss = mutableStateOf("У вас проблемы с подключением сети")
 
@@ -86,6 +85,11 @@ class SearchMovieViewModel @Inject constructor(
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
         return this.isEmpty()
+    }
+
+    fun clearQuery() {
+        oldQuery.value = ""
+        processInitial()
     }
 
     fun processNotFoundMovie(query: String) {
@@ -125,9 +129,7 @@ class SearchMovieViewModel @Inject constructor(
     fun processNotificationOfInternetLoss() {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.NotificationOfInternetLoss) {
-                state.copy(
-                    notificationOfInternetLoss.value
-                )
+                state.copy(notificationOfInternetLoss.value)
             } else {
                 state
             }
@@ -209,9 +211,8 @@ class SearchMovieViewModel @Inject constructor(
     suspend fun processGetFilters(genresName: String) {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.SwitchingFiltersState) {
-                 getMovie(genresName, 10).body()?.let {
+                getMovie(genresName, 10).body()?.let {
                     _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(it))
-                     it
                 }
                 state.copy(filter = genresName)
             } else {
@@ -223,8 +224,7 @@ class SearchMovieViewModel @Inject constructor(
     fun processLoadMovieListWithFilters() {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.LoadListMovieWithFilters) {
-                val filterList = state.listMovie
-                state.copy(listMovie = filterList)
+                state.copy(listMovie = state.listMovie)
             } else {
                 state
             }
