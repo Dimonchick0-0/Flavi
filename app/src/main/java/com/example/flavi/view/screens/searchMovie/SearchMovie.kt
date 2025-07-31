@@ -4,6 +4,7 @@ package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
@@ -45,11 +48,13 @@ import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -247,6 +252,18 @@ fun SearchMovie(
 
                 is SearchMovieState.LoadListMovieWithFilters -> {
                     viewModel.processLoadMovieListWithFilters()
+                    SearchMovieComponent(
+                        value = viewModel.oldQuery.value,
+                        onValueChange = {
+                            viewModel.updateQuery(it)
+                        },
+                        onEmitValue = {
+                            coroutineScope.launch {
+                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                            }
+                        },
+                        viewModel = viewModel
+                    )
                     LazyColumn {
                         currentState.listMovie.docs.forEach {
                             item {
@@ -259,6 +276,94 @@ fun SearchMovie(
             }
         }
     }
+}
+
+@Composable
+private fun EstimateMovie(
+    modifier: Modifier = Modifier,
+    textEstimate: String,
+    onClickToElement: () -> Unit,
+    onItemClick: () -> Unit
+) {
+    Box(modifier = modifier.clickable {
+        onClickToElement()
+        onItemClick()
+    }) {
+        Text(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            text = textEstimate,
+            fontSize = 17.sp,
+            color = Color.Black
+        )
+    }
+
+}
+
+@Composable
+private fun AlertDialogEstimateMovie(
+    modifier: Modifier = Modifier,
+    changeStateShowDialog: () -> Unit,
+    enabledButtons: Boolean,
+    onClickToElement: () -> Unit,
+) {
+    val listEstimate = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    val item = remember { mutableIntStateOf(0) }
+    AlertDialog(
+        modifier = modifier
+            .width(350.dp),
+        onDismissRequest = { changeStateShowDialog() },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LazyRow {
+                    listEstimate.forEach { elemtent ->
+                        item {
+                            EstimateMovie(
+                                textEstimate = elemtent.toString(),
+                                onClickToElement = onClickToElement,
+                                onItemClick = {
+                                    item.intValue = elemtent
+                                }
+                            )
+                        }
+
+                    }
+                }
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Ваша оценка: ${item.intValue}",
+                    fontSize = 17.sp,
+                    color = Color.Black
+                )
+            }
+        },
+        title = {
+            Text(
+                text = "Оценка фильма",
+                fontSize = 17.sp,
+                color = Color.Black
+            )
+        },
+        buttons = {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Button(
+                    onClick = changeStateShowDialog,
+                    enabled = enabledButtons
+                ) {
+                    Text(
+                        text = "Оценить",
+                        color = Color.White
+                    )
+                }
+            }
+        }
+    )
+
 }
 
 @Composable
@@ -392,7 +497,12 @@ private fun SearchMovieComponent(
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp),
+            .padding(top = 16.dp, start = 8.dp, end = 8.dp)
+            .border(
+                width = 1.dp,
+                color = Color.Black,
+                shape = RoundedCornerShape(10.dp)
+            ),
         value = value,
         onValueChange = { onValueChange(it) },
         placeholder = {
@@ -426,6 +536,8 @@ private fun MovieCardComponent(
     modifier: Modifier = Modifier,
     movieCard: MovieCard
 ) {
+    val stateButtons = remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
     val isLike = remember { mutableStateOf(false) }
     val colorRating = if (movieCard.rating.imdb > 5.0) Color.Green else Color.Red
@@ -512,6 +624,34 @@ private fun MovieCardComponent(
                                         Icon(
                                             imageVector = Icons.Default.FavoriteBorder,
                                             contentDescription = ""
+                                        )
+                                    }
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Оценить") },
+                            onClick = {},
+                            leadingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        showDialog.value = true
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = MyIcons.Star,
+                                        contentDescription = ""
+                                    )
+                                    if (showDialog.value) {
+                                        AlertDialogEstimateMovie(
+                                            changeStateShowDialog = {
+                                                showDialog.value = false
+                                                stateButtons.value = false
+                                            },
+                                            enabledButtons = stateButtons.value,
+                                            onClickToElement = {
+                                                stateButtons.value = true
+                                            }
                                         )
                                     }
                                 }
