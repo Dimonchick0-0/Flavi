@@ -3,10 +3,10 @@ package com.example.flavi.viewmodel
 import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.datasource.Network
+import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
@@ -14,6 +14,7 @@ import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,17 +23,16 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import leakcanary.AppWatcher
 import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
     private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
+    private val repositoryImpl: UserRepositoryImpl,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
@@ -56,6 +56,8 @@ class SearchMovieViewModel @Inject constructor(
 
     val notificationOfInternetLoss = mutableStateOf("У вас проблемы с подключением сети")
 
+    val searchMovieInTheDB = mutableStateOf(false)
+
     init {
         changeStateByConnection(context)
         query
@@ -65,6 +67,9 @@ class SearchMovieViewModel @Inject constructor(
             }
             .map {
                 getMovie(it, 1)
+            }
+            .catch {
+                Log.d("Auth", it.message.toString())
             }
             .onEach {
                 if (it.body()?.docs?.isNotFoundMovies()!!) {
@@ -83,8 +88,18 @@ class SearchMovieViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    suspend fun checkMovieByTitle(movieId: Int): Boolean {
+        return repositoryImpl.checkMovieInDbByTitle(movieId)
+    }
+
+    fun saveMovieInTheFavorites(movieCard: MovieCard) {
+        viewModelScope.launch {
+            repositoryImpl.saveMovieToDb(movieCard)
+        }
+    }
+
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
-        return this.isEmpty()
+        return isEmpty()
     }
 
     fun clearQuery() {

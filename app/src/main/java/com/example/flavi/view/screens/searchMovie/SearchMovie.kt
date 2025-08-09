@@ -4,7 +4,6 @@ package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -54,7 +53,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,6 +71,7 @@ import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.SearchMovieViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun SearchMovie(
@@ -201,7 +200,11 @@ fun SearchMovie(
                         )
                     )
                     viewModel.processLoadMovie()
-                    MovieCardComponent(movieCard = currentState.movie)
+                    MovieCardComponent(
+                        movieCard = currentState.movie,
+                        viewModel = viewModel
+                    )
+
                 }
 
                 is SearchMovieState.ConnectToTheNetwork -> {
@@ -264,11 +267,22 @@ fun SearchMovie(
                         },
                         viewModel = viewModel
                     )
+
                     LazyColumn {
                         currentState.listMovie.docs.forEach {
+//                            coroutineScope.launch {
+//                                if (viewModel.checkMovieByTitle(it.id)) {
+//                                    Log.d("Auth", "Фильм который есть в базе это: ${it.name}")
+//                                }
+//                            }
+
                             item {
-                                MovieCardComponent(movieCard = it)
+                                MovieCardComponent(
+                                    movieCard = it,
+                                    viewModel = viewModel
+                                )
                             }
+
                         }
                     }
 
@@ -531,16 +545,19 @@ private fun SearchMovieComponent(
     )
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 private fun MovieCardComponent(
     modifier: Modifier = Modifier,
-    movieCard: MovieCard
+    movieCard: MovieCard,
+    viewModel: SearchMovieViewModel
 ) {
     val stateButtons = remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
-    val isLike = remember { mutableStateOf(false) }
+//    val isLike = remember { mutableStateOf(false) }
     val colorRating = if (movieCard.rating.imdb > 5.0) Color.Green else Color.Red
+    val coroutineScope = rememberCoroutineScope()
     Card(
         modifier = modifier
             .padding(top = 50.dp)
@@ -592,7 +609,17 @@ private fun MovieCardComponent(
                 ) {
                     IconButton(
                         modifier = Modifier.padding(top = 8.dp, end = 8.dp),
-                        onClick = { expanded.value = true }
+                        onClick = {
+                            expanded.value = true
+                            coroutineScope.launch {
+                                if (viewModel.checkMovieByTitle(movieId = movieCard.id)) {
+                                    viewModel.searchMovieInTheDB.value = true
+                                }
+                                if (!viewModel.checkMovieByTitle(movieId = movieCard.id)) {
+                                    viewModel.searchMovieInTheDB.value = false
+                                }
+                            }
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
@@ -611,16 +638,21 @@ private fun MovieCardComponent(
                             leadingIcon = {
                                 IconButton(
                                     onClick = {
-                                        isLike.value = !isLike.value
+                                        coroutineScope.launch {
+                                            viewModel.saveMovieInTheFavorites(
+                                                movieCard.copy(isFavorite = true)
+                                            )
+                                            viewModel.searchMovieInTheDB.value = true
+                                        }
                                     }
                                 ) {
-                                    if (isLike.value) {
+                                    if (viewModel.searchMovieInTheDB.value) {
                                         Icon(
                                             imageVector = Icons.Default.Favorite,
                                             contentDescription = ""
                                         )
                                     }
-                                    if (!isLike.value) {
+                                    if (!viewModel.searchMovieInTheDB.value) {
                                         Icon(
                                             imageVector = Icons.Default.FavoriteBorder,
                                             contentDescription = ""
