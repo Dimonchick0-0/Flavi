@@ -26,9 +26,7 @@ object BottomNavigation {
     @Composable
     fun BottomNav(
         navHostController: NavHostController,
-        containerColor: Color = NavigationBarDefaults.containerColor,
-        onClickToItemNavigationFirst: () -> Unit,
-//        onClickToItemNavigationSecond: () -> Unit
+        containerColor: Color = NavigationBarDefaults.containerColor
     ) {
         val listNavigation = listOf(
             FlaviBottomNavigation("Поиск", Screens.SearchMovie, Icons.Filled.Search),
@@ -58,8 +56,6 @@ object BottomNavigation {
                             }
                             launchSingleTop = true
                             restoreState = true
-                            onClickToItemNavigationFirst()
-//                            onClickToItemNavigationSecond()
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(

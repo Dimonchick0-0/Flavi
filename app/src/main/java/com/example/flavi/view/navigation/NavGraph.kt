@@ -57,34 +57,17 @@ fun NavGraph() {
                             }
                         }
                     )
-                },
-                goToSearchMoviesClick = {
-                    navController.navigate(route = Screens.Profile)
-                    checkingForAdditionalScreens(navController)
                 }
             )
         }
         composable<Screens.SearchMovie> {
             SearchMovie(
-                navHostController = navController,
-                onClickToFavoriteScreen = {
-                    navController.navigate(Screens.Favorite)
-                },
-                onClickToProfileScreen = {
-                    navController.navigate(route = Screens.Profile)
-                }
+                navHostController = navController
             )
         }
         composable<Screens.Favorite> {
             FavoriteScreen(
-                navHostController = navController,
-                onClickToSearchMovie = {
-                    navController.navigate(route = Screens.SearchMovie)
-                    checkingForAdditionalScreens(navController)
-                },
-                onClickToProfileScreen = {
-                    navController.navigate(route = Screens.Profile)
-                }
+                navHostController = navController
             )
         }
     }

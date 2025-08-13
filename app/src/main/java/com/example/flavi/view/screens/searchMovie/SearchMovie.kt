@@ -76,9 +76,7 @@ import kotlinx.coroutines.launch
 fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
-    viewModel: SearchMovieViewModel = hiltViewModel(),
-    onClickToFavoriteScreen: () -> Unit,
-    onClickToProfileScreen: () -> Unit
+    viewModel: SearchMovieViewModel = hiltViewModel()
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -86,7 +84,7 @@ fun SearchMovie(
         bottomBar = {
             BottomNavigation.BottomNav(
                 navHostController = navHostController,
-                onClickToItemNavigationFirst = onClickToProfileScreen
+                containerColor = MaterialTheme.colorScheme.tertiary
             )
         },
         floatingActionButton = {

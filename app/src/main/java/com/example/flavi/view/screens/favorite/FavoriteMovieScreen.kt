@@ -26,9 +26,7 @@ import kotlinx.coroutines.launch
 fun FavoriteScreen(
     modifier: Modifier = Modifier,
     viewModel: FavoriteScreenViewModel = hiltViewModel(),
-    navHostController: NavHostController,
-    onClickToSearchMovie: () -> Unit,
-    onClickToProfileScreen: () -> Unit
+    navHostController: NavHostController
 ) {
 
     val state = viewModel.favoriteState.collectAsStateWithLifecycle()
@@ -38,10 +36,7 @@ fun FavoriteScreen(
         bottomBar = {
             BottomNavigation.BottomNav(
                 navHostController = navHostController,
-                onClickToItemNavigationFirst = {
-                    onClickToSearchMovie()
-                    onClickToProfileScreen()
-                }
+                containerColor = MaterialTheme.colorScheme.tertiary
             )
         }
     ) { innerPadding ->
