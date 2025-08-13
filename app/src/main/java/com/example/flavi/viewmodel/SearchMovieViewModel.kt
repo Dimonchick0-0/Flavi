@@ -1,7 +1,6 @@
 package com.example.flavi.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,12 +13,10 @@ import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -68,9 +65,6 @@ class SearchMovieViewModel @Inject constructor(
             .map {
                 getMovie(it, 1)
             }
-            .catch {
-                Log.d("Auth", it.message.toString())
-            }
             .onEach {
                 if (it.body()?.docs?.isNotFoundMovies()!!) {
                     _stateSearchMovie.emit(SearchMovieState.NotFound)
@@ -89,7 +83,7 @@ class SearchMovieViewModel @Inject constructor(
     }
 
     suspend fun checkMovieByTitle(movieId: Int): Boolean {
-        return repositoryImpl.checkMovieInDbByTitle(movieId)
+        return repositoryImpl.checkMovieInDbByMovieId(movieId)
     }
 
     fun saveMovieInTheFavorites(movieCard: MovieCard) {

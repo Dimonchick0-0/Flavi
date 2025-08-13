@@ -48,7 +48,7 @@ fun Profile(
         bottomBar = {
             BottomNavigation.BottomNav(
                 navHostController = navHostController,
-                onClickToItemNavigation = goToSearchMoviesClick,
+                onClickToItemNavigationFirst = goToSearchMoviesClick,
                 containerColor = MaterialTheme.colorScheme.tertiary
             )
         }

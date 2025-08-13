@@ -1,6 +1,7 @@
 package com.example.flavi.model.data.repository
 
 import com.example.flavi.model.data.database.dao.UserDao
+import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toEntity
 import com.example.flavi.model.data.database.map.toMoviesDbModel
@@ -10,33 +11,44 @@ import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
-    private val movieService: MovieService
+    private val movieService: MovieService,
+    private val getFirebaseAuth: GetFirebaseAuth
 ) : UserRepository {
 
     override suspend fun userRegister(name: String, password: String, email: String) {
-        val userId = GetFirebaseAuth.getIdUser()
+        val userId = getFirebaseAuth.getIdUser()
         val userDbModel = UserDbModel(
             userId = userId,
             name = name,
             email = email,
             password = password
         )
-        userDao.insertUserToDB(userDbModel)
-        userDao.insertMovieToDb(MovieCard().toMoviesDbModel(userId))
+        userDao.insertUserToDb(
+            userDbModel = userDbModel,
+            movies = MovieCard().toMoviesDbModel(userId),
+            userId
+        )
     }
 
-    suspend fun checkMovieInDbByTitle(movieId: Int): Boolean {
-        return userDao.checkMovieByTitle(movieId)
+    fun getFavoritesMovie(): Flow<List<MoviesDbModel>> {
+        val userId = getFirebaseAuth.getIdUser()
+        return userDao.getFavoriteMovie(userId)
+    }
+
+    suspend fun checkMovieInDbByMovieId(movieId: Int): Boolean {
+        val userId = getFirebaseAuth.getIdUser()
+        return userDao.checkMovieByTitle(movieId, userId)
     }
 
     suspend fun saveMovieToDb(movieCard: MovieCard) {
-        val id = GetFirebaseAuth.getIdUser()
+        val id = getFirebaseAuth.getIdUser()
         withContext(Dispatchers.IO) {
             userDao.insertMovieToDb(movieCard.toMoviesDbModel(id))
         }

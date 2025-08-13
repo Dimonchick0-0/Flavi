@@ -19,6 +19,7 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.flavi.view.ui.theme.MyIcons
 
 object BottomNavigation {
 
@@ -26,11 +27,13 @@ object BottomNavigation {
     fun BottomNav(
         navHostController: NavHostController,
         containerColor: Color = NavigationBarDefaults.containerColor,
-        onClickToItemNavigation: () -> Unit
+        onClickToItemNavigationFirst: () -> Unit,
+//        onClickToItemNavigationSecond: () -> Unit
     ) {
         val listNavigation = listOf(
             FlaviBottomNavigation("Поиск", Screens.SearchMovie, Icons.Filled.Search),
-            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle)
+            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle),
+            FlaviBottomNavigation("Избранные", Screens.Favorite, MyIcons.Favorite_Movies)
         )
         NavigationBar(
             containerColor = containerColor
@@ -55,7 +58,8 @@ object BottomNavigation {
                             }
                             launchSingleTop = true
                             restoreState = true
-                            onClickToItemNavigation()
+                            onClickToItemNavigationFirst()
+//                            onClickToItemNavigationSecond()
                         }
                     },
                     colors = NavigationBarItemDefaults.colors(

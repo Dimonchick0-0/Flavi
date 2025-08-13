@@ -151,10 +151,7 @@ fun AuthUser(
                                 .padding(horizontal = 48.dp),
                             onClick = {
                                 if (email.isNotBlank() && password.isNotBlank()) {
-                                    val time = measureTime {
-                                        viewModel.authUser()
-                                    }
-                                    Log.d("Auth", "$time")
+                                    viewModel.authUser()
                                 }
                                 email.ifEmpty {
                                     viewModel.errorStateEmail.value = true
