@@ -71,14 +71,12 @@ import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.SearchMovieViewModel
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
-    viewModel: SearchMovieViewModel = hiltViewModel(),
-    onClickToProfileUser: () -> Unit
+    viewModel: SearchMovieViewModel = hiltViewModel()
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
@@ -86,7 +84,7 @@ fun SearchMovie(
         bottomBar = {
             BottomNavigation.BottomNav(
                 navHostController = navHostController,
-                onClickToItemNavigation = onClickToProfileUser
+                containerColor = MaterialTheme.colorScheme.tertiary
             )
         },
         floatingActionButton = {
@@ -202,7 +200,22 @@ fun SearchMovie(
                     viewModel.processLoadMovie()
                     MovieCardComponent(
                         movieCard = currentState.movie,
-                        viewModel = viewModel
+                        onClickSaveMovie = {
+                            viewModel.saveMovieInTheFavorites(
+                                currentState.movie.copy(isFavorite = true)
+                            )
+                        },
+                        onClickCheckingMovie = {
+                            coroutineScope.launch {
+                                if (viewModel.checkMovieByTitle(movieId = currentState.movie.id)) {
+                                    viewModel.searchMovieInTheDB.value = true
+                                }
+                                if (!viewModel.checkMovieByTitle(movieId = currentState.movie.id)) {
+                                    viewModel.searchMovieInTheDB.value = false
+                                }
+                            }
+                        },
+                        searchMovie = viewModel.searchMovieInTheDB.value
                     )
 
                 }
@@ -270,19 +283,29 @@ fun SearchMovie(
 
                     LazyColumn {
                         currentState.listMovie.docs.forEach {
-//                            coroutineScope.launch {
-//                                if (viewModel.checkMovieByTitle(it.id)) {
-//                                    Log.d("Auth", "Фильм который есть в базе это: ${it.name}")
-//                                }
-//                            }
-
                             item {
                                 MovieCardComponent(
                                     movieCard = it,
-                                    viewModel = viewModel
+                                    onClickSaveMovie = {
+                                        coroutineScope.launch {
+                                            viewModel.saveMovieInTheFavorites(
+                                                it.copy(isFavorite = true)
+                                            )
+                                        }
+                                    },
+                                    onClickCheckingMovie = {
+                                        coroutineScope.launch {
+                                            if (viewModel.checkMovieByTitle(movieId = it.id)) {
+                                                viewModel.searchMovieInTheDB.value = true
+                                            }
+                                            if (!viewModel.checkMovieByTitle(movieId = it.id)) {
+                                                viewModel.searchMovieInTheDB.value = false
+                                            }
+                                        }
+                                    },
+                                    searchMovie = viewModel.searchMovieInTheDB.value
                                 )
                             }
-
                         }
                     }
 
@@ -547,17 +570,17 @@ private fun SearchMovieComponent(
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
-private fun MovieCardComponent(
+fun MovieCardComponent(
     modifier: Modifier = Modifier,
     movieCard: MovieCard,
-    viewModel: SearchMovieViewModel
+    onClickSaveMovie: () -> Unit,
+    onClickCheckingMovie: () -> Unit,
+    searchMovie: Boolean
 ) {
     val stateButtons = remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
-//    val isLike = remember { mutableStateOf(false) }
     val colorRating = if (movieCard.rating.imdb > 5.0) Color.Green else Color.Red
-    val coroutineScope = rememberCoroutineScope()
     Card(
         modifier = modifier
             .padding(top = 50.dp)
@@ -610,15 +633,8 @@ private fun MovieCardComponent(
                     IconButton(
                         modifier = Modifier.padding(top = 8.dp, end = 8.dp),
                         onClick = {
+                            onClickCheckingMovie()
                             expanded.value = true
-                            coroutineScope.launch {
-                                if (viewModel.checkMovieByTitle(movieId = movieCard.id)) {
-                                    viewModel.searchMovieInTheDB.value = true
-                                }
-                                if (!viewModel.checkMovieByTitle(movieId = movieCard.id)) {
-                                    viewModel.searchMovieInTheDB.value = false
-                                }
-                            }
                         }
                     ) {
                         Icon(
@@ -638,21 +654,18 @@ private fun MovieCardComponent(
                             leadingIcon = {
                                 IconButton(
                                     onClick = {
-                                        coroutineScope.launch {
-                                            viewModel.saveMovieInTheFavorites(
-                                                movieCard.copy(isFavorite = true)
-                                            )
-                                            viewModel.searchMovieInTheDB.value = true
-                                        }
+                                        onClickSaveMovie()
+                                        searchMovie
+//                                        viewModel.searchMovieInTheDB.value = true
                                     }
                                 ) {
-                                    if (viewModel.searchMovieInTheDB.value) {
+                                    if (searchMovie) {
                                         Icon(
                                             imageVector = Icons.Default.Favorite,
                                             contentDescription = ""
                                         )
                                     }
-                                    if (!viewModel.searchMovieInTheDB.value) {
+                                    if (!searchMovie) {
                                         Icon(
                                             imageVector = Icons.Default.FavoriteBorder,
                                             contentDescription = ""

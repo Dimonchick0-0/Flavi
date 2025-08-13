@@ -38,8 +38,7 @@ fun Profile(
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = hiltViewModel(),
     navHostController: NavHostController,
-    onLogOutOfAccountClick: () -> Unit,
-    goToSearchMoviesClick: () -> Unit
+    onLogOutOfAccountClick: () -> Unit
 ) {
     
     val state = viewModel.stateProfile.collectAsStateWithLifecycle()
@@ -48,7 +47,6 @@ fun Profile(
         bottomBar = {
             BottomNavigation.BottomNav(
                 navHostController = navHostController,
-                onClickToItemNavigation = goToSearchMoviesClick,
                 containerColor = MaterialTheme.colorScheme.tertiary
             )
         }

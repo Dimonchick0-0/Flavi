@@ -7,6 +7,9 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
+import com.example.flavi.model.data.database.map.toMoviesDbModel
+import com.example.flavi.model.domain.entity.MovieCard
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
@@ -22,9 +25,22 @@ interface UserDao {
     @Query("SELECT EXISTS(SELECT * FROM userdbmodel WHERE email =:emailUser AND password =:passwordUser)")
     suspend fun checkUserByEmailAndPassword(emailUser: String, passwordUser: String): Boolean
 
-    @Query("select exists(select * from movies where movieId =:movieId)")
-    suspend fun checkMovieByTitle(movieId: Int): Boolean
+    @Query("select exists(select * from movies where movieId =:movieId and userMovieId =:userId)")
+    suspend fun checkMovieByTitle(movieId: Int, userId: String): Boolean
 
     @Query("select userId from userdbmodel where userId =:userId")
     fun getUserId(userId: String): Long
+
+    @Query("select * from movies where userMovieId =:userId")
+    fun getFavoriteMovie(userId: String): Flow<List<MoviesDbModel>>
+
+    @Transaction
+    suspend fun insertUserToDb(
+        userDbModel: UserDbModel,
+        movies: MoviesDbModel,
+        userId: String
+    ) {
+        insertUserToDB(userDbModel)
+        insertMovieToDb(movies)
+    }
 }
