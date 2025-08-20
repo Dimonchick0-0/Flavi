@@ -6,6 +6,7 @@ import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toEntity
 import com.example.flavi.model.data.database.map.toMoviesDbModel
 import com.example.flavi.model.data.datasource.MovieService
+import com.example.flavi.model.domain.entity.FilterMovies
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.entity.User
@@ -37,6 +38,10 @@ class UserRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun removeMovieFromFavorite(movieId: Int) {
+        userDao.removeMovieFromDatabase(movieId)
+    }
+
     fun getFavoritesMovie(): Flow<List<MoviesDbModel>> {
         val userId = getFirebaseAuth.getIdUser()
         return userDao.getFavoriteMovie(userId)
@@ -62,8 +67,12 @@ class UserRepositoryImpl @Inject constructor(
         return userDao.checkUserByEmailAndPassword(email, password)
     }
 
-    override suspend fun getMovieByTitle(page: Int, limit: Int, query: String): Response<Movies> {
-        return movieService.getMovieByQuery(page, limit, query)
+    override suspend fun getMovieByTitle(keyword: String): Response<Movies> {
+        return movieService.getListMoviesByQuery(keyword)
+    }
+
+    suspend fun getFilterMovies(query: String, type: String): Response<FilterMovies> {
+        return movieService.getFilterListMovies(query, type)
     }
 
 }

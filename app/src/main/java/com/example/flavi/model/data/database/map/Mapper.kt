@@ -2,10 +2,7 @@ package com.example.flavi.model.data.database.map
 
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.GenresDTO
-import com.example.flavi.model.data.datasource.PosterDTO
-import com.example.flavi.model.data.datasource.RatingDTO
+import com.example.flavi.model.domain.entity.FilterMovieCard
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.User
 
@@ -13,24 +10,36 @@ fun UserDbModel.toEntity() = User(userId, name, password, email)
 
 fun MovieCard.toMoviesDbModel(userId: String) = MoviesDbModel(
     userMovieId = userId,
-    movieId = id,
-    name = name,
-    alternativeName = alternativeName,
-    poster = poster.url,
+    filmId = filmId,
+    nameRu = nameRu,
+    nameEn = nameEn,
+    posterUrlPreview = posterUrlPreview,
     year = year,
-    rating = rating.imdb,
+    rating = rating,
     genres = genres,
     countries = countries,
     isFavorite = isFavorite
 )
 
 fun MoviesDbModel.toMoviesCardEntity() = MovieCard(
-    id = movieId,
-    name = name,
-    alternativeName = alternativeName,
-    poster = PosterDTO(url = poster),
+    filmId = filmId,
+    nameRu = nameRu,
+    nameEn = nameEn,
+    posterUrlPreview = posterUrlPreview,
     year = year,
-    rating = RatingDTO(imdb = rating),
+    rating = rating,
+    genres = genres,
+    countries = countries,
+    isFavorite = isFavorite
+)
+
+fun MovieCard.toFilterMovieCard() = FilterMovieCard(
+    kinopoiskId = filmId,
+    nameRu = nameRu,
+    nameOriginal = nameEn,
+    year = year,
+    posterUrlPreview = posterUrlPreview,
+    ratingImdb = rating.toFloat(),
     genres = genres,
     countries = countries,
     isFavorite = isFavorite

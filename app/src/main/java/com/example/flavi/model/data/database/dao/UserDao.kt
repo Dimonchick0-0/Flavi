@@ -25,7 +25,7 @@ interface UserDao {
     @Query("SELECT EXISTS(SELECT * FROM userdbmodel WHERE email =:emailUser AND password =:passwordUser)")
     suspend fun checkUserByEmailAndPassword(emailUser: String, passwordUser: String): Boolean
 
-    @Query("select exists(select * from movies where movieId =:movieId and userMovieId =:userId)")
+    @Query("select exists(select * from movies where filmId =:movieId and userMovieId =:userId)")
     suspend fun checkMovieByTitle(movieId: Int, userId: String): Boolean
 
     @Query("select userId from userdbmodel where userId =:userId")
@@ -33,6 +33,9 @@ interface UserDao {
 
     @Query("select * from movies where userMovieId =:userId")
     fun getFavoriteMovie(userId: String): Flow<List<MoviesDbModel>>
+
+    @Query("delete from movies where filmId =:movieId")
+    suspend fun removeMovieFromDatabase(movieId: Int)
 
     @Transaction
     suspend fun insertUserToDb(

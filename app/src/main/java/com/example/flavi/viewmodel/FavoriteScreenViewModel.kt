@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.database.map.toMoviesCardEntity
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.MovieCard
+import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FavoriteScreenViewModel @Inject constructor(
-    private val repositoryImpl: UserRepositoryImpl
+    private val repositoryImpl: UserRepositoryImpl,
+    private val removeMovieFromFavoritesUseCase: RemovieMovieFromFavoritesUseCase
 ): ViewModel() {
 
     private val _favoriteState: MutableStateFlow<FavoriteScreenState> = MutableStateFlow(
@@ -26,14 +28,38 @@ class FavoriteScreenViewModel @Inject constructor(
 
     val checkMovieInFavorite = mutableStateOf(false)
 
-    fun processFavoriteMovieList() {
+    suspend fun processFavoriteMovieList() {
         _favoriteState.update { state ->
             if (state is FavoriteScreenState.LoadMovies) {
-                state.copy(movieList = state.movieList)
+                if (state.movieList.isNotEmpty()) {
+                    state.copy(movieList = state.movieList)
+                } else {
+                    _favoriteState.emit(FavoriteScreenState.EmptyList(emptyList()))
+                    state
+                }
             } else {
                 state
             }
         }
+    }
+
+    suspend fun processEmptyMovieList() {
+        _favoriteState.update { state ->
+            if (state is FavoriteScreenState.EmptyList) {
+                if (state.movieList.isNotEmpty()) {
+                    _favoriteState.emit(FavoriteScreenState.LoadMovies(state.movieList))
+                    state
+                } else {
+                    state.copy(movieList = state.movieList)
+                }
+            } else {
+                state
+            }
+        }
+    }
+
+    suspend fun removeMovieInFavoriteById(movieId: Int) {
+        removeMovieFromFavoritesUseCase(movieId)
     }
 
     fun getMovieCard() {
@@ -64,6 +90,10 @@ class FavoriteScreenViewModel @Inject constructor(
 
 sealed interface FavoriteScreenState {
     data class LoadMovies(
+        val movieList: List<MovieCard>
+    ): FavoriteScreenState
+
+    data class EmptyList(
         val movieList: List<MovieCard>
     ): FavoriteScreenState
 }

@@ -4,6 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Movies(
-    @SerialName("films") val films: List<MovieCard>
+data class FilterMovies(
+    @SerialName("items") val items: List<FilterMovieCard>
 )
