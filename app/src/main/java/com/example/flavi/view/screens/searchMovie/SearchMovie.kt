@@ -208,6 +208,7 @@ fun SearchMovie(
                                         viewModel.saveMovieInTheFavorites(
                                             movie.copy(isFavorite = true)
                                         )
+                                        viewModel.searchMovieInTheDB.value = true
                                     },
                                     onClickCheckingMovie = {
                                         coroutineScope.launch {
