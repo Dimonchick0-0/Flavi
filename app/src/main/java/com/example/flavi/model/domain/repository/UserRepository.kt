@@ -11,5 +11,7 @@ interface UserRepository {
 
     suspend fun authUser(password: String, email: String): User
 
-    suspend fun getMovieByTitle(page: Int, limit: Int, query: String): Response<Movies>
+    suspend fun getMovieByTitle(query: String): Response<Movies>
+
+    suspend fun removeMovieFromFavorite(movieId: Int)
 }

@@ -19,12 +19,12 @@ import com.example.flavi.model.data.datasource.GenresDTO
 )
 data class MoviesDbModel(
     val userMovieId: String = UNKNOWN_USER_MOVIE_ID,
-    val movieId: Int,
-    val name: String,
-    val alternativeName: String,
-    val poster: String,
-    val year: Int,
-    val rating: Float,
+    val filmId: Int,
+    val nameRu: String,
+    val nameEn: String,
+    val posterUrlPreview: String,
+    val year: String,
+    val rating: String,
     val genres: List<GenresDTO>,
     val countries: List<CountriesDTO>,
     val isFavorite: Boolean

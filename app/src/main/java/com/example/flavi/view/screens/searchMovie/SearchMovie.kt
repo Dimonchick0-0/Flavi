@@ -63,6 +63,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.domain.entity.FilterMovieCard
 import com.example.flavi.model.domain.entity.Genres
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
@@ -198,25 +199,44 @@ fun SearchMovie(
                         )
                     )
                     viewModel.processLoadMovie()
-                    MovieCardComponent(
-                        movieCard = currentState.movie,
-                        onClickSaveMovie = {
-                            viewModel.saveMovieInTheFavorites(
-                                currentState.movie.copy(isFavorite = true)
-                            )
-                        },
-                        onClickCheckingMovie = {
-                            coroutineScope.launch {
-                                if (viewModel.checkMovieByTitle(movieId = currentState.movie.id)) {
-                                    viewModel.searchMovieInTheDB.value = true
-                                }
-                                if (!viewModel.checkMovieByTitle(movieId = currentState.movie.id)) {
-                                    viewModel.searchMovieInTheDB.value = false
-                                }
+                    LazyColumn {
+                        currentState.movie.forEach { movie ->
+                            item {
+                                val colorRating = if (movie.rating > "5.0") Color.Green else Color.Red
+                                MovieCardComponent(
+                                    onClickSaveMovie = {
+                                        viewModel.saveMovieInTheFavorites(
+                                            movie.copy(isFavorite = true)
+                                        )
+                                    },
+                                    onClickCheckingMovie = {
+                                        coroutineScope.launch {
+                                            if (viewModel.checkMovieByTitle(movieId = movie.filmId)) {
+                                                viewModel.searchMovieInTheDB.value = true
+                                            }
+                                            if (!viewModel.checkMovieByTitle(movieId = movie.filmId)) {
+                                                viewModel.searchMovieInTheDB.value = false
+                                            }
+                                        }
+                                    },
+                                    onClickRemoveMovie = {
+//                                        coroutineScope.launch {
+//                                            viewModel.removeMovieFromFavorites(movieId = movie.filmId)
+//                                        }
+                                    },
+                                    searchMovie = viewModel.searchMovieInTheDB.value,
+                                    movieImage = movie.posterUrlPreview,
+                                    movieNameRu = movie.nameRu,
+                                    movieNameOriginal = movie.nameEn,
+                                    movieYear = movie.year,
+                                    movieCountrie = movie.countries.toCountrie().country,
+                                    movieGenre = movie.genres.toGenresDTO().genre,
+                                    movieRating = movie.rating,
+                                    movieColorRating = colorRating
+                                )
                             }
-                        },
-                        searchMovie = viewModel.searchMovieInTheDB.value
-                    )
+                        }
+                    }
 
                 }
 
@@ -282,28 +302,43 @@ fun SearchMovie(
                     )
 
                     LazyColumn {
-                        currentState.listMovie.docs.forEach {
+                        currentState.listMovie.forEach { filterMovie ->
+                            val colorRating = if (filterMovie.ratingImdb > 5.0) Color.Green else Color.Red
                             item {
                                 MovieCardComponent(
-                                    movieCard = it,
                                     onClickSaveMovie = {
                                         coroutineScope.launch {
-                                            viewModel.saveMovieInTheFavorites(
-                                                it.copy(isFavorite = true)
-                                            )
+//                                            viewModel.saveMovieInTheFavorites(
+//                                                filterMovie.copy(isFavorite = true)
+//                                            )
                                         }
                                     },
                                     onClickCheckingMovie = {
                                         coroutineScope.launch {
-                                            if (viewModel.checkMovieByTitle(movieId = it.id)) {
+                                            if (viewModel.checkMovieByTitle(movieId = filterMovie.kinopoiskId)) {
                                                 viewModel.searchMovieInTheDB.value = true
                                             }
-                                            if (!viewModel.checkMovieByTitle(movieId = it.id)) {
+                                            if (!viewModel.checkMovieByTitle(movieId = filterMovie.kinopoiskId)) {
                                                 viewModel.searchMovieInTheDB.value = false
                                             }
                                         }
                                     },
-                                    searchMovie = viewModel.searchMovieInTheDB.value
+                                    onClickRemoveMovie = {
+                                        coroutineScope.launch {
+                                            viewModel.removeMovieFromFavorites(filterMovie.kinopoiskId)
+                                            viewModel.searchMovieInTheDB.value = false
+                                        }
+                                    },
+                                    searchMovie = viewModel.searchMovieInTheDB.value,
+                                    movieImage = filterMovie.posterUrlPreview,
+                                    movieNameRu = filterMovie.nameRu,
+                                    movieNameOriginal = filterMovie.nameOriginal,
+                                    movieYear = filterMovie.year,
+                                    movieCountrie = filterMovie.countries.toCountrie().country,
+                                    movieGenre = filterMovie.genres.toGenresDTO().genre,
+                                    movieRating = filterMovie.ratingImdb.toString(),
+                                    movieColorRating = colorRating
+
                                 )
                             }
                         }
@@ -572,21 +607,27 @@ private fun SearchMovieComponent(
 @Composable
 fun MovieCardComponent(
     modifier: Modifier = Modifier,
-    movieCard: MovieCard,
+    movieImage: String,
+    movieNameRu: String,
+    movieNameOriginal: String,
+    movieYear: String,
+    movieCountrie: String,
+    movieGenre: String,
+    movieRating: String,
+    movieColorRating: Color,
     onClickSaveMovie: () -> Unit,
     onClickCheckingMovie: () -> Unit,
+    onClickRemoveMovie: () -> Unit,
     searchMovie: Boolean
 ) {
     val stateButtons = remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
-    val colorRating = if (movieCard.rating.imdb > 5.0) Color.Green else Color.Red
+//    val colorRating = if (movieCard.rating > "5.0") Color.Green else Color.Red
+
     Card(
         modifier = modifier
-            .padding(top = 50.dp)
-            .clickable {
-                Log.d("Auth", movieCard.id.toString())
-            },
+            .padding(top = 50.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -598,31 +639,31 @@ fun MovieCardComponent(
                 modifier = Modifier
                     .size(100.dp)
                     .fillMaxHeight(),
-                model = movieCard.poster.url,
+                model = movieImage,
                 contentDescription = "Картинка фильма"
             )
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = movieCard.name
+                    text = movieNameRu
                 )
                 Row {
                     Text(
-                        text = movieCard.alternativeName
+                        text = movieNameOriginal
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = movieCard.year.toString()
+                        text = movieYear
                     )
                 }
                 Row {
                     Text(
-                        text = movieCard.countries.toCountrie().name
+                        text = movieCountrie
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = movieCard.genres.toGenresDTO().name
+                        text = movieGenre
                     )
                 }
             }
@@ -655,8 +696,8 @@ fun MovieCardComponent(
                                 IconButton(
                                     onClick = {
                                         onClickSaveMovie()
+//                                        onClickRemoveMovie()
                                         searchMovie
-//                                        viewModel.searchMovieInTheDB.value = true
                                     }
                                 ) {
                                     if (searchMovie) {
@@ -705,8 +746,8 @@ fun MovieCardComponent(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = movieCard.rating.imdb.toString(),
-                        color = colorRating
+                        text = movieRating,
+                        color = movieColorRating
                     )
                 }
             }
@@ -714,10 +755,10 @@ fun MovieCardComponent(
     }
 }
 
-private fun List<GenresDTO>.toGenresDTO(): GenresDTO {
+fun List<GenresDTO>.toGenresDTO(): GenresDTO {
     return this.elementAt(0)
 }
 
-private fun List<CountriesDTO>.toCountrie(): CountriesDTO {
+fun List<CountriesDTO>.toCountrie(): CountriesDTO {
     return this.elementAt(0)
 }

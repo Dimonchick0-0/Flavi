@@ -4,11 +4,14 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.database.map.toFilterMovieCard
 import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
+import com.example.flavi.model.domain.entity.FilterMovieCard
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
+import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,12 +26,14 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.internal.filterList
 import retrofit2.Response
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
     private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
+    private val removeMovieFromFavoritesUseCase: RemovieMovieFromFavoritesUseCase,
     private val repositoryImpl: UserRepositoryImpl,
     @ApplicationContext context: Context
 ) : ViewModel() {
@@ -63,23 +68,28 @@ class SearchMovieViewModel @Inject constructor(
                 oldQuery.value = it
             }
             .map {
-                getMovie(it, 1)
+                getMovie(it)
             }
             .onEach {
-                if (it.body()?.docs?.isNotFoundMovies()!!) {
-                    _stateSearchMovie.emit(SearchMovieState.NotFound)
+                it.body()?.also { movies ->
+                    val newMoviesList = movies.films.filterList {
+                        rating != "null"
+                    }
+                    _stateSearchMovie.emit(SearchMovieState.LoadMovie(newMoviesList))
                 }
             }
             .onEach {
-                it.body()?.let { movies ->
-                    movies.docs.forEach { movie ->
-                        _stateSearchMovie.emit(
-                            SearchMovieState.LoadMovie(movie = movie)
-                        )
+                it.body()?.also { movies ->
+                    if (movies.films.isNotFoundMovies()) {
+                        _stateSearchMovie.emit(SearchMovieState.NotFound)
                     }
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    suspend fun removeMovieFromFavorites(movieId: Int) {
+        removeMovieFromFavoritesUseCase(movieId)
     }
 
     suspend fun checkMovieByTitle(movieId: Int): Boolean {
@@ -201,13 +211,9 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    private suspend fun getMovie(query: String, limit: Int): Response<Movies> {
+    private suspend fun getMovie(keyword: String): Response<Movies> {
         return withContext(Dispatchers.Default) {
-            getMovieByTitleUseCase(
-                page = 1,
-                limit = limit,
-                query = query
-            )
+            repositoryImpl.getMovieByTitle(keyword)
         }
     }
 
@@ -220,8 +226,11 @@ class SearchMovieViewModel @Inject constructor(
     suspend fun processGetFilters(genresName: String) {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.SwitchingFiltersState) {
-                getMovie(genresName, 10).body()?.let {
-                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(it))
+                repositoryImpl.getFilterMovies(genresName, type = "FILM").body()?.let { filterMovies ->
+                    val newFilterMovie = filterMovies.items.filterList {
+                        ratingImdb != 0.0f
+                    }
+                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(newFilterMovie))
                 }
                 state.copy(filter = genresName)
             } else {

@@ -1,6 +1,8 @@
 package com.example.flavi.model.di
 
 import com.example.flavi.model.data.datasource.MovieService
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,10 +16,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://api.kinopoisk.dev/"
+//    private const val BASE_URL = "https://api.kinopoisk.dev/"
+    private const val BASE_URL = "https://kinopoiskapiunofficial.tech/"
     private const val HEADER_API = "X-API-KEY"
-    private const val API_KEY = "04VGND6-Y58MEZ1-JT1CGJE-6W3ETFG"
-    private const val ACCEPT = "accept"
+    private const val API_KEY = "65e12335-5427-4b62-a715-7fef0133e98c"
+//    private const val ACCEPT = "accept"
+    private const val CONTENT_TYPE = "Content-Type"
     private const val APP_JSON = "application/json"
 
     @Provides
@@ -26,8 +30,8 @@ object NetworkModule {
             .addNetworkInterceptor { chain ->
                 val request = chain.request()
                     .newBuilder()
-                    .addHeader(ACCEPT, APP_JSON)
                     .addHeader(HEADER_API, API_KEY)
+                    .addHeader(CONTENT_TYPE, APP_JSON)
                     .build()
                 chain.proceed(request)
             }

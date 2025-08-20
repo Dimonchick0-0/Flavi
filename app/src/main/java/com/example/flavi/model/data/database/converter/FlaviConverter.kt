@@ -1,4 +1,4 @@
-package com.example.flavi.model.data.database
+package com.example.flavi.model.data.database.converter
 
 import androidx.room.TypeConverter
 import com.example.flavi.model.data.datasource.CountriesDTO

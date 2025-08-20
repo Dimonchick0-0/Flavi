@@ -1,5 +1,6 @@
 package com.example.flavi.view.screens.favorite
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,11 +18,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
+import com.example.flavi.view.screens.searchMovie.toCountrie
+import com.example.flavi.view.screens.searchMovie.toGenresDTO
 import com.example.flavi.viewmodel.FavoriteScreenState
 import com.example.flavi.viewmodel.FavoriteScreenViewModel
-import com.example.flavi.viewmodel.SearchMovieViewModel
 import kotlinx.coroutines.launch
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun FavoriteScreen(
     modifier: Modifier = Modifier,
@@ -47,29 +50,58 @@ fun FavoriteScreen(
                 .background(color = MaterialTheme.colorScheme.onBackground)
         ) {
             when (val currentState = state.value) {
+
                 is FavoriteScreenState.LoadMovies -> {
-                    viewModel.processFavoriteMovieList()
+                    coroutineScope.launch {
+                        viewModel.processFavoriteMovieList()
+                    }
                     viewModel.getMovieCard()
-                    currentState.movieList.forEach {
+                    currentState.movieList.forEach { movie ->
+                        val colorRating = if (movie.rating > "5.0") Color.Green else Color.Red
                         MovieCardComponent(
-                            movieCard = it,
                             onClickSaveMovie = {
-                                viewModel.saveMovieToFavorite(it)
+                                viewModel.saveMovieToFavorite(movie)
                             },
                             onClickCheckingMovie = {
                                 coroutineScope.launch {
-                                    if (viewModel.checkingMovieInFavorite(it.id)) {
+                                    if (viewModel.checkingMovieInFavorite(movie.filmId)) {
                                         viewModel.checkMovieInFavorite.value = true
                                     }
-                                    if (!viewModel.checkingMovieInFavorite(movieId = it.id)) {
+                                    if (!viewModel.checkingMovieInFavorite(movieId = movie.filmId)) {
                                         viewModel.checkMovieInFavorite.value = false
                                     }
                                 }
                             },
-                            searchMovie = viewModel.checkMovieInFavorite.value
+                            onClickRemoveMovie = {
+                                coroutineScope.launch {
+                                    viewModel.removeMovieInFavoriteById(movie .filmId)
+                                    viewModel.checkMovieInFavorite.value = false
+                                }
+                            },
+                            searchMovie = viewModel.checkMovieInFavorite.value,
+                            movieImage = movie.posterUrlPreview,
+                            movieNameRu = movie.nameRu,
+                            movieNameOriginal = movie.nameEn,
+                            movieYear = movie.year,
+                            movieCountrie = movie.countries.toCountrie().country,
+                            movieGenre = movie.genres.toGenresDTO().genre,
+                            movieRating = movie.rating,
+                            movieColorRating = colorRating
                         )
                     }
                 }
+
+                is FavoriteScreenState.EmptyList -> {
+                    coroutineScope.launch {
+                        viewModel.processEmptyMovieList()
+                    }
+                    Text(
+                        text = "Нет любимых фильмов...(",
+                        color = Color.Black,
+                        fontSize = 25.sp
+                    )
+                }
+
             }
         }
     }
