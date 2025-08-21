@@ -221,9 +221,10 @@ fun SearchMovie(
                                         }
                                     },
                                     onClickRemoveMovie = {
-//                                        coroutineScope.launch {
-//                                            viewModel.removeMovieFromFavorites(movieId = movie.filmId)
-//                                        }
+                                        coroutineScope.launch {
+                                            viewModel.removeMovieFromFavorites(movieId = movie.filmId)
+                                            viewModel.searchMovieInTheDB.value = false
+                                        }
                                     },
                                     searchMovie = viewModel.searchMovieInTheDB.value,
                                     movieImage = movie.posterUrlPreview,
@@ -316,6 +317,7 @@ fun SearchMovie(
                                                     )
                                                 )
                                             )
+                                            viewModel.searchMovieInTheDB.value = true
                                         }
                                     },
                                     onClickCheckingMovie = {
@@ -330,8 +332,10 @@ fun SearchMovie(
                                     },
                                     onClickRemoveMovie = {
                                         coroutineScope.launch {
-                                            viewModel.removeMovieFromFavorites(filterMovie.kinopoiskId)
-                                            viewModel.searchMovieInTheDB.value = false
+                                            viewModel.apply {
+                                                removeMovieFromFavorites(filterMovie.kinopoiskId)
+                                                searchMovieInTheDB.value = false
+                                            }
                                         }
                                     },
                                     searchMovie = viewModel.searchMovieInTheDB.value,
@@ -628,7 +632,6 @@ fun MovieCardComponent(
     val stateButtons = remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
-//    val colorRating = if (movieCard.rating > "5.0") Color.Green else Color.Red
 
     Card(
         modifier = modifier
@@ -700,7 +703,12 @@ fun MovieCardComponent(
                             leadingIcon = {
                                 IconButton(
                                     onClick = {
-                                        onClickSaveMovie()
+                                        if (!searchMovie) {
+                                            onClickSaveMovie()
+                                        }
+                                        if (searchMovie) {
+                                            onClickRemoveMovie()
+                                        }
 //                                        onClickRemoveMovie()
                                         searchMovie
                                     }
