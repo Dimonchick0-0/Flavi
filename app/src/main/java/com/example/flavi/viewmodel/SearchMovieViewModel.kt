@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flavi.model.data.database.map.toFilterMovieCard
+import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.FilterMovieCard
@@ -100,6 +100,10 @@ class SearchMovieViewModel @Inject constructor(
         viewModelScope.launch {
             repositoryImpl.saveMovieToDb(movieCard)
         }
+    }
+
+    fun mapFilterMovieCardToMovieCardEntity(filterMovieCard: FilterMovieCard): MovieCard {
+        return filterMovieCard.toMovieCardEntity()
     }
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {

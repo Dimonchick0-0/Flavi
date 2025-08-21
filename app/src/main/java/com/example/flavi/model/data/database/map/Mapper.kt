@@ -33,13 +33,13 @@ fun MoviesDbModel.toMoviesCardEntity() = MovieCard(
     isFavorite = isFavorite
 )
 
-fun MovieCard.toFilterMovieCard() = FilterMovieCard(
-    kinopoiskId = filmId,
+fun FilterMovieCard.toMovieCardEntity() = MovieCard(
+    filmId = kinopoiskId,
     nameRu = nameRu,
-    nameOriginal = nameEn,
+    nameEn = nameOriginal,
     year = year,
     posterUrlPreview = posterUrlPreview,
-    ratingImdb = rating.toFloat(),
+    rating = ratingImdb.toString(),
     genres = genres,
     countries = countries,
     isFavorite = isFavorite

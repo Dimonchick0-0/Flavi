@@ -208,6 +208,7 @@ fun SearchMovie(
                                         viewModel.saveMovieInTheFavorites(
                                             movie.copy(isFavorite = true)
                                         )
+                                        viewModel.searchMovieInTheDB.value = true
                                     },
                                     onClickCheckingMovie = {
                                         coroutineScope.launch {
@@ -308,9 +309,13 @@ fun SearchMovie(
                                 MovieCardComponent(
                                     onClickSaveMovie = {
                                         coroutineScope.launch {
-//                                            viewModel.saveMovieInTheFavorites(
-//                                                filterMovie.copy(isFavorite = true)
-//                                            )
+                                            viewModel.saveMovieInTheFavorites(
+                                                viewModel.mapFilterMovieCardToMovieCardEntity(
+                                                    filterMovie.copy(
+                                                        isFavorite = true
+                                                    )
+                                                )
+                                            )
                                         }
                                     },
                                     onClickCheckingMovie = {
