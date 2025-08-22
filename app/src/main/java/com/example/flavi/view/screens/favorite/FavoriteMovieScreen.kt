@@ -60,7 +60,10 @@ fun FavoriteScreen(
                         val colorRating = if (movie.rating > "5.0") Color.Green else Color.Red
                         MovieCardComponent(
                             onClickSaveMovie = {
-                                viewModel.saveMovieToFavorite(movie)
+                                viewModel.apply {
+                                    saveMovieToFavorite(movie)
+                                    checkMovieInFavorite.value = true
+                                }
                             },
                             onClickCheckingMovie = {
                                 coroutineScope.launch {
@@ -74,8 +77,11 @@ fun FavoriteScreen(
                             },
                             onClickRemoveMovie = {
                                 coroutineScope.launch {
-                                    viewModel.removeMovieInFavoriteById(movie .filmId)
-                                    viewModel.checkMovieInFavorite.value = false
+                                    viewModel.apply {
+                                        removeMovieInFavoriteById(movie.filmId)
+                                        checkMovieInFavorite.value = false
+                                        checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
+                                    }
                                 }
                             },
                             searchMovie = viewModel.checkMovieInFavorite.value,
