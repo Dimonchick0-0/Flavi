@@ -7,6 +7,7 @@ import com.example.flavi.model.data.database.map.toMoviesCardEntity
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
+import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -43,14 +44,21 @@ class FavoriteScreenViewModel @Inject constructor(
         }
     }
 
+    suspend fun checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList() {
+        val checkMovie = CheckFavoriteMovieList<MovieCard>()
+        if (checkMovie.list.isEmpty()) {
+            _favoriteState.emit(FavoriteScreenState.EmptyList(checkMovie.list))
+        }
+    }
+
     suspend fun processEmptyMovieList() {
         _favoriteState.update { state ->
             if (state is FavoriteScreenState.EmptyList) {
-                if (state.movieList.isNotEmpty()) {
+                if (state.movieList.isEmpty()) {
+                    state.copy(movieList = state.movieList)
+                } else {
                     _favoriteState.emit(FavoriteScreenState.LoadMovies(state.movieList))
                     state
-                } else {
-                    state.copy(movieList = state.movieList)
                 }
             } else {
                 state

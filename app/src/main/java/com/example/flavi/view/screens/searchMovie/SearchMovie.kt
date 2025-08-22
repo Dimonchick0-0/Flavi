@@ -67,6 +67,7 @@ import com.example.flavi.model.domain.entity.FilterMovieCard
 import com.example.flavi.model.domain.entity.Genres
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
+import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.SearchMovieState
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.SearchMovieViewModel
@@ -208,6 +209,11 @@ fun SearchMovie(
                                         viewModel.saveMovieInTheFavorites(
                                             movie.copy(isFavorite = true)
                                         )
+                                        val checkMovie = CheckFavoriteMovieList<MovieCard>()
+                                        checkMovie.list.add(movie)
+                                        checkMovie.list.forEach {
+                                            Log.d("Auth", it.nameRu)
+                                        }
                                         viewModel.searchMovieInTheDB.value = true
                                     },
                                     onClickCheckingMovie = {
