@@ -46,8 +46,7 @@ fun Profile(
     Scaffold(
         bottomBar = {
             BottomNavigation.BottomNav(
-                navHostController = navHostController,
-                containerColor = MaterialTheme.colorScheme.tertiary
+                navHostController = navHostController
             )
         }
     ) { innerPadding ->

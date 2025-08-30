@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
 import com.example.flavi.view.screens.searchMovie.toCountrie
@@ -28,6 +29,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun FavoriteScreen(
     modifier: Modifier = Modifier,
+    onClickToMovieDetailScreen: (MovieCard) -> Unit,
     viewModel: FavoriteScreenViewModel = hiltViewModel(),
     navHostController: NavHostController
 ) {
@@ -38,8 +40,7 @@ fun FavoriteScreen(
     Scaffold(
         bottomBar = {
             BottomNavigation.BottomNav(
-                navHostController = navHostController,
-                containerColor = MaterialTheme.colorScheme.tertiary
+                navHostController = navHostController
             )
         }
     ) { innerPadding ->
@@ -84,10 +85,13 @@ fun FavoriteScreen(
                                     }
                                 }
                             },
+                            onClickGetMovieDetail = {
+                                onClickToMovieDetailScreen(movie)
+                            },
                             searchMovie = viewModel.checkMovieInFavorite.value,
                             movieImage = movie.posterUrlPreview,
                             movieNameRu = movie.nameRu,
-                            movieNameOriginal = movie.nameEn,
+                            nameOriginal = movie.nameEn,
                             movieYear = movie.year,
                             movieCountrie = movie.countries.toCountrie().country,
                             movieGenre = movie.genres.toGenresDTO().genre,

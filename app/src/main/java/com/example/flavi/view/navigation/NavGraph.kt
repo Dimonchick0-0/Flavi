@@ -1,13 +1,14 @@
 package com.example.flavi.view.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.example.flavi.view.screens.auth.AuthUser
 import com.example.flavi.view.screens.favorite.FavoriteScreen
+import com.example.flavi.view.screens.movieDetail.MovieDetail
 import com.example.flavi.view.screens.profile.Profile
 import com.example.flavi.view.screens.registration.RegistrationScreen
 import com.example.flavi.view.screens.searchMovie.SearchMovie
@@ -20,39 +21,39 @@ fun NavGraph() {
     val currentUser = Firebase.auth.currentUser
     val navController = rememberNavController()
     val startDestination = if (currentUser == null) {
-        Screens.Auth
+        Screens.Auth.route
     } else {
-        Screens.SearchMovie
+        Screens.SearchMovie.route
     }
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
-        composable<Screens.Register> {
+        composable(Screens.Register.route) {
             RegistrationScreen(
                 onRegisterClick = {
                     navController.navigate(route = Screens.Auth)
                 }
             )
         }
-        composable<Screens.Auth> {
+        composable(Screens.Auth.route) {
             AuthUser(
                 onProfileClick = {
-                    navController.navigate(route = Screens.SearchMovie)
+                    navController.navigate(route = Screens.SearchMovie.route)
                 },
                 onRegisterClick = {
-                    navController.navigate(route = Screens.Register)
+                    navController.navigate(route = Screens.Register.route)
                 }
             )
         }
-        composable<Screens.Profile> {
+        composable(Screens.Profile.route) {
             Profile(
                 navHostController = navController,
                 onLogOutOfAccountClick = {
                     navController.navigate(
-                        route = Screens.Auth,
+                        route = Screens.Auth.route,
                         navOptions = navOptions {
-                            popUpTo(route = Screens.Profile) {
+                            popUpTo(route = Screens.Profile.route) {
                                 inclusive = true
                             }
                         }
@@ -60,41 +61,55 @@ fun NavGraph() {
                 }
             )
         }
-        composable<Screens.SearchMovie> {
-            SearchMovie(
-                navHostController = navController
-            )
-        }
-        composable<Screens.Favorite> {
-            FavoriteScreen(
-                navHostController = navController
-            )
-        }
-    }
-}
 
-private fun checkingForAdditionalScreens(
-    navController: NavHostController
-) {
-    if (navController.popBackStack()) {
-        navController.popBackStack()
+        composable(Screens.SearchMovie.route) {
+            SearchMovie(
+                navHostController = navController,
+                onClickToMovieDetailScreen = {
+                    navController.navigate(Screens.MovieDetail.createRoute(it.filmId))
+                }
+            )
+        }
+        composable(Screens.Favorite.route) {
+            FavoriteScreen(
+                navHostController = navController,
+                onClickToMovieDetailScreen = {
+                    navController.navigate(Screens.MovieDetail.createRoute(it.filmId))
+                }
+            )
+        }
+        composable(Screens.MovieDetail.route) {
+            val filmId = it.arguments?.getString("film_id")?.toInt() ?: 0
+            MovieDetail(
+                filmId = filmId
+            )
+        }
     }
 }
 
 @Serializable
-sealed interface Screens {
+sealed class Screens(val route: String) {
     @Serializable
-    object Register
+    data object Register : Screens("register")
 
     @Serializable
-    object Auth
+    data object Auth : Screens("auth")
 
     @Serializable
-    object Profile
+    data object Profile : Screens("profile")
 
     @Serializable
-    object SearchMovie
+    object SearchMovie : Screens("search_movie")
 
     @Serializable
-    object Favorite
+    data object Favorite : Screens("favorite")
+
+    @Serializable
+    data object MovieDetail: Screens("movie_detail/{film_id}") {
+
+        fun createRoute(filmId: Int): String {
+            return "movie_detail/$filmId"
+        }
+
+    }
 }
