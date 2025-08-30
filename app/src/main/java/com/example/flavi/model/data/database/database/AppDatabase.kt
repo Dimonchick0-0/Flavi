@@ -10,7 +10,7 @@ import com.example.flavi.model.data.database.entitydb.UserDbModel
 
 @Database(
     entities = [UserDbModel::class, MoviesDbModel::class],
-    version = 26,
+    version = 31,
     exportSchema = false
 )
 @TypeConverters(FlaviConverter::class)

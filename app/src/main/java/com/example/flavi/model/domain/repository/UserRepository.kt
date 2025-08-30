@@ -1,7 +1,5 @@
 package com.example.flavi.model.domain.repository
 
-import com.example.flavi.model.domain.entity.Movie
-import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.entity.User
 import retrofit2.Response

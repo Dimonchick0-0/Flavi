@@ -3,7 +3,6 @@
 package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -61,9 +60,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
-import com.example.flavi.model.domain.entity.FilterMovieCard
 import com.example.flavi.model.domain.entity.Genres
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
@@ -78,6 +77,7 @@ import kotlinx.coroutines.launch
 fun SearchMovie(
     modifier: Modifier = Modifier,
     navHostController: NavHostController,
+    onClickToMovieDetailScreen: (MovieCard) -> Unit,
     viewModel: SearchMovieViewModel = hiltViewModel()
 ) {
     val state = viewModel.stateSearchMovie.collectAsStateWithLifecycle()
@@ -85,8 +85,7 @@ fun SearchMovie(
     Scaffold(
         bottomBar = {
             BottomNavigation.BottomNav(
-                navHostController = navHostController,
-                containerColor = MaterialTheme.colorScheme.tertiary
+                navHostController = navHostController
             )
         },
         floatingActionButton = {
@@ -211,9 +210,6 @@ fun SearchMovie(
                                         )
                                         val checkMovie = CheckFavoriteMovieList<MovieCard>()
                                         checkMovie.list.add(movie)
-                                        checkMovie.list.forEach {
-                                            Log.d("Auth", it.nameRu)
-                                        }
                                         viewModel.searchMovieInTheDB.value = true
                                     },
                                     onClickCheckingMovie = {
@@ -232,10 +228,13 @@ fun SearchMovie(
                                             viewModel.searchMovieInTheDB.value = false
                                         }
                                     },
+                                    onClickGetMovieDetail = {
+                                        onClickToMovieDetailScreen(movie)
+                                    },
                                     searchMovie = viewModel.searchMovieInTheDB.value,
                                     movieImage = movie.posterUrlPreview,
                                     movieNameRu = movie.nameRu,
-                                    movieNameOriginal = movie.nameEn,
+                                    nameOriginal = movie.nameEn,
                                     movieYear = movie.year,
                                     movieCountrie = movie.countries.toCountrie().country,
                                     movieGenre = movie.genres.toGenresDTO().genre,
@@ -344,16 +343,18 @@ fun SearchMovie(
                                             }
                                         }
                                     },
+                                    onClickGetMovieDetail = {
+                                        onClickToMovieDetailScreen(filterMovie.toMovieCardEntity())
+                                    },
                                     searchMovie = viewModel.searchMovieInTheDB.value,
                                     movieImage = filterMovie.posterUrlPreview,
                                     movieNameRu = filterMovie.nameRu,
-                                    movieNameOriginal = filterMovie.nameOriginal,
+                                    nameOriginal = filterMovie.nameOriginal,
                                     movieYear = filterMovie.year,
                                     movieCountrie = filterMovie.countries.toCountrie().country,
                                     movieGenre = filterMovie.genres.toGenresDTO().genre,
                                     movieRating = filterMovie.ratingImdb.toString(),
                                     movieColorRating = colorRating
-
                                 )
                             }
                         }
@@ -387,7 +388,7 @@ private fun EstimateMovie(
 }
 
 @Composable
-private fun AlertDialogEstimateMovie(
+fun AlertDialogEstimateMovie(
     modifier: Modifier = Modifier,
     changeStateShowDialog: () -> Unit,
     enabledButtons: Boolean,
@@ -593,7 +594,7 @@ private fun SearchMovieComponent(
         value = value,
         onValueChange = { onValueChange(it) },
         placeholder = {
-            Text(text = "Поиск фильмов...")
+            Text(text = "Поиск фильмов...",)
         },
         leadingIcon = {
             IconButton(onClick = {
@@ -624,7 +625,7 @@ fun MovieCardComponent(
     modifier: Modifier = Modifier,
     movieImage: String,
     movieNameRu: String,
-    movieNameOriginal: String,
+    nameOriginal: String,
     movieYear: String,
     movieCountrie: String,
     movieGenre: String,
@@ -633,6 +634,7 @@ fun MovieCardComponent(
     onClickSaveMovie: () -> Unit,
     onClickCheckingMovie: () -> Unit,
     onClickRemoveMovie: () -> Unit,
+    onClickGetMovieDetail: () -> Unit,
     searchMovie: Boolean
 ) {
     val stateButtons = remember { mutableStateOf(false) }
@@ -641,7 +643,10 @@ fun MovieCardComponent(
 
     Card(
         modifier = modifier
-            .padding(top = 50.dp),
+            .padding(top = 50.dp)
+            .clickable {
+                onClickGetMovieDetail()
+            },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -664,7 +669,7 @@ fun MovieCardComponent(
                 )
                 Row {
                     Text(
-                        text = movieNameOriginal
+                        text = nameOriginal
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
@@ -715,7 +720,6 @@ fun MovieCardComponent(
                                         if (searchMovie) {
                                             onClickRemoveMovie()
                                         }
-//                                        onClickRemoveMovie()
                                         searchMovie
                                     }
                                 ) {
@@ -775,9 +779,9 @@ fun MovieCardComponent(
 }
 
 fun List<GenresDTO>.toGenresDTO(): GenresDTO {
-    return this.elementAt(0)
+    return first()
 }
 
 fun List<CountriesDTO>.toCountrie(): CountriesDTO {
-    return this.elementAt(0)
+    return first()
 }

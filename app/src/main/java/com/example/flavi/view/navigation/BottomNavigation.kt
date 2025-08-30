@@ -1,5 +1,7 @@
 package com.example.flavi.view.navigation
 
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
@@ -25,20 +27,20 @@ object BottomNavigation {
 
     @Composable
     fun BottomNav(
-        navHostController: NavHostController,
-        containerColor: Color = NavigationBarDefaults.containerColor
+        navHostController: NavHostController
     ) {
         val listNavigation = listOf(
-            FlaviBottomNavigation("Поиск", Screens.SearchMovie, Icons.Filled.Search),
-            FlaviBottomNavigation("Аккаунт", Screens.Profile, Icons.Filled.AccountCircle),
-            FlaviBottomNavigation("Избранные", Screens.Favorite, MyIcons.Favorite_Movies)
+            FlaviBottomNavigation("Поиск", Screens.SearchMovie.route, Icons.Filled.Search),
+            FlaviBottomNavigation("Аккаунт", Screens.Profile.route, Icons.Filled.AccountCircle),
+            FlaviBottomNavigation("Избранные", Screens.Favorite.route, MyIcons.Favorite_Movies)
         )
-        NavigationBar(
-            containerColor = containerColor
+        BottomNavigation(
+            backgroundColor = MaterialTheme.colorScheme.tertiary,
+            contentColor = MaterialTheme.colorScheme.onBackground
         ) {
             val navBackStackEntry by navHostController.currentBackStackEntryAsState()
             listNavigation.forEach { flaviNavItem ->
-                NavigationBarItem(
+                BottomNavigationItem(
                     icon = {
                         Icon(
                             imageVector = flaviNavItem.icon,
@@ -57,13 +59,7 @@ object BottomNavigation {
                             launchSingleTop = true
                             restoreState = true
                         }
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        unselectedIconColor = Color.DarkGray,
-                        unselectedTextColor = Color.DarkGray,
-                        selectedIconColor = MaterialTheme.colorScheme.onBackground,
-                        selectedTextColor = MaterialTheme.colorScheme.onBackground
-                    )
+                    }
                 )
             }
         }
