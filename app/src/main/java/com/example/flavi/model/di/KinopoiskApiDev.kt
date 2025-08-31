@@ -11,29 +11,30 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 @Module
 @InstallIn(SingletonComponent::class)
-object KinopoiskApiUnOfficial {
+object KinopoiskApiDev {
 
-    private const val BASE_URL = "https://kinopoiskapiunofficial.tech/"
+    private const val BASE_URL = "https://api.kinopoisk.dev/"
     private const val HEADER_API = "X-API-KEY"
-    private const val API_KEY = "65e12335-5427-4b62-a715-7fef0133e98c"
-    private const val CONTENT_TYPE = "Content-Type"
+    private const val API_KEY = "04VGND6-Y58MEZ1-JT1CGJE-6W3ETFG"
+    private const val ACCEPT = "accept"
     private const val APP_JSON = "application/json"
 
     @Provides
-    fun provideOkHttpClientAndMovieService(): MovieService {
+    fun provideOkHttpClientAndMovieService(): KinoposikService {
         val okHttpClient = NetworkModule.provideOkHttpClient(
-            name1 = HEADER_API,
-            value1 = API_KEY,
-            name2 = CONTENT_TYPE,
-            value2 = APP_JSON
+            name1 = ACCEPT,
+            value1 = APP_JSON,
+            name2 = HEADER_API,
+            value2 = API_KEY
         )
+
         val movieService = NetworkModule.provideMovieKinopoisk(
             service = Retrofit.Builder()
                 .addConverterFactory(GsonConverterFactory.create())
                 .baseUrl(BASE_URL)
                 .client(okHttpClient)
                 .build()
-                .create(MovieService::class.java)
+                .create(KinoposikService::class.java)
         )
         return movieService
     }

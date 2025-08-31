@@ -1,10 +1,7 @@
 package com.example.flavi.model.di
 
-import com.example.flavi.model.data.datasource.MovieService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 object NetworkModule {
 
@@ -29,16 +26,6 @@ object NetworkModule {
             .build()
     }
 
-    fun <T> provideMovie(
-        okHttpClient: OkHttpClient,
-        url: T
-    ): MovieService {
-        return Retrofit.Builder()
-            .baseUrl(url as String)
-            .addConverterFactory(GsonConverterFactory.create())
-            .client(okHttpClient)
-            .build()
-            .create(MovieService::class.java)
-    }
+    fun <T> provideMovieKinopoisk(service: T): T = service
 
 }
