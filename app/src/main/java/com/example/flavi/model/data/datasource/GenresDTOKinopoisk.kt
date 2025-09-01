@@ -4,4 +4,4 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CountriesDTO(@SerialName("countries") val countries: String)
+data class GenresDTOKinopoisk(@SerialName("name") val name: String)
