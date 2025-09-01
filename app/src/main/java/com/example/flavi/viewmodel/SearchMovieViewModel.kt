@@ -10,6 +10,7 @@ import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.FilterMovieCard
 import com.example.flavi.model.domain.entity.MovieCard
+import com.example.flavi.model.domain.entity.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
@@ -103,8 +104,8 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    fun mapFilterMovieCardToMovieCardEntity(filterMovieCard: FilterMovieCard): MovieCard {
-        return filterMovieCard.toMovieCardEntity()
+    fun mapFilterMovieCardToMovieCardEntity(movieCardKinopoisk: MovieCardKinopoisk): MovieCard {
+        return movieCardKinopoisk.toMovieCardEntity()
     }
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
@@ -228,14 +229,27 @@ class SearchMovieViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+//    suspend fun processGetFilters(genresName: String) {
+//        _stateSearchMovie.update { state ->
+//            if (state is SearchMovieState.SwitchingFiltersState) {
+//                repositoryImpl.getFilterMovies(genresName, type = "FILM").body()?.let { filterMovies ->
+//                    val newFilterMovie = filterMovies.items.filterList {
+//                        ratingImdb != 0.0f
+//                    }
+//                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(newFilterMovie))
+//                }
+//                state.copy(filter = genresName)
+//            } else {
+//                state
+//            }
+//        }
+//    }
+
     suspend fun processGetFilters(genresName: String) {
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.SwitchingFiltersState) {
-                repositoryImpl.getFilterMovies(genresName, type = "FILM").body()?.let { filterMovies ->
-                    val newFilterMovie = filterMovies.items.filterList {
-                        ratingImdb != 0.0f
-                    }
-                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(newFilterMovie))
+                repositoryImpl.getMovieFilter(genresName).body()?.let { filterMovies ->
+                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(filterMovies.docs))
                 }
                 state.copy(filter = genresName)
             } else {

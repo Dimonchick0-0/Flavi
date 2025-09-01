@@ -19,8 +19,6 @@ import androidx.navigation.NavHostController
 import com.example.flavi.model.domain.entity.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
-import com.example.flavi.view.screens.searchMovie.toCountrie
-import com.example.flavi.view.screens.searchMovie.toGenresDTO
 import com.example.flavi.viewmodel.FavoriteScreenState
 import com.example.flavi.viewmodel.FavoriteScreenViewModel
 import kotlinx.coroutines.launch
@@ -93,8 +91,7 @@ fun FavoriteScreen(
                             movieNameRu = movie.nameRu,
                             nameOriginal = movie.nameEn,
                             movieYear = movie.year,
-                            movieCountrie = movie.countries.toCountrie().country,
-                            movieGenre = movie.genres.toGenresDTO().genre,
+                            movieGenre = movie.genres.first().genre,
                             movieRating = movie.rating,
                             movieColorRating = colorRating
                         )

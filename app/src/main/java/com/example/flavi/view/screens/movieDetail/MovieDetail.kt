@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
@@ -33,8 +32,6 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.domain.entity.MovieDetail
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
-import com.example.flavi.view.screens.searchMovie.toCountrie
-import com.example.flavi.view.screens.searchMovie.toGenresDTO
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailState
 import com.example.flavi.viewmodel.MovieDetailViewModel
@@ -81,16 +78,16 @@ fun MovieDetail(
                         onClickRemoveMovieFromFavorite = {
                             coroutineScope.launch {
                                 viewModel.apply {
-                                    viewModel.removeMovieFromFavorite(currentState.movie.kinopoiskId)
-                                    viewModel.checkMovieInFavorite.value = true
+                                    removeMovieFromFavorite(currentState.movie.kinopoiskId)
+                                    checkMovieInFavorite.value = true
                                 }
                             }
                         },
                         onClickSaveToFavoriteMovie = {
                             coroutineScope.launch {
                                 viewModel.apply {
-                                    viewModel.saveMovieToFavorite(currentState.movie)
-                                    viewModel.checkMovieInFavorite.value = false
+                                    saveMovieToFavorite(currentState.movie)
+                                    checkMovieInFavorite.value = false
                                 }
                             }
                         },
@@ -146,7 +143,7 @@ private fun MovieDetailComponent(
         }
         movieDetail.countries.forEach {
             Text(
-                text = it.country,
+                text = it.countries,
                 color = Color.Black
             )
         }
