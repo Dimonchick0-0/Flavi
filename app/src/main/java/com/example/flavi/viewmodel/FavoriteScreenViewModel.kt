@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.database.map.toMoviesCardEntity
 import com.example.flavi.model.data.repository.UserRepositoryImpl
-import com.example.flavi.model.domain.entity.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import dagger.hilt.android.lifecycle.HiltViewModel

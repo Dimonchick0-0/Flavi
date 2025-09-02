@@ -1,4 +1,4 @@
-package com.example.flavi.model.domain.entity
+package com.example.flavi.model.domain.entity.kinopoiskUnOfficial
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

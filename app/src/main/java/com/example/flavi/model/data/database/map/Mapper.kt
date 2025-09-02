@@ -2,11 +2,13 @@ package com.example.flavi.model.data.database.map
 
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
+import com.example.flavi.model.data.datasource.CountriesDTO
+import com.example.flavi.model.data.datasource.CountriesDTOKinopoisk
 import com.example.flavi.model.data.datasource.GenresDTO
 import com.example.flavi.model.data.datasource.GenresDTOKinopoisk
-import com.example.flavi.model.domain.entity.MovieCard
-import com.example.flavi.model.domain.entity.MovieCardKinopoisk
-import com.example.flavi.model.domain.entity.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.User
 
 fun UserDbModel.toEntity() = User(userId, name, password, email)
@@ -45,12 +47,16 @@ fun MovieCardKinopoisk.toMovieCardEntity() = MovieCard(
     posterUrlPreview = poster.previewUrl,
     rating = rating.imdb.toString(),
     genres = genres.toListGenresDTO(),
-    countries = countries,
+    countries = countries.toListCountrieDTO(),
     isFavorite = isFavorite
 )
 
 private fun List<GenresDTOKinopoisk>.toListGenresDTO(): List<GenresDTO> {
     return map { GenresDTO(genre = it.name) }
+}
+
+private fun List<CountriesDTOKinopoisk>.toListCountrieDTO(): List<CountriesDTO> {
+    return map { CountriesDTO(it.name) }
 }
 
 fun MovieDetail.toMovieCardEntity() = MovieCard(

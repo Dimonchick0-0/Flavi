@@ -1,6 +1,6 @@
 package com.example.flavi.model.data.datasource
 
-import com.example.flavi.model.domain.entity.MoviesKinopoiskDev
+import com.example.flavi.model.domain.entity.kinopoiskDev.MoviesKinopoiskDev
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query

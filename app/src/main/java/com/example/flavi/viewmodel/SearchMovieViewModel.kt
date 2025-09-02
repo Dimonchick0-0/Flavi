@@ -1,17 +1,15 @@
 package com.example.flavi.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
-import com.example.flavi.model.domain.entity.FilterMovieCard
-import com.example.flavi.model.domain.entity.MovieCard
-import com.example.flavi.model.domain.entity.MovieCardKinopoisk
-import com.example.flavi.model.domain.entity.Movies
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
 import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState

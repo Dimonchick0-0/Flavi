@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.repository.UserRepositoryImpl
-import com.example.flavi.model.domain.entity.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -30,7 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.flavi.model.domain.entity.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailState
@@ -143,7 +143,7 @@ private fun MovieDetailComponent(
         }
         movieDetail.countries.forEach {
             Text(
-                text = it.countries,
+                text = it.country,
                 color = Color.Black
             )
         }

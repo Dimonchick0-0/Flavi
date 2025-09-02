@@ -1,6 +1,7 @@
-package com.example.flavi.model.domain.entity
+package com.example.flavi.model.domain.entity.kinopoiskDev
 
 import com.example.flavi.model.data.datasource.CountriesDTO
+import com.example.flavi.model.data.datasource.CountriesDTOKinopoisk
 import com.example.flavi.model.data.datasource.GenresDTOKinopoisk
 import com.example.flavi.model.data.datasource.PosterDTO
 import com.example.flavi.model.data.datasource.RatingDTO
@@ -16,7 +17,7 @@ data class MovieCardKinopoisk(
     @SerialName("poster") val poster: PosterDTO = UNKNOWN_POSTER,
     @SerialName("rating") val rating: RatingDTO = UNKNOWN_RATING,
     @SerialName("genres") val genres: List<GenresDTOKinopoisk> = UNKNOWN_GENRES,
-    @SerialName("countries") val countries: List<CountriesDTO> = UNKNOWN_COUNTRIES,
+    @SerialName("countries") val countries: List<CountriesDTOKinopoisk> = UNKNOWN_COUNTRIES,
     @SerialName("isFavorite") val isFavorite: Boolean = UNKNOWN_IS_FAVORITE
 ) {
     companion object {
@@ -27,7 +28,7 @@ data class MovieCardKinopoisk(
         private val UNKNOWN_POSTER: PosterDTO = PosterDTO(previewUrl = "")
         private val UNKNOWN_RATING: RatingDTO = RatingDTO(0.0f)
         private val UNKNOWN_GENRES = emptyList<GenresDTOKinopoisk>()
-        private val UNKNOWN_COUNTRIES = emptyList<CountriesDTO>()
+        private val UNKNOWN_COUNTRIES = emptyList<CountriesDTOKinopoisk>()
         private const val UNKNOWN_IS_FAVORITE = false
     }
 }
