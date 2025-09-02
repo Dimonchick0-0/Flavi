@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import com.example.flavi.model.domain.entity.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
 import com.example.flavi.viewmodel.FavoriteScreenState
@@ -92,6 +92,7 @@ fun FavoriteScreen(
                             nameOriginal = movie.nameEn,
                             movieYear = movie.year,
                             movieGenre = movie.genres.first().genre,
+                            movieCountrie = movie.countries.first().country,
                             movieRating = movie.rating,
                             movieColorRating = colorRating
                         )

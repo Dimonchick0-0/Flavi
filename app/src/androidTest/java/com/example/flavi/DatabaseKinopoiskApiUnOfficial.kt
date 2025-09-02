@@ -7,7 +7,7 @@ import com.example.flavi.model.data.database.dao.UserDao
 import com.example.flavi.model.data.database.database.AppDatabase
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toMoviesDbModel
-import com.example.flavi.model.domain.entity.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Before

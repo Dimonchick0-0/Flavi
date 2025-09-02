@@ -1,4 +1,4 @@
-package com.example.flavi.model.domain.entity
+package com.example.flavi.model.domain.entity.kinopoiskUnOfficial
 
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO

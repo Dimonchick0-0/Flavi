@@ -62,7 +62,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.domain.entity.Genres
-import com.example.flavi.model.domain.entity.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.SearchMovieState
@@ -236,6 +236,7 @@ fun SearchMovie(
                                         nameOriginal = movie.nameEn,
                                         movieYear = movie.year,
                                         movieGenre = movie.genres.first().genre,
+                                        movieCountrie = movie.countries.first().country,
                                         movieRating = movie.rating,
                                         movieColorRating = colorRating
                                     )
@@ -347,6 +348,7 @@ fun SearchMovie(
                                     movieNameRu = filterMovie.name,
                                     nameOriginal = filterMovie.alternativeName,
                                     movieYear = filterMovie.year.toString(),
+                                    movieCountrie = filterMovie.countries.first().name,
                                     movieGenre = filterMovie.genres.first().name,
                                     movieRating = filterMovie.rating.imdb.toString(),
                                     movieColorRating = colorRating
@@ -623,6 +625,7 @@ fun MovieCardComponent(
     nameOriginal: String,
     movieYear: String,
     movieGenre: String,
+    movieCountrie: String,
     movieRating: String,
     movieColorRating: Color,
     onClickSaveMovie: () -> Unit,
@@ -672,7 +675,11 @@ fun MovieCardComponent(
                 }
                 Row {
                     Text(
-                        text = movieGenre.toString()
+                        text = movieCountrie
+                    )
+                    Spacer(modifier.width(16.dp))
+                    Text(
+                        text = movieGenre
                     )
                 }
             }

@@ -7,8 +7,6 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
-import com.example.flavi.model.data.database.map.toMoviesDbModel
-import com.example.flavi.model.domain.entity.MovieCard
 import kotlinx.coroutines.flow.Flow
 
 @Dao
