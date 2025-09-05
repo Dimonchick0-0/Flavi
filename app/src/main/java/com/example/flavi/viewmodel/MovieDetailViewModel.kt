@@ -1,11 +1,15 @@
 package com.example.flavi.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.database.map.toMovieCard
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.repository.UserRepositoryImpl
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,9 +30,27 @@ class MovieDetailViewModel @Inject constructor(
 
     val checkMovieInFavorite = mutableStateOf(false)
 
-    fun processLoadMovieDetailState() {
+    fun mapMovieDetailToMovieCard(movie: MovieDetail): MovieCard {
+        return movie.toMovieCard()
+    }
+
+    fun setStatusMovieFavoriteDuringRemove(movie: MovieDetail) {
+        val checkMovieInFavorite = CheckFavoriteMovieList<MovieCard>()
+        checkMovieInFavorite.apply {
+            list.remove(mapMovieDetailToMovieCard(movie))
+            checkListMovie.value = false
+            Log.d("Auth", checkListMovie.value.toString())
+        }
+    }
+
+    suspend fun processLoadMovieDetailState() {
         _movieDetailState.update { state ->
             if (state is MovieDetailState.LoadMovieDetail) {
+                val movie = CheckFavoriteMovieList<MovieCard>()
+                if (checkMovieInFavorite(state.movie.kinopoiskId)) {
+                    movie.checkListMovie.value = true
+                }
+                Log.d("Auth", movie.checkListMovie.value.toString())
                 state.copy(movie = state.movie)
             } else {
                 state
@@ -42,6 +64,7 @@ class MovieDetailViewModel @Inject constructor(
 
     suspend fun removeMovieFromFavorite(movieId: Int) {
         repositoryImpl.removeMovieFromFavorite(movieId)
+
     }
 
     suspend fun saveMovieToFavorite(movie: MovieDetail) {

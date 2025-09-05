@@ -1,9 +1,12 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,7 +33,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailState
@@ -79,15 +84,20 @@ fun MovieDetail(
                             coroutineScope.launch {
                                 viewModel.apply {
                                     removeMovieFromFavorite(currentState.movie.kinopoiskId)
-                                    checkMovieInFavorite.value = true
+                                    checkMovieInFavorite.value = false
+                                    setStatusMovieFavoriteDuringRemove(currentState.movie)
                                 }
                             }
                         },
                         onClickSaveToFavoriteMovie = {
+                            val movieList = CheckFavoriteMovieList<MovieCard>()
                             coroutineScope.launch {
                                 viewModel.apply {
                                     saveMovieToFavorite(currentState.movie)
-                                    checkMovieInFavorite.value = false
+                                    movieList.list.add(
+                                        mapMovieDetailToMovieCard(currentState.movie)
+                                    )
+                                    checkMovieInFavorite.value = true
                                 }
                             }
                         },
@@ -171,7 +181,10 @@ private fun CardFunctionMovieComponent(
             .fillMaxWidth()
             .padding(start = 20.dp, end = 20.dp)
     ) {
-        Row {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
             IconButton(
                 onClick = {
                     if (!checkMovieInFavorite) {
@@ -185,17 +198,28 @@ private fun CardFunctionMovieComponent(
                 if (checkMovieInFavorite) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
-                        contentDescription = ""
+                        contentDescription = "",
+                        tint = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(25.dp))
+                    Text(
+                        text = "Удалить из избранных",
+                        color = Color.Black
                     )
                 }
                 if (!checkMovieInFavorite) {
                     Icon(
                         imageVector = Icons.Default.FavoriteBorder,
-                        contentDescription = ""
+                        contentDescription = "",
+                        tint = Color.Black
+                    )
+                    Spacer(modifier = Modifier.height(25.dp))
+                    Text(
+                        text = "Сохранить",
+                        color = Color.Black
                     )
                 }
             }
-
             IconButton(
                 onClick = {
                     showDialog.value = true
@@ -204,7 +228,8 @@ private fun CardFunctionMovieComponent(
             ) {
                 Icon(
                     imageVector = MyIcons.Star,
-                    contentDescription = ""
+                    contentDescription = "",
+                    tint = Color.Black
                 )
                 if (showDialog.value) {
                     AlertDialogEstimateMovie(
@@ -218,6 +243,11 @@ private fun CardFunctionMovieComponent(
                         }
                     )
                 }
+                Spacer(modifier = Modifier.height(25.dp))
+                Text(
+                    text = "Оценить",
+                    color = Color.Black
+                )
             }
         }
     }
