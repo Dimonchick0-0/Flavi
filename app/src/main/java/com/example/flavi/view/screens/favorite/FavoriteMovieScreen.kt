@@ -5,10 +5,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,8 +32,10 @@ import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
 import com.example.flavi.viewmodel.FavoriteScreenState
 import com.example.flavi.viewmodel.FavoriteScreenViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun FavoriteScreen(
@@ -34,11 +47,38 @@ fun FavoriteScreen(
 
     val state = viewModel.favoriteState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
+    val isRefreshing = remember { mutableStateOf(false) }
+    val onRefresh: () -> Unit = {
+        isRefreshing.value = true
+        coroutineScope.launch {
+            delay(3000)
+            isRefreshing.value = false
+        }
+    }
 
     Scaffold(
         bottomBar = {
             BottomNavigation.BottomNav(
                 navHostController = navHostController
+            )
+        },
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Ваши любимые фильмы"
+                    )
+                },
+                actions = {
+                    IconButton(
+                        onClick = onRefresh
+                    ) {
+                        Icon(
+                            Icons.Filled.Refresh,
+                            contentDescription = "Обновление списка"
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -52,51 +92,61 @@ fun FavoriteScreen(
 
                 is FavoriteScreenState.LoadMovies -> {
                     coroutineScope.launch {
-                        viewModel.processFavoriteMovieList()
+                        viewModel.apply {
+                            processFavoriteMovieList()
+                        }
                     }
                     viewModel.getMovieCard()
-                    currentState.movieList.forEach { movie ->
-                        val colorRating = if (movie.rating > "5.0") Color.Green else Color.Red
-                        MovieCardComponent(
-                            onClickSaveMovie = {
-                                viewModel.apply {
-                                    saveMovieToFavorite(movie)
-                                    checkMovieInFavorite.value = true
-                                }
-                            },
-                            onClickCheckingMovie = {
-                                coroutineScope.launch {
-                                    if (viewModel.checkingMovieInFavorite(movie.filmId)) {
-                                        viewModel.checkMovieInFavorite.value = true
-                                    }
-                                    if (!viewModel.checkingMovieInFavorite(movieId = movie.filmId)) {
-                                        viewModel.checkMovieInFavorite.value = false
-                                    }
-                                }
-                            },
-                            onClickRemoveMovie = {
-                                coroutineScope.launch {
-                                    viewModel.apply {
-                                        removeMovieInFavoriteById(movie.filmId)
-                                        checkMovieInFavorite.value = false
-                                        checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
-                                    }
-                                }
-                            },
-                            onClickGetMovieDetail = {
-                                onClickToMovieDetailScreen(movie)
-                            },
-                            searchMovie = viewModel.checkMovieInFavorite.value,
-                            movieImage = movie.posterUrlPreview,
-                            movieNameRu = movie.nameRu,
-                            nameOriginal = movie.nameEn,
-                            movieYear = movie.year,
-                            movieGenre = movie.genres.first().genre,
-                            movieCountrie = movie.countries.first().country,
-                            movieRating = movie.rating,
-                            movieColorRating = colorRating
-                        )
+
+                    LazyColumn {
+                        currentState.movieList.forEach { movie ->
+                            val colorRating = if (movie.rating > "5.0") Color.Green else Color.Red
+                            item {
+                                MovieCardComponent(
+                                    onClickSaveMovie = {
+                                        viewModel.apply {
+                                            saveMovieToFavorite(movie)
+                                            checkMovieInFavorite.value = true
+                                        }
+                                    },
+                                    onClickCheckingMovie = {
+                                        coroutineScope.launch {
+                                            if (viewModel.checkingMovieInFavorite(movie.filmId)) {
+                                                viewModel.checkMovieInFavorite.value = true
+                                            }
+                                            if (!viewModel.checkingMovieInFavorite(movieId = movie.filmId)) {
+                                                viewModel.checkMovieInFavorite.value = false
+                                            }
+                                        }
+                                    },
+                                    onClickRemoveMovie = {
+                                        coroutineScope.launch {
+                                            viewModel.apply {
+                                                removeMovieInFavoriteById(movie.filmId)
+                                                checkMovieInFavorite.value = false
+                                                checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
+                                            }
+                                        }
+                                    },
+                                    onClickGetMovieDetail = {
+                                        onClickToMovieDetailScreen(movie)
+                                    },
+                                    searchMovie = viewModel.checkMovieInFavorite.value,
+                                    movieImage = movie.posterUrlPreview,
+                                    movieNameRu = movie.nameRu,
+                                    nameOriginal = movie.nameEn,
+                                    movieYear = movie.year,
+                                    movieGenre = movie.genres.first().genre,
+                                    movieCountrie = movie.countries.first().country,
+                                    movieRating = movie.rating,
+                                    movieColorRating = colorRating
+                                )
+                            }
+                        }
+
                     }
+
+
                 }
 
                 is FavoriteScreenState.EmptyList -> {
@@ -111,7 +161,38 @@ fun FavoriteScreen(
                 }
 
             }
+            PullToRefreshUpdateMovieFavoriteList(
+                modifier = modifier.fillMaxSize(),
+                viewModel = viewModel,
+                isRefreshing =  isRefreshing.value,
+                onRefresh = onRefresh
+            )
         }
     }
 
+}
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PullToRefreshUpdateMovieFavoriteList(
+    modifier: Modifier = Modifier,
+    viewModel: FavoriteScreenViewModel,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit
+) {
+    val state = rememberPullToRefreshState()
+    val coroutineScope = rememberCoroutineScope()
+
+
+    PullToRefreshBox(
+        modifier = modifier,
+        isRefreshing = isRefreshing,
+        state = state,
+        onRefresh = onRefresh
+    ) {
+        coroutineScope.launch {
+            viewModel.checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
+        }
+    }
 }

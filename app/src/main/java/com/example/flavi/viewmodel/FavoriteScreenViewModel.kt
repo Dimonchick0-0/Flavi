@@ -46,9 +46,10 @@ class FavoriteScreenViewModel @Inject constructor(
 
     suspend fun checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList() {
         val checkMovie = CheckFavoriteMovieList<MovieCard>()
-        if (checkMovie.list.isEmpty()) {
+        if (checkMovie.getStatusListIfIsEmptyOrNotEmpty()) {
             _favoriteState.emit(FavoriteScreenState.EmptyList(checkMovie.list))
         }
+
     }
 
     suspend fun processEmptyMovieList() {

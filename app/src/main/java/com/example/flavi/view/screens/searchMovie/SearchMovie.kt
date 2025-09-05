@@ -3,6 +3,7 @@
 package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -208,7 +209,10 @@ fun SearchMovie(
                                                 movie.copy(isFavorite = true)
                                             )
                                             val checkMovie = CheckFavoriteMovieList<MovieCard>()
-                                            checkMovie.list.add(movie)
+                                            checkMovie.apply {
+                                                list.add(movie)
+                                                checkListMovie.value = true
+                                            }
                                             viewModel.searchMovieInTheDB.value = true
                                         },
                                         onClickCheckingMovie = {
@@ -223,8 +227,10 @@ fun SearchMovie(
                                         },
                                         onClickRemoveMovie = {
                                             coroutineScope.launch {
-                                                viewModel.removeMovieFromFavorites(movieId = movie.filmId)
-                                                viewModel.searchMovieInTheDB.value = false
+                                                viewModel.apply {
+                                                    removeMovieFromFavorites(movieId = movie.filmId)
+                                                    searchMovieInTheDB.value = false
+                                                }
                                             }
                                         },
                                         onClickGetMovieDetail = {
@@ -309,13 +315,20 @@ fun SearchMovie(
 
                     LazyColumn {
                         currentState.listMovie.forEach { filterMovie ->
-                            val colorRating = if (filterMovie.rating.imdb > 5.0) Color.Green else Color.Red
+                            val colorRating = if (filterMovie.rating.imdb > 5.0)
+                                Color.Green
+                            else
+                                Color.Red
+                            val checkMovieObserver = CheckFavoriteMovieList<MovieCard>()
                             item {
                                 MovieCardComponent(
                                     onClickSaveMovie = {
                                         coroutineScope.launch {
                                             viewModel.apply {
                                                 saveMovieInTheFavorites(
+                                                    mapFilterMovieCardToMovieCardEntity(filterMovie)
+                                                )
+                                                checkMovieObserver.list.add(
                                                     mapFilterMovieCardToMovieCardEntity(filterMovie)
                                                 )
                                             }

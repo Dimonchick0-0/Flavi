@@ -39,6 +39,18 @@ fun MoviesDbModel.toMoviesCardEntity() = MovieCard(
 
 )
 
+fun MovieDetail.toMovieCard() = MovieCard(
+    filmId = kinopoiskId,
+    nameRu = nameRu,
+    nameEn = nameOriginal,
+    year = year.toString(),
+    posterUrlPreview = posterUrl,
+    rating = ratingImdb.toString(),
+    genres = genres,
+    countries = countries,
+    isFavorite = isFavorite
+)
+
 fun MovieCardKinopoisk.toMovieCardEntity() = MovieCard(
     filmId = id,
     nameRu = name,
