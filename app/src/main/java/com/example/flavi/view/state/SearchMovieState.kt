@@ -1,5 +1,6 @@
 package com.example.flavi.view.state
 
+import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 
@@ -27,4 +28,6 @@ sealed interface SearchMovieState {
     data class SwitchingFiltersState(val filter: String): SearchMovieState
 
     data class LoadListMovieWithFilters(val listMovie: List<MovieCardKinopoisk>): SearchMovieState
+
+    data class HistorySearchList(val historySearch: List<String>): SearchMovieState
 }

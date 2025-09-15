@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
+import com.example.flavi.model.data.database.entitydb.HistorySearchDb
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import kotlinx.coroutines.flow.Flow
@@ -34,6 +35,15 @@ interface UserDao {
 
     @Query("delete from movies where filmId =:movieId")
     suspend fun removeMovieFromDatabase(movieId: Int)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTitleMovieInToDatabase(title: HistorySearchDb)
+
+    @Query("select * from historySearch where userId =:userId")
+    fun getHistorySearch(userId: String): Flow<List<HistorySearchDb>>
+
+    @Query("delete from historySearch where title ==:title")
+    suspend fun removeHistorySearchBiId(title: String)
 
     @Transaction
     suspend fun insertUserToDb(

@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MovieCard(
+    val userMovieId: String = UNKNOWN_USER_MOVIE_ID,
     @SerialName("filmId") val filmId: Int = UNKNOWN_ID,
     @SerialName("nameRu") val nameRu: String = UNKNOWN_NAME,
     @SerialName("nameEn") val nameEn: String = UNKNOWN_ALTERNATIVE_NAME,
@@ -18,6 +19,7 @@ data class MovieCard(
     @SerialName("isFavorite") val isFavorite: Boolean = UNKNOWN_IS_FAVORITE
 ) {
     companion object {
+        private const val UNKNOWN_USER_MOVIE_ID = ""
         private const val UNKNOWN_ID = 0
         private const val UNKNOWN_NAME = ""
         private const val UNKNOWN_ALTERNATIVE_NAME = ""

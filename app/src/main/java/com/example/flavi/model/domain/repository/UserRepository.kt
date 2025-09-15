@@ -12,4 +12,6 @@ interface UserRepository {
     suspend fun getMovieByTitle(query: String): Response<Movies>
 
     suspend fun removeMovieFromFavorite(movieId: Int)
+
+    suspend fun removeHistorySearch(title: String)
 }

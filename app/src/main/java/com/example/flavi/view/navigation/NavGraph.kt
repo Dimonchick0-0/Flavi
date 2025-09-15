@@ -32,7 +32,7 @@ fun NavGraph() {
         composable(Screens.Register.route) {
             RegistrationScreen(
                 onRegisterClick = {
-                    navController.navigate(route = Screens.Auth)
+                    navController.navigate(route = Screens.Auth.route)
                 }
             )
         }

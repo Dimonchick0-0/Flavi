@@ -1,25 +1,30 @@
 package com.example.flavi.viewmodel
 
 import android.content.Context
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.database.entitydb.HistorySearchDb
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
-import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
+import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
-import com.example.flavi.model.domain.usecase.GetMovieByTitleUseCase
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -32,7 +37,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
-    private val getMovieByTitleUseCase: GetMovieByTitleUseCase,
     private val removeMovieFromFavoritesUseCase: RemovieMovieFromFavoritesUseCase,
     private val repositoryImpl: UserRepositoryImpl,
     @ApplicationContext context: Context
@@ -59,6 +63,8 @@ class SearchMovieViewModel @Inject constructor(
     val notificationOfInternetLoss = mutableStateOf("У вас проблемы с подключением сети")
 
     val searchMovieInTheDB = mutableStateOf(false)
+
+    val listHistorySearch = mutableStateOf(listOf<String>())
 
     init {
         changeStateByConnection(context)
@@ -88,6 +94,26 @@ class SearchMovieViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    suspend fun emitToHistorySearchState() {
+        _stateSearchMovie.emit(SearchMovieState.HistorySearchList(historySearch = listHistorySearch.value))
+    }
+
+    suspend fun removeHistorySearch(title: String) {
+        repositoryImpl.removeHistorySearch(title = title)
+    }
+
+    suspend fun showHistorySearch() {
+         getSearchHistoryList().collect {
+            listHistorySearch.value = it.map { historySearch ->
+                historySearch.title
+            }.distinct()
+        }
+    }
+
+    private fun getSearchHistoryList(): Flow<List<HistorySearch>> {
+        return repositoryImpl.getHistorySearchList()
+    }
+
     suspend fun removeMovieFromFavorites(movieId: Int) {
         removeMovieFromFavoritesUseCase(movieId)
     }
@@ -100,6 +126,10 @@ class SearchMovieViewModel @Inject constructor(
         viewModelScope.launch {
             repositoryImpl.saveMovieToDb(movieCard)
         }
+    }
+
+    suspend fun saveHistorySearch(title: String) {
+        repositoryImpl.insertTitleMovieInToDatabase(title)
     }
 
     fun mapFilterMovieCardToMovieCardEntity(movieCardKinopoisk: MovieCardKinopoisk): MovieCard {
@@ -226,22 +256,6 @@ class SearchMovieViewModel @Inject constructor(
             _stateSearchMovie.emit(SearchMovieState.SwitchingFiltersState(it))
         }.launchIn(viewModelScope)
     }
-
-//    suspend fun processGetFilters(genresName: String) {
-//        _stateSearchMovie.update { state ->
-//            if (state is SearchMovieState.SwitchingFiltersState) {
-//                repositoryImpl.getFilterMovies(genresName, type = "FILM").body()?.let { filterMovies ->
-//                    val newFilterMovie = filterMovies.items.filterList {
-//                        ratingImdb != 0.0f
-//                    }
-//                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(newFilterMovie))
-//                }
-//                state.copy(filter = genresName)
-//            } else {
-//                state
-//            }
-//        }
-//    }
 
     suspend fun processGetFilters(genresName: String) {
         _stateSearchMovie.update { state ->
