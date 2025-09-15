@@ -1,6 +1,5 @@
 package com.example.flavi.viewmodel
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,7 +38,6 @@ class MovieDetailViewModel @Inject constructor(
         checkMovieInFavorite.apply {
             list.remove(mapMovieDetailToMovieCard(movie))
             checkListMovie.value = false
-            Log.d("Auth", checkListMovie.value.toString())
         }
     }
 
@@ -50,7 +48,6 @@ class MovieDetailViewModel @Inject constructor(
                 if (checkMovieInFavorite(state.movie.kinopoiskId)) {
                     movie.checkListMovie.value = true
                 }
-                Log.d("Auth", movie.checkListMovie.value.toString())
                 state.copy(movie = state.movie)
             } else {
                 state

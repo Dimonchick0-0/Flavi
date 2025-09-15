@@ -1,12 +1,14 @@
 package com.example.flavi.model.data.repository
 
 import com.example.flavi.model.data.database.dao.UserDao
+import com.example.flavi.model.data.database.entitydb.HistorySearchDb
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toEntity
 import com.example.flavi.model.data.database.map.toMoviesDbModel
 import com.example.flavi.model.data.datasource.KinoposikService
 import com.example.flavi.model.data.datasource.MovieService
+import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
@@ -15,6 +17,7 @@ import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import retrofit2.Response
 import javax.inject.Inject
@@ -36,9 +39,18 @@ class UserRepositoryImpl @Inject constructor(
         )
         userDao.insertUserToDb(
             userDbModel = userDbModel,
-            movies = MovieCard().toMoviesDbModel(userId),
-            userId
+            movies = MovieCard().toMoviesDbModel(userId = userId),
+            userId = userId
         )
+    }
+
+    override suspend fun removeHistorySearch(title: String) {
+        userDao.removeHistorySearchBiId(title)
+    }
+
+    suspend fun insertTitleMovieInToDatabase(title: String) {
+        val userId = getFirebaseAuth.getIdUser()
+        userDao.insertTitleMovieInToDatabase(title = HistorySearchDb(id = 0, title = title, userId = userId))
     }
 
     suspend fun getMovieDetailById(id: Int): Response<MovieDetail> {
@@ -47,6 +59,11 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun removeMovieFromFavorite(movieId: Int) {
         userDao.removeMovieFromDatabase(movieId)
+    }
+
+    fun getHistorySearchList(): Flow<List<HistorySearch>> {
+        val userId = getFirebaseAuth.getIdUser()
+        return userDao.getHistorySearch(userId).map { it.toEntity() }
     }
 
     fun getFavoritesMovie(): Flow<List<MoviesDbModel>> {
@@ -60,9 +77,9 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     suspend fun saveMovieToDb(movieCard: MovieCard) {
-        val id = getFirebaseAuth.getIdUser()
+        val userId = getFirebaseAuth.getIdUser()
         withContext(Dispatchers.IO) {
-            userDao.insertMovieToDb(movieCard.toMoviesDbModel(userId = id))
+            userDao.insertMovieToDb(movieCard.toMoviesDbModel(userId = userId))
         }
     }
 

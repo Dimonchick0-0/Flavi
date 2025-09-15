@@ -1,9 +1,9 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,8 +11,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
+import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -21,12 +24,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -78,31 +83,35 @@ fun MovieDetail(
 
                     }
 
-                    MovieDetailComponent(
-                        movieDetail = currentState.movie,
-                        onClickRemoveMovieFromFavorite = {
-                            coroutineScope.launch {
-                                viewModel.apply {
-                                    removeMovieFromFavorite(currentState.movie.kinopoiskId)
-                                    checkMovieInFavorite.value = false
-                                    setStatusMovieFavoriteDuringRemove(currentState.movie)
-                                }
-                            }
-                        },
-                        onClickSaveToFavoriteMovie = {
-                            val movieList = CheckFavoriteMovieList<MovieCard>()
-                            coroutineScope.launch {
-                                viewModel.apply {
-                                    saveMovieToFavorite(currentState.movie)
-                                    movieList.list.add(
-                                        mapMovieDetailToMovieCard(currentState.movie)
-                                    )
-                                    checkMovieInFavorite.value = true
-                                }
-                            }
-                        },
-                        checkMovieInFavorite = viewModel.checkMovieInFavorite.value
-                    )
+                    LazyColumn {
+                        item {
+                            MovieDetailComponent(
+                                movieDetail = currentState.movie,
+                                onClickRemoveMovieFromFavorite = {
+                                    coroutineScope.launch {
+                                        viewModel.apply {
+                                            removeMovieFromFavorite(currentState.movie.kinopoiskId)
+                                            checkMovieInFavorite.value = false
+                                            setStatusMovieFavoriteDuringRemove(currentState.movie)
+                                        }
+                                    }
+                                },
+                                onClickSaveToFavoriteMovie = {
+                                    val movieList = CheckFavoriteMovieList<MovieCard>()
+                                    coroutineScope.launch {
+                                        viewModel.apply {
+                                            saveMovieToFavorite(currentState.movie)
+                                            movieList.list.add(
+                                                mapMovieDetailToMovieCard(currentState.movie)
+                                            )
+                                            checkMovieInFavorite.value = true
+                                        }
+                                    }
+                                },
+                                checkMovieInFavorite = viewModel.checkMovieInFavorite.value
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -118,6 +127,8 @@ private fun MovieDetailComponent(
     onClickRemoveMovieFromFavorite: () -> Unit,
     checkMovieInFavorite: Boolean
 ) {
+    val maxLines = remember { mutableIntStateOf(3) }
+
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -151,17 +162,124 @@ private fun MovieDetailComponent(
                 )
             }
         }
-        movieDetail.countries.forEach {
-            Text(
-                text = it.country,
-                color = Color.Black
-            )
+        Row {
+            movieDetail.countries.forEach {
+                Text(
+                    text = it.country + " ",
+                    color = Color.Black
+                )
+            }
         }
+        OpenDescriptionMovie(
+            movieDetail = movieDetail,
+            isOpenDescription = {
+                if (maxLines.intValue == maxLines.intValue) {
+                    maxLines.intValue = Int.MAX_VALUE
+                }
+            },
+            isClosedDescription = {
+                if (maxLines.intValue == Int.MAX_VALUE) {
+                    maxLines.intValue = 3
+                }
+            },
+            maxLines = maxLines.intValue
+        )
+        Spacer(modifier = Modifier.height(25.dp))
+        Rating(movieDetail = movieDetail)
+        Spacer(modifier = Modifier.height(25.dp))
         CardFunctionMovieComponent(
             onClickRemoveMovieFromFavorite = onClickRemoveMovieFromFavorite,
             onClickSaveToFavoriteMovie = onClickSaveToFavoriteMovie,
             checkMovieInFavorite = checkMovieInFavorite
         )
+    }
+}
+
+@Composable
+private fun OpenDescriptionMovie(
+    movieDetail: MovieDetail,
+    maxLines: Int,
+    isClosedDescription: () -> Unit,
+    isOpenDescription: () -> Unit
+) {
+    Text(
+        text = movieDetail.description,
+        color = Color.Black,
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis
+    )
+    if (maxLines == 3) {
+        TextButton(
+            onClick = isOpenDescription
+        ) {
+            Text(
+                text = "Показать описание полностью",
+                color = Color.Red
+            )
+        }
+    }
+    if (maxLines == Int.MAX_VALUE) {
+        TextButton(
+            onClick = isClosedDescription
+        ) {
+            Text(
+                text = "Скрыть описание",
+                color = Color.Red
+            )
+        }
+    }
+}
+
+@Composable
+private fun Rating(
+    movieDetail: MovieDetail
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        Card(
+            modifier = Modifier
+                .height(64.dp)
+                .width(150.dp),
+            backgroundColor = MaterialTheme.colorScheme.secondary
+        ) {
+            Box(
+                contentAlignment = Alignment.TopCenter
+            ) {
+                Text(
+                    text = movieDetail.ratingImdb.toString(),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+                Text(
+                    modifier = Modifier.padding(top = 25.dp),
+                    text = "Рейтинг IMDB",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 14.sp
+                )
+            }
+        }
+        Card(
+            modifier = Modifier
+                .height(64.dp)
+                .width(150.dp),
+            backgroundColor = MaterialTheme.colorScheme.secondary
+        ) {
+            Box(
+              contentAlignment = Alignment.TopCenter
+            ) {
+                Text(
+                    text = movieDetail.ratingKinopoisk.toString(),
+                    color = MaterialTheme.colorScheme.onSecondary
+                )
+                Text(
+                    modifier = Modifier.padding(top = 25.dp),
+                    text = "Рейтинг Кинопоиска",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 14.sp
+                )
+            }
+        }
     }
 }
 
@@ -201,8 +319,8 @@ private fun CardFunctionMovieComponent(
                         contentDescription = "",
                         tint = Color.Black
                     )
-                    Spacer(modifier = Modifier.height(25.dp))
                     Text(
+                        modifier = Modifier.padding(top = 45.dp),
                         text = "Удалить из избранных",
                         color = Color.Black
                     )
@@ -213,8 +331,8 @@ private fun CardFunctionMovieComponent(
                         contentDescription = "",
                         tint = Color.Black
                     )
-                    Spacer(modifier = Modifier.height(25.dp))
                     Text(
+                        modifier = Modifier.padding(top = 45.dp),
                         text = "Сохранить",
                         color = Color.Black
                     )
@@ -243,8 +361,8 @@ private fun CardFunctionMovieComponent(
                         }
                     )
                 }
-                Spacer(modifier = Modifier.height(25.dp))
                 Text(
+                    modifier = Modifier.padding(top = 45.dp),
                     text = "Оценить",
                     color = Color.Black
                 )
