@@ -8,7 +8,7 @@ import javax.inject.Inject
 class GetMovieByTitleUseCase @Inject constructor(
     private val userRepository: UserRepository
 ) {
-    suspend operator fun invoke(query: String): Response<Movies> {
-        return userRepository.getMovieByTitle(query)
+    suspend operator fun invoke(keyword: String, page: Int): Response<Movies> {
+        return userRepository.getMovieByTitle(keyword, page)
     }
 }

@@ -8,6 +8,7 @@ import androidx.room.Transaction
 import com.example.flavi.model.data.database.entitydb.HistorySearchDb
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -31,7 +32,7 @@ interface UserDao {
     fun getUserId(userId: String): Long
 
     @Query("select * from movies where userMovieId =:userId")
-    fun getFavoriteMovie(userId: String): Flow<List<MoviesDbModel>>
+    fun getFavoriteMovie(userId: String): Flow<List<MovieCard>>
 
     @Query("delete from movies where filmId =:movieId")
     suspend fun removeMovieFromDatabase(movieId: Int)
@@ -45,13 +46,13 @@ interface UserDao {
     @Query("delete from historySearch where title ==:title")
     suspend fun removeHistorySearchBiId(title: String)
 
-    @Transaction
-    suspend fun insertUserToDb(
-        userDbModel: UserDbModel,
-        movies: MoviesDbModel,
-        userId: String
-    ) {
-        insertUserToDB(userDbModel)
-        insertMovieToDb(movies)
-    }
+//    @Transaction
+//    suspend fun insertUserToDb(
+//        userDbModel: UserDbModel,
+//        movies: MoviesDbModel,
+//        userId: String
+//    ) {
+//        insertUserToDB(userDbModel)
+//        insertMovieToDb(movies)
+//    }
 }

@@ -26,15 +26,4 @@ class FlaviConverter {
     fun fromStringToListCountriesDTO(string: String): List<CountriesDTO> {
         return Gson().fromJson(string, Array<CountriesDTO>::class.java).toList()
     }
-
-//    @TypeConverter
-//    fun fromListMoviesDbModelToString(list: List<MoviesDbModelList>): String {
-//        return Gson().toJson(list)
-//    }
-//
-//    @TypeConverter
-//    fun fromStringToListMoviesDbModel(string: String): List<MoviesDbModelList> {
-//        return Gson().fromJson(string, Array<MoviesDbModelList>::class.java).toList()
-//    }
-
 }

@@ -11,7 +11,6 @@ data class HistorySearchDb(
     val userId: String = UNKNOWN_USER_ID
 ) {
     companion object {
-//        private const val UNKNOWN_ID = 0
         private const val UNKNOWN_USER_ID = ""
     }
 }

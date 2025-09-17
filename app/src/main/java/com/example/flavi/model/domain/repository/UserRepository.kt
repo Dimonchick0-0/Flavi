@@ -9,7 +9,7 @@ interface UserRepository {
 
     suspend fun authUser(password: String, email: String): User
 
-    suspend fun getMovieByTitle(query: String): Response<Movies>
+    suspend fun getMovieByTitle(keyword: String, page: Int): Response<Movies>
 
     suspend fun removeMovieFromFavorite(movieId: Int)
 

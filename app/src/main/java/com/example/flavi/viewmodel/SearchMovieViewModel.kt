@@ -1,12 +1,9 @@
 package com.example.flavi.viewmodel
 
 import android.content.Context
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flavi.model.data.database.entitydb.HistorySearchDb
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
@@ -24,7 +21,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -247,7 +243,7 @@ class SearchMovieViewModel @Inject constructor(
 
     private suspend fun getMovie(keyword: String): Response<Movies> {
         return withContext(Dispatchers.Default) {
-            repositoryImpl.getMovieByTitle(keyword)
+            repositoryImpl.getMovieByTitle(keyword, page = 1)
         }
     }
 
