@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MovieCardKinopoisk(
+    val movieId: Int,
     @SerialName("id") val id: Int = UNKNOWN_ID,
     @SerialName("name") val name: String = UNKNOWN_NAME,
     @SerialName("alternativeName") val alternativeName: String = UNKNOWN_ALTERNATIVE_NAME,

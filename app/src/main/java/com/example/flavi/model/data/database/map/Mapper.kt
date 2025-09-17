@@ -20,6 +20,7 @@ fun List<HistorySearchDb>.toEntity(): List<HistorySearch> {
 }
 
 fun MovieCard.toMoviesDbModel(userId: String) = MoviesDbModel(
+    id = id,
     userMovieId = userId,
     filmId = filmId,
     nameRu = nameRu,
@@ -33,6 +34,7 @@ fun MovieCard.toMoviesDbModel(userId: String) = MoviesDbModel(
 )
 
 fun MoviesDbModel.toMoviesCardEntity() = MovieCard(
+    id = id,
     userMovieId = userMovieId,
     filmId = filmId,
     nameRu = nameRu,
@@ -47,6 +49,7 @@ fun MoviesDbModel.toMoviesCardEntity() = MovieCard(
 )
 
 fun MovieDetail.toMovieCard() = MovieCard(
+    id = id,
     filmId = kinopoiskId,
     nameRu = nameRu,
     nameEn = nameOriginal,
@@ -59,6 +62,7 @@ fun MovieDetail.toMovieCard() = MovieCard(
 )
 
 fun MovieCardKinopoisk.toMovieCardEntity() = MovieCard(
+    id = movieId,
     filmId = id,
     nameRu = name,
     nameEn = alternativeName,
@@ -79,6 +83,7 @@ private fun List<CountriesDTOKinopoisk>.toListCountrieDTO(): List<CountriesDTO> 
 }
 
 fun MovieDetail.toMovieCardEntity() = MovieCard(
+    id = id,
     filmId = kinopoiskId,
     nameRu = nameRu,
     nameEn = nameOriginal,

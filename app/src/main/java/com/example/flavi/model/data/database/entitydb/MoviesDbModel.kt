@@ -2,22 +2,14 @@ package com.example.flavi.model.data.database.entitydb
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 import com.example.flavi.model.data.datasource.CountriesDTO
 import com.example.flavi.model.data.datasource.GenresDTO
 
-@Entity(
-    tableName = "movies",
-    primaryKeys = ["userMovieId"],
-    foreignKeys = [
-        ForeignKey(
-            entity = UserDbModel::class,
-            parentColumns = ["userId"],
-            childColumns = ["userMovieId"],
-            onDelete = ForeignKey.CASCADE
-        )
-    ]
-)
+@Entity(tableName = "movies")
 data class MoviesDbModel(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
     val userMovieId: String = UNKNOWN_USER_MOVIE_ID,
     val filmId: Int,
     val nameRu: String,

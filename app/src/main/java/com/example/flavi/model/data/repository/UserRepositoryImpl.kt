@@ -37,11 +37,12 @@ class UserRepositoryImpl @Inject constructor(
             email = email,
             password = password
         )
-        userDao.insertUserToDb(
-            userDbModel = userDbModel,
-            movies = MovieCard().toMoviesDbModel(userId = userId),
-            userId = userId
-        )
+        userDao.insertUserToDB(userDbModel)
+//        userDao.insertUserToDb(
+//            userDbModel = userDbModel,
+//            movies = MovieCard().toMoviesDbModel(userId = userId),
+//            userId = userId
+//        )
     }
 
     override suspend fun removeHistorySearch(title: String) {
@@ -66,7 +67,7 @@ class UserRepositoryImpl @Inject constructor(
         return userDao.getHistorySearch(userId).map { it.toEntity() }
     }
 
-    fun getFavoritesMovie(): Flow<List<MoviesDbModel>> {
+    fun getFavoritesMovie(): Flow<List<MovieCard>> {
         val userId = getFirebaseAuth.getIdUser()
         return userDao.getFavoriteMovie(userId)
     }
@@ -91,8 +92,8 @@ class UserRepositoryImpl @Inject constructor(
         return userDao.checkUserByEmailAndPassword(email, password)
     }
 
-    override suspend fun getMovieByTitle(keyword: String): Response<Movies> {
-        return movieService.getListMoviesByQuery(keyword)
+    override suspend fun getMovieByTitle(keyword: String, page: Int): Response<Movies> {
+        return movieService.getListMoviesByQuery(keyword, page)
     }
 
     suspend fun getMovieFilter(query: String): Response<MoviesKinopoiskDev> {

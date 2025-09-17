@@ -10,7 +10,8 @@ import retrofit2.http.Query
 interface MovieService {
     @GET("/api/v2.1/films/search-by-keyword")
     suspend fun getListMoviesByQuery(
-        @Query("keyword") keyword: String
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int
     ): Response<Movies>
 
     @GET("/api/v2.2/films/{id}")

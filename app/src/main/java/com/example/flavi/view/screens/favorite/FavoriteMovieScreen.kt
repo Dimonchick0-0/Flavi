@@ -184,7 +184,6 @@ private fun PullToRefreshUpdateMovieFavoriteList(
     val state = rememberPullToRefreshState()
     val coroutineScope = rememberCoroutineScope()
 
-
     PullToRefreshBox(
         modifier = modifier,
         isRefreshing = isRefreshing,

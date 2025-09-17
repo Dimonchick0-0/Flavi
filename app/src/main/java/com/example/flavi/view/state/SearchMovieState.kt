@@ -1,8 +1,7 @@
 package com.example.flavi.view.state
 
-import com.example.flavi.model.domain.entity.HistorySearch
-import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 
 sealed interface SearchMovieState {
     data object Initial : SearchMovieState

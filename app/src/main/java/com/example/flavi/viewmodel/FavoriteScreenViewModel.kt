@@ -3,7 +3,6 @@ package com.example.flavi.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.flavi.model.data.database.map.toMoviesCardEntity
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
@@ -73,15 +72,8 @@ class FavoriteScreenViewModel @Inject constructor(
 
     fun getMovieCard() {
         viewModelScope.launch {
-            repositoryImpl.getFavoritesMovie().collect { listMovieDbModel ->
-                listMovieDbModel.forEach { movieDbModel ->
-                    val movieCard = movieDbModel.toMoviesCardEntity()
-                    mutableListOf<MovieCard>().apply {
-                        add(movieCard)
-                    }.also {
-                        _favoriteState.emit(FavoriteScreenState.LoadMovies(it.toList()))
-                    }
-                }
+            repositoryImpl.getFavoritesMovie().collect {
+                _favoriteState.emit(FavoriteScreenState.LoadMovies(movieList = it))
             }
         }
     }
