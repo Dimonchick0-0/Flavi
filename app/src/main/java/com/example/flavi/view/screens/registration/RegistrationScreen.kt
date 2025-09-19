@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +27,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -31,7 +36,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.flavi.view.screens.components.RegistrationButton
 import com.example.flavi.view.screens.components.RegistrationTextField
+import com.example.flavi.view.screens.components.RegistrationTextFieldPassword
 import com.example.flavi.view.state.RegisterState
+import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.RegisterCommand
 import com.example.flavi.viewmodel.RegisterViewModel
 
@@ -84,6 +91,7 @@ fun RegistrationScreen(
                 val email = currentState.email
                 val password = currentState.password
                 val confirmPassword = currentState.confirmPassword
+                val passwordVisibility = remember { mutableStateOf(false) }
                 val color = if (password.length < 6 && confirmPassword.length < 6) {
                     MaterialTheme.colorScheme.error
                 } else {
@@ -121,7 +129,7 @@ fun RegistrationScreen(
                     )
                 }
                 Row {
-                    RegistrationTextField(
+                    RegistrationTextFieldPassword(
                         text = "Пароль",
                         value = password,
                         onQueryChange = {
@@ -129,29 +137,80 @@ fun RegistrationScreen(
                             viewModel.processCommand(RegisterCommand.InputPassword(it))
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = PasswordVisualTransformation('*'),
+                        visualTransformation = if (!passwordVisibility.value) {
+                            PasswordVisualTransformation('*')
+                        } else {
+                            VisualTransformation.None
+                        },
                         isError = viewModel.errorStatePassword.value,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             errorBorderColor = color
-                        )
+                        ),
+                        leadingIcon = {
+                            IconButton(
+                                onClick = {
+                                    passwordVisibility.value = !passwordVisibility.value
+                                }
+                            ) {
+                                if (!passwordVisibility.value) {
+                                    Icon(
+                                        imageVector = MyIcons.Lock,
+                                        contentDescription = ""
+                                    )
+                                }
+
+                                if (passwordVisibility.value) {
+                                    Icon(
+                                        imageVector = MyIcons.LockOpen,
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+
+                        }
                     )
-                    RegistrationTextField(
-                        text = "Повторите пароль",
+                    RegistrationTextFieldPassword(
+                        text = "Пароль",
                         value = confirmPassword,
                         onQueryChange = {
                             viewModel.errorStateConfirmPassword.value = it.length <= 5
                             viewModel.processCommand(RegisterCommand.InputConfirmPassword(it))
                         },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = PasswordVisualTransformation('*'),
+                        visualTransformation = if (!passwordVisibility.value) {
+                            PasswordVisualTransformation('*')
+                        } else {
+                            VisualTransformation.None
+                        },
                         isError = viewModel.errorStateConfirmPassword.value,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = Color.Black,
                             unfocusedBorderColor = Color.Black,
                             errorBorderColor = color
-                        )
+                        ),
+                        leadingIcon = {
+                            IconButton(
+                                onClick = {
+                                    passwordVisibility.value = !passwordVisibility.value
+                                }
+                            ) {
+                                if (!passwordVisibility.value) {
+                                    Icon(
+                                        imageVector = MyIcons.Lock,
+                                        contentDescription = ""
+                                    )
+                                }
+
+                                if (passwordVisibility.value) {
+                                    Icon(
+                                        imageVector = MyIcons.LockOpen,
+                                        contentDescription = ""
+                                    )
+                                }
+                            }
+                        }
                     )
                 }
                 Row(

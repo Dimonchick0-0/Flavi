@@ -1,9 +1,19 @@
 package com.example.flavi.model.di
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+import okhttp3.Cache
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import javax.inject.Singleton
 
-object NetworkModule {
+@Singleton
+class NetworkModule(
+    @ApplicationContext context: Context
+) {
+
+    private val cacheSize = (5 * 1024 * 1024).toLong()
+    private val cache = Cache(context.cacheDir, cacheSize)
 
     fun <T, V, K, L> provideOkHttpClient(
         name1: T,
@@ -23,6 +33,7 @@ object NetworkModule {
             .addInterceptor(interceptor = HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
+            .cache(cache)
             .build()
     }
 

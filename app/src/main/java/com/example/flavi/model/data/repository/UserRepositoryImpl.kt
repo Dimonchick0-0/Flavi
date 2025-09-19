@@ -38,11 +38,6 @@ class UserRepositoryImpl @Inject constructor(
             password = password
         )
         userDao.insertUserToDB(userDbModel)
-//        userDao.insertUserToDb(
-//            userDbModel = userDbModel,
-//            movies = MovieCard().toMoviesDbModel(userId = userId),
-//            userId = userId
-//        )
     }
 
     override suspend fun removeHistorySearch(title: String) {

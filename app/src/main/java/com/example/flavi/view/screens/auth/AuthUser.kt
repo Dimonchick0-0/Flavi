@@ -12,13 +12,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +31,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -34,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.flavi.view.state.AuthUserState
+import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.AuthUserViewModel
 import kotlin.time.measureTime
 
@@ -83,6 +89,7 @@ fun AuthUser(
             is AuthUserState.AuthUser -> {
                 val email = currentState.email
                 val password = currentState.password
+                val passwordVisibility = remember { mutableStateOf(false) }
                 val color = if (password.length < 6) {
                     MaterialTheme.colorScheme.error
                 } else {
@@ -138,7 +145,32 @@ fun AuthUser(
                                 unfocusedBorderColor = Color.Black,
                                 errorBorderColor = color
                             ),
-                            visualTransformation = PasswordVisualTransformation('*')
+                            visualTransformation = if (!passwordVisibility.value) {
+                                PasswordVisualTransformation('*')
+                            } else {
+                                VisualTransformation.None
+                            },
+                            leadingIcon = {
+                                IconButton(
+                                    onClick = {
+                                        passwordVisibility.value = !passwordVisibility.value
+                                    }
+                                ) {
+                                    if (!passwordVisibility.value) {
+                                        Icon(
+                                            imageVector = MyIcons.Lock,
+                                            contentDescription = ""
+                                        )
+                                    }
+
+                                    if (passwordVisibility.value) {
+                                        Icon(
+                                            imageVector = MyIcons.LockOpen,
+                                            contentDescription = ""
+                                        )
+                                    }
+                                }
+                            }
                         )
                     }
                     Row(
