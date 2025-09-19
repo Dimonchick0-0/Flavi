@@ -45,14 +45,4 @@ interface UserDao {
 
     @Query("delete from historySearch where title ==:title")
     suspend fun removeHistorySearchBiId(title: String)
-
-//    @Transaction
-//    suspend fun insertUserToDb(
-//        userDbModel: UserDbModel,
-//        movies: MoviesDbModel,
-//        userId: String
-//    ) {
-//        insertUserToDB(userDbModel)
-//        insertMovieToDb(movies)
-//    }
 }
