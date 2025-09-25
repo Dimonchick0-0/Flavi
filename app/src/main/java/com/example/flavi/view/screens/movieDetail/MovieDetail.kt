@@ -1,7 +1,9 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
@@ -22,6 +26,7 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,8 +47,8 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
+import com.example.flavi.view.state.MovieDetailState
 import com.example.flavi.view.ui.theme.MyIcons
-import com.example.flavi.viewmodel.MovieDetailState
 import com.example.flavi.viewmodel.MovieDetailViewModel
 import kotlinx.coroutines.launch
 
@@ -69,10 +74,10 @@ fun MovieDetail(
 
                 is MovieDetailState.LoadMovieDetail -> {
                     viewModel.getMovieById(filmId)
-
                     coroutineScope.launch {
                         viewModel.apply {
                             processLoadMovieDetailState()
+//                            loadImageMovie(filmId)
                             if (checkMovieInFavorite(currentState.movie.kinopoiskId)) {
                                 checkMovieInFavorite.value = true
                             }
@@ -82,7 +87,6 @@ fun MovieDetail(
                         }
 
                     }
-
                     LazyColumn {
                         item {
                             MovieDetailComponent(
@@ -108,7 +112,9 @@ fun MovieDetail(
                                         }
                                     }
                                 },
-                                checkMovieInFavorite = viewModel.checkMovieInFavorite.value
+                                checkMovieInFavorite = viewModel.checkMovieInFavorite.value,
+                                viewModel = viewModel,
+                                filmId = filmId
                             )
                         }
                     }
@@ -120,21 +126,39 @@ fun MovieDetail(
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
+private fun ImageCardMovie(
+    modifier: Modifier = Modifier,
+    item: String
+) {
+    GlideImage(
+        modifier = modifier.size(150.dp),
+        model = item,
+        contentDescription = ""
+    )
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
 private fun MovieDetailComponent(
     modifier: Modifier = Modifier,
     movieDetail: MovieDetail,
+    viewModel: MovieDetailViewModel,
+    filmId: Int,
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
     checkMovieInFavorite: Boolean
 ) {
     val maxLines = remember { mutableIntStateOf(3) }
-
+    val coroutineScope = rememberCoroutineScope()
+    val listTypeImage = listOf("Кадры", "Постеры", "Фан-арты")
+    val listPoster = mutableListOf<String>()
+    val checkImageInList = remember { mutableStateOf(false) }
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GlideImage(
-            modifier = modifier.height(300.dp),
+            modifier = Modifier.height(300.dp),
             model = movieDetail.posterUrl,
             contentDescription = "Картинка"
         )
@@ -192,7 +216,85 @@ private fun MovieDetailComponent(
             onClickSaveToFavoriteMovie = onClickSaveToFavoriteMovie,
             checkMovieInFavorite = checkMovieInFavorite
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "Изображения",
+            color = Color.Black
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        CardInFilterQueryImage(
+            listCardFilterImageQuery = listTypeImage,
+            loadImageClick = {
+                coroutineScope.launch {
+                    if (listPoster.isNotEmpty()) {
+                        listPoster.clear()
+                        checkImageInList.value = false
+                    }
+                    if (listPoster.isEmpty()) {
+                        viewModel.loadImageMovie(id = filmId, type = it).forEach {
+                            listPoster.add(it.previewUrl)
+                            checkImageInList.value = true
+                        }
+                    }
+                }
+            },
+            content = {
+                if (checkImageInList.value) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(state = rememberScrollState())
+                    ) {
+                        listPoster.forEach {
+                            ImageCardMovie(item = it)
+                        }
+                    }
+                }
+            }
+        )
     }
+}
+
+@Composable
+private fun CardInFilterQueryImage(
+    modifier: Modifier = Modifier,
+    listCardFilterImageQuery: List<String>,
+    loadImageClick: (String) -> Unit,
+    content: @Composable () -> Unit
+) {
+    val selectedNumber = remember { mutableIntStateOf(-1) }
+    val typeImage = remember { mutableStateOf("") }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+            listCardFilterImageQuery.forEachIndexed { index, s ->
+                val colorItemSelected =
+                    if (index == selectedNumber.intValue) Color.Green else Color.DarkGray
+                TextButton(
+                    onClick = {
+                        selectedNumber.intValue = index
+                        when(s) {
+                            "Кадры" -> typeImage.value = "STILL"
+                            "Постеры" -> typeImage.value = "POSTER"
+                            "Фан-арты" -> typeImage.value = "FAN_ART"
+                        }
+                        loadImageClick(typeImage.value)
+                    },
+                ) {
+                    Text(
+                        text = s,
+                        color = colorItemSelected
+                    )
+                }
+            }
+        }
+    }
+    Surface(content = content)
+
 }
 
 @Composable
@@ -266,7 +368,7 @@ private fun Rating(
             backgroundColor = MaterialTheme.colorScheme.secondary
         ) {
             Box(
-              contentAlignment = Alignment.TopCenter
+                contentAlignment = Alignment.TopCenter
             ) {
                 Text(
                     text = movieDetail.ratingKinopoisk.toString(),

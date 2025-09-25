@@ -6,6 +6,7 @@ import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toEntity
 import com.example.flavi.model.data.database.map.toMoviesDbModel
+import com.example.flavi.model.data.datasource.ImageMovieDTO
 import com.example.flavi.model.data.datasource.KinoposikService
 import com.example.flavi.model.data.datasource.MovieService
 import com.example.flavi.model.domain.entity.HistorySearch
@@ -17,6 +18,7 @@ import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -38,6 +40,10 @@ class UserRepositoryImpl @Inject constructor(
             password = password
         )
         userDao.insertUserToDB(userDbModel)
+    }
+
+    suspend fun loadImageMovieById(id: Int, type: String): Response<ImageMovieDTO> {
+        return movieService.loadImageFilmById(id, type)
     }
 
     override suspend fun removeHistorySearch(title: String) {

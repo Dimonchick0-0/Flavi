@@ -18,4 +18,10 @@ interface MovieService {
     suspend fun getMovieById(
         @Path("id") id: Int
     ): Response<MovieDetail>
+
+    @GET("/api/v2.2/films/{id}/images?page=1")
+    suspend fun loadImageFilmById(
+        @Path("id") id: Int,
+        @Query("type") type: String
+    ): Response<ImageMovieDTO>
 }

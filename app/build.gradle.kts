@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +9,21 @@ plugins {
     id("com.google.dagger.hilt.android")
     kotlin("plugin.serialization") version "2.1.21"
 }
+
+private val keystorePropertiesFile = rootProject.file("keystore.properties")
+private val keystoreProperties = keystorePropertiesFile.inputStream().use { inputStream ->
+    Properties().apply {
+        load(inputStream)
+    }
+}
+
+private val apiKeyKinopoiskUnOfficial = keystoreProperties.getProperty(
+    "FLAVI_API_KEY_UN_OFFICIAL_KINOPOISK"
+)
+
+private val apiKeyKinopoiskDev = keystoreProperties.getProperty(
+    "FLAVI_API_KEY_KINOPOISK_DEV"
+)
 
 android {
     namespace = "com.example.flavi"
@@ -20,6 +37,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField(
+            type = "String",
+            name = "FLAVI_API_KEY_UN_OFFICIAL_KINOPOISK",
+            value = apiKeyKinopoiskUnOfficial
+        )
+        buildConfigField(
+            type = "String",
+            name = "FLAVI_API_KEY_KINOPOISK_DEV",
+            value = apiKeyKinopoiskDev
+        )
     }
 
     buildTypes {
@@ -40,6 +67,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         unitTests.isIncludeAndroidResources = true

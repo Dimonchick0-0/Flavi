@@ -1,18 +1,24 @@
 package com.example.flavi.viewmodel
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.database.map.toMovieCard
 import com.example.flavi.model.data.database.map.toMovieCardEntity
+import com.example.flavi.model.data.datasource.PosterDTO
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
+import com.example.flavi.view.state.MovieDetailState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,6 +37,16 @@ class MovieDetailViewModel @Inject constructor(
 
     fun mapMovieDetailToMovieCard(movie: MovieDetail): MovieCard {
         return movie.toMovieCard()
+    }
+
+    suspend fun loadImageMovie(id: Int, type: String): List<PosterDTO> {
+        val listPoster = mutableListOf<PosterDTO>()
+        repositoryImpl.loadImageMovieById(id, type).body()?.let { imageMovie ->
+            imageMovie.items.forEach {
+                listPoster.add(it)
+            }
+        }
+        return listPoster.toList()
     }
 
     fun setStatusMovieFavoriteDuringRemove(movie: MovieDetail) {
@@ -78,6 +94,3 @@ class MovieDetailViewModel @Inject constructor(
 
 }
 
-sealed interface MovieDetailState {
-    data class LoadMovieDetail(val movie: MovieDetail) : MovieDetailState
-}

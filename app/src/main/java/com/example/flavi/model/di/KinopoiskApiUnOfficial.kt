@@ -1,6 +1,7 @@
 package com.example.flavi.model.di
 
 import android.content.Context
+import com.example.flavi.BuildConfig
 import com.example.flavi.model.data.datasource.KinoposikService
 import com.example.flavi.model.data.datasource.MovieService
 import dagger.Module
@@ -17,7 +18,7 @@ object KinopoiskApiUnOfficial {
 
     private const val BASE_URL = "https://kinopoiskapiunofficial.tech/"
     private const val HEADER_API = "X-API-KEY"
-    private const val API_KEY = "65e12335-5427-4b62-a715-7fef0133e98c"
+    private const val API_KEY = BuildConfig.FLAVI_API_KEY_UN_OFFICIAL_KINOPOISK
     private const val CONTENT_TYPE = "Content-Type"
     private const val APP_JSON = "application/json"
 
