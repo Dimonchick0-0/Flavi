@@ -544,7 +544,8 @@ private fun FAB(
     val listOfGenres = listOf(
         Genres(idGenres = 0, name = "ужасы"),
         Genres(idGenres = 1, name = "драма"),
-        Genres(idGenres = 2, name = "мелодрама")
+        Genres(idGenres = 2, name = "мелодрама"),
+        Genres(idGenres = 3, name = "триллер")
     )
     FloatingActionButton(
         modifier = modifier,
@@ -555,7 +556,8 @@ private fun FAB(
             if (!viewModel.networkState.value) {
                 viewModel.showDialog.value = true
             }
-        }) {
+        }
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {

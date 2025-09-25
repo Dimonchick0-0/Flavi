@@ -20,6 +20,7 @@ data class MovieDetail(
     @SerialName("countries") val countries: List<CountriesDTO> = UNKNOWN_COUNTRIES,
     @SerialName("startYear") val startYear: Int = UNKNOWN_START_YEAR,
     @SerialName("endYear") val endYear: Int = UNKNOWN_END_YEAR,
+    @SerialName("type") val type: String = UNKNOWN_TYPE,
     @SerialName("isFavorite") val isFavorite: Boolean = UNKNOWN_IS_FAVORITE
 ) {
     companion object {
@@ -30,6 +31,7 @@ data class MovieDetail(
         private const val UNKNOWN_ALTERNATIVE_NAME = ""
         private const val UNKNOWN_YEAR = 0
         private const val UNKNOWN_POSTER = ""
+        private const val UNKNOWN_TYPE = ""
         private const val UNKNOWN_RATING_KINOPOISK = 0.0f
         private const val UNKNOWN_START_YEAR = 0
         private const val UNKNOWN_END_YEAR = 0
