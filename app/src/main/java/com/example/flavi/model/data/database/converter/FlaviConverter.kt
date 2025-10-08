@@ -1,8 +1,8 @@
 package com.example.flavi.model.data.database.converter
 
 import androidx.room.TypeConverter
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.data.datasource.countries.CountriesDTO
+import com.example.flavi.model.data.datasource.genres.GenresDTO
 import com.google.gson.Gson
 
 class FlaviConverter {

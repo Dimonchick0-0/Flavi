@@ -3,12 +3,15 @@ package com.example.flavi.view.screens.movieDetail
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,17 +19,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
+import androidx.compose.material.Surface
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
@@ -36,6 +45,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,13 +53,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.example.flavi.R
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
 import com.example.flavi.view.state.MovieDetailState
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailViewModel
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -57,244 +72,273 @@ import kotlinx.coroutines.launch
 fun MovieDetail(
     modifier: Modifier = Modifier,
     filmId: Int,
-    viewModel: MovieDetailViewModel = hiltViewModel()
+    viewModel: MovieDetailViewModel = hiltViewModel(),
+    loadAllImageMovieClick: () -> Unit
 ) {
 
     val state = viewModel.movieDetailState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
 
-    Scaffold { innerPadding ->
-        Column(
-            modifier = modifier
-                .padding(innerPadding)
+    Scaffold(
+        modifier = modifier.fillMaxSize()
+    ) { innerPadding ->
+        LazyColumn(
+            contentPadding = innerPadding,
+            modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.onBackground)
+                .background(color = MaterialTheme.colorScheme.onBackground),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            when (val currentState = state.value) {
+            item {
+                when (val currentState = state.value) {
 
-                is MovieDetailState.LoadMovieDetail -> {
-                    viewModel.getMovieById(filmId)
-                    coroutineScope.launch {
-                        viewModel.apply {
-                            processLoadMovieDetailState()
-//                            loadImageMovie(filmId)
-                            if (checkMovieInFavorite(currentState.movie.kinopoiskId)) {
-                                checkMovieInFavorite.value = true
-                            }
-                            if (!checkMovieInFavorite(currentState.movie.kinopoiskId)) {
-                                checkMovieInFavorite.value = false
+                    is MovieDetailState.LoadMovieDetail -> {
+                        viewModel.getMovieById(filmId)
+                        coroutineScope.launch {
+                            viewModel.apply {
+                                getActors(filmId)
+                                processLoadMovieDetailState()
+                                if (checkMovieInFavorite(currentState.movie.kinopoiskId)) {
+                                    checkMovieInFavorite.value = true
+                                }
+                                if (!checkMovieInFavorite(currentState.movie.kinopoiskId)) {
+                                    checkMovieInFavorite.value = false
+                                }
                             }
                         }
-
-                    }
-                    LazyColumn {
-                        item {
-                            MovieDetailComponent(
-                                movieDetail = currentState.movie,
-                                onClickRemoveMovieFromFavorite = {
-                                    coroutineScope.launch {
-                                        viewModel.apply {
-                                            removeMovieFromFavorite(currentState.movie.kinopoiskId)
-                                            checkMovieInFavorite.value = false
-                                            setStatusMovieFavoriteDuringRemove(currentState.movie)
-                                        }
+                        MovieDetailComponent(
+                            movieDetail = currentState.movie,
+                            onClickRemoveMovieFromFavorite = {
+                                coroutineScope.launch {
+                                    viewModel.apply {
+                                        removeMovieFromFavorite(currentState.movie.kinopoiskId)
+                                        checkMovieInFavorite.value = false
+                                        setStatusMovieFavoriteDuringRemove(currentState.movie)
                                     }
-                                },
-                                onClickSaveToFavoriteMovie = {
-                                    val movieList = CheckFavoriteMovieList<MovieCard>()
-                                    coroutineScope.launch {
-                                        viewModel.apply {
-                                            saveMovieToFavorite(currentState.movie)
-                                            movieList.list.add(
-                                                mapMovieDetailToMovieCard(currentState.movie)
-                                            )
-                                            checkMovieInFavorite.value = true
-                                        }
+                                }
+                            },
+                            onClickSaveToFavoriteMovie = {
+                                val movieList = CheckFavoriteMovieList<MovieCard>()
+                                coroutineScope.launch {
+                                    viewModel.apply {
+                                        saveMovieToFavorite(currentState.movie)
+                                        movieList.list.add(
+                                            mapMovieDetailToMovieCard(currentState.movie)
+                                        )
+                                        checkMovieInFavorite.value = true
                                     }
-                                },
-                                checkMovieInFavorite = viewModel.checkMovieInFavorite.value,
-                                viewModel = viewModel,
-                                filmId = filmId
-                            )
-                        }
+                                }
+                            },
+                            checkMovieInFavorite = viewModel.checkMovieInFavorite.value,
+                            viewModel = viewModel,
+                            filmId = filmId,
+                            loadAllImageMovieClick = loadAllImageMovieClick,
+                            actors = currentState.actors
+                        )
                     }
                 }
             }
         }
-    }
-}
 
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-private fun ImageCardMovie(
-    modifier: Modifier = Modifier,
-    item: String
-) {
-    GlideImage(
-        modifier = modifier.size(150.dp),
-        model = item,
-        contentDescription = ""
-    )
+
+    }
 }
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun MovieDetailComponent(
-    modifier: Modifier = Modifier,
     movieDetail: MovieDetail,
     viewModel: MovieDetailViewModel,
     filmId: Int,
+    actors: List<Actor>,
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
+    loadAllImageMovieClick: () -> Unit,
     checkMovieInFavorite: Boolean
 ) {
     val maxLines = remember { mutableIntStateOf(3) }
     val coroutineScope = rememberCoroutineScope()
     val listTypeImage = listOf("Кадры", "Постеры", "Фан-арты")
-    val listPoster = mutableListOf<String>()
+    val listPoster = mutableListOf<Poster>()
     val checkImageInList = remember { mutableStateOf(false) }
-    Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        GlideImage(
-            modifier = Modifier.height(300.dp),
-            model = movieDetail.posterUrl,
-            contentDescription = "Картинка"
-        )
+
+    GlideImage(
+        modifier = Modifier.height(300.dp),
+        model = movieDetail.posterUrl,
+        contentDescription = "Картинка"
+    )
+    Text(
+        modifier = Modifier.padding(top = 10.dp),
+        text = movieDetail.nameRu,
+        color = Color.Black,
+        fontSize = 24.sp
+    )
+    Text(
+        text = movieDetail.nameOriginal,
+        fontSize = 16.sp,
+        color = Color.Black
+    )
+    Row {
         Text(
-            modifier = Modifier.padding(top = 10.dp),
-            text = movieDetail.nameRu,
-            color = Color.Black,
-            fontSize = 24.sp
-        )
-        Text(
-            text = movieDetail.nameOriginal,
+            text = movieDetail.year.toString() + " ",
             fontSize = 16.sp,
             color = Color.Black
         )
-        Row {
+        movieDetail.genres.forEach {
             Text(
-                text = movieDetail.year.toString() + " ",
-                fontSize = 16.sp,
+                text = it.genre + " ",
                 color = Color.Black
             )
-            movieDetail.genres.forEach {
-                Text(
-                    text = it.genre + " ",
-                    color = Color.Black
-                )
-            }
         }
-        Row {
-            movieDetail.countries.forEach {
-                Text(
-                    text = it.country + " ",
-                    color = Color.Black
-                )
-            }
+    }
+    Row {
+        movieDetail.countries.forEach {
+            Text(
+                text = it.country + " ",
+                color = Color.Black
+            )
         }
-        OpenDescriptionMovie(
-            movieDetail = movieDetail,
-            isOpenDescription = {
-                if (maxLines.intValue == maxLines.intValue) {
-                    maxLines.intValue = Int.MAX_VALUE
+    }
+    OpenDescriptionMovie(
+        movieDetail = movieDetail,
+        isOpenDescription = {
+            if (maxLines.intValue == maxLines.intValue) {
+                maxLines.intValue = Int.MAX_VALUE
+            }
+        },
+        isClosedDescription = {
+            if (maxLines.intValue == Int.MAX_VALUE) {
+                maxLines.intValue = 3
+            }
+        },
+        maxLines = maxLines.intValue
+    )
+    Spacer(modifier = Modifier.height(25.dp))
+    Rating(movieDetail = movieDetail)
+    Spacer(modifier = Modifier.height(25.dp))
+    CardFunctionMovieComponent(
+        onClickRemoveMovieFromFavorite = onClickRemoveMovieFromFavorite,
+        onClickSaveToFavoriteMovie = onClickSaveToFavoriteMovie,
+        checkMovieInFavorite = checkMovieInFavorite
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(
+        text = "Изображения",
+        color = Color.Black
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    ComponentMovieDetail.CardInFilterQueryImage(
+        listCardFilterImageQuery = listTypeImage,
+        loadImageClick = {
+            coroutineScope.launch {
+                if (listPoster.isNotEmpty()) {
+                    listPoster.clear()
+                    checkImageInList.value = false
                 }
-            },
-            isClosedDescription = {
-                if (maxLines.intValue == Int.MAX_VALUE) {
-                    maxLines.intValue = 3
-                }
-            },
-            maxLines = maxLines.intValue
-        )
-        Spacer(modifier = Modifier.height(25.dp))
-        Rating(movieDetail = movieDetail)
-        Spacer(modifier = Modifier.height(25.dp))
-        CardFunctionMovieComponent(
-            onClickRemoveMovieFromFavorite = onClickRemoveMovieFromFavorite,
-            onClickSaveToFavoriteMovie = onClickSaveToFavoriteMovie,
-            checkMovieInFavorite = checkMovieInFavorite
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Изображения",
-            color = Color.Black
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        CardInFilterQueryImage(
-            listCardFilterImageQuery = listTypeImage,
-            loadImageClick = {
-                coroutineScope.launch {
-                    if (listPoster.isNotEmpty()) {
-                        listPoster.clear()
-                        checkImageInList.value = false
+                if (listPoster.isEmpty()) {
+                    viewModel.loadImageMovie(id = filmId, type = it).forEach {
+                        listPoster.add(it)
+                        checkImageInList.value = true
                     }
-                    if (listPoster.isEmpty()) {
-                        viewModel.loadImageMovie(id = filmId, type = it).forEach {
-                            listPoster.add(it.previewUrl)
-                            checkImageInList.value = true
+                }
+            }
+        },
+        content = {
+
+            if (checkImageInList.value) {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    listPoster
+                        .take(4)
+                        .forEach {
+                            item {
+                                ComponentMovieDetail.ImageCardMovie(
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                    previewUrl = it.previewUrl
+                                )
+                                if (listPoster[3].previewUrl == it.previewUrl) {
+                                    GetMorePhotosMovie(
+                                        onClickGetMorePhotos = loadAllImageMovieClick
+                                    )
+                                }
+                            }
                         }
-                    }
                 }
-            },
-            content = {
-                if (checkImageInList.value) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(state = rememberScrollState())
+            }
+        }
+    )
+    Spacer(modifier = Modifier.height(16.dp))
+    Text(
+        text = "Актёры",
+        color = Color.Black
+    )
+    if (actors.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(16.dp))
+        LazyHorizontalGrid(
+            rows = GridCells.Fixed(count = 3),
+            modifier = Modifier
+                .height(height = 250.dp)
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            actors.forEach {
+                item {
+                    Card(
+                        modifier = Modifier.size(width = 300.dp, height = 64.dp),
+                        backgroundColor = Color.Black
                     ) {
-                        listPoster.forEach {
-                            ImageCardMovie(item = it)
+                        Row {
+                            GlideImage(
+                                modifier = Modifier.fillMaxHeight(),
+                                model = it.posterUrl,
+                                contentDescription = ""
+                            )
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp)
+                            ) {
+                                Text(
+                                    text = it.nameRu,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = it.nameEn,
+                                    color = Color.White
+                                )
+                                Text(
+                                    text = it.professionText,
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
                 }
             }
-        )
+        }
     }
 }
 
 @Composable
-private fun CardInFilterQueryImage(
+private fun GetMorePhotosMovie(
     modifier: Modifier = Modifier,
-    listCardFilterImageQuery: List<String>,
-    loadImageClick: (String) -> Unit,
-    content: @Composable () -> Unit
+    onClickGetMorePhotos: () -> Unit
 ) {
-    val selectedNumber = remember { mutableIntStateOf(-1) }
-    val typeImage = remember { mutableStateOf("") }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+    IconButton(
+        modifier = modifier.padding(all = 16.dp),
+        onClick = onClickGetMorePhotos
     ) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-            listCardFilterImageQuery.forEachIndexed { index, s ->
-                val colorItemSelected =
-                    if (index == selectedNumber.intValue) Color.Green else Color.DarkGray
-                TextButton(
-                    onClick = {
-                        selectedNumber.intValue = index
-                        when(s) {
-                            "Кадры" -> typeImage.value = "STILL"
-                            "Постеры" -> typeImage.value = "POSTER"
-                            "Фан-арты" -> typeImage.value = "FAN_ART"
-                        }
-                        loadImageClick(typeImage.value)
-                    },
-                ) {
-                    Text(
-                        text = s,
-                        color = colorItemSelected
-                    )
-                }
-            }
-        }
+        Icon(
+            modifier = Modifier.size(45.dp),
+            tint = Color.Black,
+            imageVector = MyIcons.ArrowForward,
+            contentDescription = ""
+        )
     }
-    Surface(content = content)
-
 }
 
 @Composable

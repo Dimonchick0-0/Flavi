@@ -2,23 +2,25 @@ package com.example.flavi.model.data.repository
 
 import com.example.flavi.model.data.database.dao.UserDao
 import com.example.flavi.model.data.database.entitydb.HistorySearchDb
-import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.database.map.toEntity
+import com.example.flavi.model.data.database.map.toListPosterEntity
 import com.example.flavi.model.data.database.map.toMoviesDbModel
-import com.example.flavi.model.data.datasource.ImageMovieDTO
-import com.example.flavi.model.data.datasource.KinoposikService
-import com.example.flavi.model.data.datasource.MovieService
+import com.example.flavi.model.data.datasource.actors.ActorDTO
+import com.example.flavi.model.data.datasource.actors.ListActor
+import com.example.flavi.model.data.datasource.images.ImageMovieDTO
+import com.example.flavi.model.data.datasource.services.KinoposikService
+import com.example.flavi.model.data.datasource.services.MovieService
 import com.example.flavi.model.domain.entity.HistorySearch
+import com.example.flavi.model.domain.entity.User
+import com.example.flavi.model.domain.entity.kinopoiskDev.MoviesKinopoiskDev
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
-import com.example.flavi.model.domain.entity.kinopoiskDev.MoviesKinopoiskDev
-import com.example.flavi.model.domain.entity.User
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
 import com.example.flavi.model.domain.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import retrofit2.Response
@@ -40,6 +42,18 @@ class UserRepositoryImpl @Inject constructor(
             password = password
         )
         userDao.insertUserToDB(userDbModel)
+    }
+
+    suspend fun getActorsFromMovie(filmId: Int): Response<List<ActorDTO>> {
+        return movieService.getActorByMovieId(filmId)
+    }
+
+    suspend fun getSearchActors(nameActor: String): Response<ListActor> {
+        return movieService.getSearchActor(nameActor)
+    }
+
+    suspend fun loadAllImageMovie(id: Int, type: String): List<Poster> {
+        return loadImageMovieById(id, type).body()?.items?.toListPosterEntity()!!
     }
 
     suspend fun loadImageMovieById(id: Int, type: String): Response<ImageMovieDTO> {

@@ -1,7 +1,7 @@
 package com.example.flavi.model.domain.entity.kinopoiskUnOfficial
 
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.data.datasource.countries.CountriesDTO
+import com.example.flavi.model.data.datasource.genres.GenresDTO
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

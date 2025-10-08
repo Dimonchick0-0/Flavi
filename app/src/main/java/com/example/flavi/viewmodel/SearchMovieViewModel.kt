@@ -5,13 +5,16 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.database.map.toActorEntity
 import com.example.flavi.model.data.database.map.toMovieCardEntity
-import com.example.flavi.model.data.datasource.Network
+import com.example.flavi.model.data.datasource.actors.ListActor
+import com.example.flavi.model.data.datasource.network.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,9 +25,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.update
@@ -33,6 +34,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.internal.filterList
 import retrofit2.Response
 import javax.inject.Inject
+import kotlin.time.measureTime
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
@@ -65,6 +67,10 @@ class SearchMovieViewModel @Inject constructor(
 
     val listHistorySearch = mutableStateOf(listOf<String>())
 
+    private val listActor = mutableStateOf(SearchActor())
+
+    val checkActor = mutableStateOf(false)
+
     init {
         changeStateByConnection(context)
         query
@@ -72,25 +78,48 @@ class SearchMovieViewModel @Inject constructor(
                 _stateSearchMovie.emit(SearchMovieState.InputQuery(it))
                 oldQuery.value = it
             }
-            .map {
-                getMovie(it)
-            }
-            .onEach {
-                it.body()?.also { movies ->
-                    val newMoviesList = movies.films.filterList {
-                        rating != "null"
-                    }
-                    _stateSearchMovie.emit(SearchMovieState.LoadMovie(newMoviesList))
-                }
-            }
-            .onEach {
-                it.body()?.also { movies ->
-                    if (movies.films.isNotFoundMovies()) {
-                        _stateSearchMovie.emit(SearchMovieState.NotFound)
-                    }
-                }
-            }
+            .retry(retries = 3L)
             .launchIn(viewModelScope)
+    }
+
+    suspend fun gettingTheEnteredQuery() {
+        getActors(oldQuery.value).body()?.let { listActors ->
+            if (listActors.items.isNotEmpty()) {
+                listActors.items.forEach {
+                    listActor.value = it.toActorEntity()
+                    checkActor.value = true
+                }
+            } else {
+                checkActor.value = false
+            }
+        }
+        val time = measureTime {
+            getMovie(oldQuery.value).body()?.also { movies ->
+                val filteredList = movies.films.filterList {
+                    if (nameEn == listActor.value.nameEn) {
+                        checkActor.value = false
+                    }
+                    rating != "null"
+                }
+                if (filteredList.isNotFoundMovies()) {
+                    _stateSearchMovie.emit(SearchMovieState.NotFound)
+                }
+
+                _stateSearchMovie.emit(
+                    SearchMovieState.LoadMovieAndActors(
+                        movie = filteredList,
+                        searchActor = listActor.value
+                    )
+                )
+            }
+        }
+        Log.d("Auth", time.toString())
+    }
+
+    private suspend fun getActors(nameActor: String): Response<ListActor> {
+        return withContext(Dispatchers.Default) {
+            repositoryImpl.getSearchActors(nameActor)
+        }
     }
 
     suspend fun emitToHistorySearchState() {
@@ -102,7 +131,7 @@ class SearchMovieViewModel @Inject constructor(
     }
 
     suspend fun showHistorySearch() {
-         getSearchHistoryList().collect {
+        getSearchHistoryList().collect {
             listHistorySearch.value = it.map { historySearch ->
                 historySearch.title
             }.distinct()
@@ -157,19 +186,9 @@ class SearchMovieViewModel @Inject constructor(
 
     fun updateQuery(newQuery: String) {
         _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.LoadMovie) {
+            if (state is SearchMovieState.LoadMovieAndActors) {
                 oldQuery.value = newQuery
                 currentQuery.value = oldQuery.value
-                state.copy(movie = state.movie)
-            } else {
-                state
-            }
-        }
-    }
-
-    fun processLoadMovie() {
-        _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.LoadMovie) {
                 state.copy(movie = state.movie)
             } else {
                 state

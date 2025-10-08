@@ -1,6 +1,7 @@
 package com.example.flavi.model.data.database.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -9,6 +10,7 @@ import com.example.flavi.model.data.database.entitydb.HistorySearchDb
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
 import kotlinx.coroutines.flow.Flow
 
 @Dao

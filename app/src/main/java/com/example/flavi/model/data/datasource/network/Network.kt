@@ -1,17 +1,11 @@
-package com.example.flavi.model.data.datasource
+package com.example.flavi.model.data.datasource.network
 
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
-import android.net.LinkProperties
 import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import dagger.hilt.android.qualifiers.ApplicationContext
-import leakcanary.AppWatcher
 import javax.inject.Inject
 
 class Network @Inject constructor (

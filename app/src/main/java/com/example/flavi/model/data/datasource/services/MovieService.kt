@@ -1,5 +1,8 @@
-package com.example.flavi.model.data.datasource
+package com.example.flavi.model.data.datasource.services
 
+import com.example.flavi.model.data.datasource.actors.ActorDTO
+import com.example.flavi.model.data.datasource.actors.ListActor
+import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
 import retrofit2.Response
@@ -24,4 +27,14 @@ interface MovieService {
         @Path("id") id: Int,
         @Query("type") type: String
     ): Response<ImageMovieDTO>
+
+    @GET("/api/v1/staff")
+    suspend fun getActorByMovieId(
+        @Query("filmId") filmId: Int
+    ): Response<List<ActorDTO>>
+
+    @GET("/api/v1/persons?page=1")
+    suspend fun getSearchActor(
+        @Query("name") nameActor: String
+    ): Response<ListActor>
 }

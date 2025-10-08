@@ -1,4 +1,4 @@
-package com.example.flavi.model.data.datasource
+package com.example.flavi.model.data.datasource.genres
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

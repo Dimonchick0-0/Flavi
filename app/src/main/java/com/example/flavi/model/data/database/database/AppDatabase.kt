@@ -10,11 +10,15 @@ import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 
 @Database(
-    entities = [UserDbModel::class, MoviesDbModel::class, HistorySearchDb::class],
-    version = 37,
+    entities = [
+        UserDbModel::class,
+        MoviesDbModel::class,
+        HistorySearchDb::class
+    ],
+    version = 41,
     exportSchema = false
 )
 @TypeConverters(FlaviConverter::class)
-abstract class AppDatabase: RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
 }
