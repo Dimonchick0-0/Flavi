@@ -35,8 +35,7 @@ object BottomNavigation {
             FlaviBottomNavigation("Избранные", Screens.Favorite.route, MyIcons.Favorite_Movies)
         )
         BottomNavigation(
-            backgroundColor = MaterialTheme.colorScheme.tertiary,
-            contentColor = MaterialTheme.colorScheme.onBackground
+            backgroundColor = MaterialTheme.colorScheme.onSecondary
         ) {
             val navBackStackEntry by navHostController.currentBackStackEntryAsState()
             listNavigation.forEach { flaviNavItem ->
@@ -44,10 +43,16 @@ object BottomNavigation {
                     icon = {
                         Icon(
                             imageVector = flaviNavItem.icon,
-                            contentDescription = flaviNavItem.name
+                            contentDescription = flaviNavItem.name,
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     },
-                    label = { Text(text = flaviNavItem.name) },
+                    label = {
+                        Text(
+                            text = flaviNavItem.name,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    },
                     selected = navBackStackEntry?.destination?.hierarchy?.any {
                         it.hasRoute(flaviNavItem.route::class)
                     } == true,

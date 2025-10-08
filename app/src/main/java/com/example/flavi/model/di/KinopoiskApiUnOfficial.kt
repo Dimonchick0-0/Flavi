@@ -2,8 +2,7 @@ package com.example.flavi.model.di
 
 import android.content.Context
 import com.example.flavi.BuildConfig
-import com.example.flavi.model.data.datasource.KinoposikService
-import com.example.flavi.model.data.datasource.MovieService
+import com.example.flavi.model.data.datasource.services.MovieService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

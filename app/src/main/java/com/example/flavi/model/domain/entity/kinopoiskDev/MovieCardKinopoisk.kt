@@ -1,10 +1,9 @@
 package com.example.flavi.model.domain.entity.kinopoiskDev
 
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.CountriesDTOKinopoisk
-import com.example.flavi.model.data.datasource.GenresDTOKinopoisk
-import com.example.flavi.model.data.datasource.PosterDTO
-import com.example.flavi.model.data.datasource.RatingDTO
+import com.example.flavi.model.data.datasource.countries.CountriesDTOKinopoisk
+import com.example.flavi.model.data.datasource.genres.GenresDTOKinopoisk
+import com.example.flavi.model.data.datasource.images.PosterDTO
+import com.example.flavi.model.data.datasource.rating.RatingDTO
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

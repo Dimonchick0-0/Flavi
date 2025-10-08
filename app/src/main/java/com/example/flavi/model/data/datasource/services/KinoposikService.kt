@@ -1,4 +1,4 @@
-package com.example.flavi.model.data.datasource
+package com.example.flavi.model.data.datasource.services
 
 import com.example.flavi.model.domain.entity.kinopoiskDev.MoviesKinopoiskDev
 import retrofit2.Response

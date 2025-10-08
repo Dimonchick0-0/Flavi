@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.flavi.model.data.database.dao.UserDao
 import com.example.flavi.model.data.database.database.AppDatabase
-import com.example.flavi.model.data.datasource.Network
+import com.example.flavi.model.data.datasource.network.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.repository.UserRepository
 import dagger.Binds

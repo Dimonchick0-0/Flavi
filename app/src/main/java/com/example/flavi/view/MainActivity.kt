@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.flavi.model.data.datasource.Network
 import com.example.flavi.view.navigation.NavGraph
 import com.example.flavi.view.ui.theme.FlaviTheme
 import com.google.firebase.Firebase

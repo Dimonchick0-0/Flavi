@@ -1,10 +1,9 @@
 package com.example.flavi.model.data.database.entitydb
 
 import androidx.room.Entity
-import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.example.flavi.model.data.datasource.CountriesDTO
-import com.example.flavi.model.data.datasource.GenresDTO
+import com.example.flavi.model.data.datasource.countries.CountriesDTO
+import com.example.flavi.model.data.datasource.genres.GenresDTO
 
 @Entity(tableName = "movies")
 data class MoviesDbModel(

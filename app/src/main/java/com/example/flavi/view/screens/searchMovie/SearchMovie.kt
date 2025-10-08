@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,8 +57,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -71,6 +68,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.domain.entity.Genres
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.SearchMovieState
@@ -91,9 +89,7 @@ fun SearchMovie(
 
     Scaffold(
         bottomBar = {
-            BottomNavigation.BottomNav(
-                navHostController = navHostController
-            )
+            BottomNavigation.BottomNav(navHostController = navHostController)
         },
         floatingActionButton = {
             FAB(viewModel = viewModel)
@@ -107,6 +103,7 @@ fun SearchMovie(
         ) {
             viewModel.setFiltersToMovies()
             when (val currentState = state.value) {
+
                 SearchMovieState.Initial -> {
                     viewModel.processInitial()
                 }
@@ -165,6 +162,7 @@ fun SearchMovie(
                                 } else {
                                     coroutineScope.launch {
                                         query.emit(currentState.query)
+                                        viewModel.gettingTheEnteredQuery()
                                         saveHistorySearch(title = currentState.query)
                                     }
                                 }
@@ -176,9 +174,10 @@ fun SearchMovie(
                             errorContainerColor = color
                         )
                     )
+
                 }
 
-                is SearchMovieState.LoadMovie -> {
+                is SearchMovieState.LoadMovieAndActors -> {
                     val color = if (viewModel.currentQuery.value.isEmpty()) {
                         MaterialTheme.colorScheme.error
                     } else {
@@ -212,8 +211,13 @@ fun SearchMovie(
                             errorContainerColor = color
                         )
                     )
-                    viewModel.processLoadMovie()
+
                     LazyColumn {
+                        item {
+                            if (viewModel.checkActor.value) {
+                                ActorsList(searchActor = currentState.searchActor)
+                            }
+                        }
                         currentState.movie.forEach { movie ->
                             item {
                                 val colorRating =
@@ -408,6 +412,38 @@ fun SearchMovie(
             }
         }
     }
+}
+
+@Composable
+private fun ActorsList(
+    modifier: Modifier = Modifier,
+    searchActor: SearchActor
+) {
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            GlideImage(
+                modifier = Modifier.size(100.dp),
+                model = searchActor.posterUrl,
+                contentDescription = ""
+            )
+            Column {
+                Text(
+                    text = searchActor.nameRu
+                )
+                Text(
+                    text = searchActor.nameEn
+                )
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -630,21 +666,14 @@ private fun SearchMovieComponent(
     color: TextFieldColors = TextFieldDefaults.colors()
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val focusRequester = FocusRequester()
-    val interactionSource = remember { MutableInteractionSource() }
+
     TextField(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp, start = 8.dp, end = 8.dp)
-            .border(
-                width = 1.dp,
-                color = Color.Black,
-                shape = RoundedCornerShape(10.dp)
-            )
-            .focusRequester(focusRequester),
-        interactionSource = interactionSource,
+            .padding(top = 16.dp, start = 8.dp, end = 8.dp),
         value = value,
         onValueChange = { onValueChange(it) },
+        shape = RoundedCornerShape(6.dp),
         placeholder = {
             Text(text = "Поиск фильмов...")
         },
@@ -666,7 +695,15 @@ private fun SearchMovieComponent(
                 )
             }
         },
-        colors = color,
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = Color.Gray,
+            unfocusedLeadingIconColor = Color.White,
+            unfocusedPlaceholderColor = Color.White,
+            unfocusedTrailingIconColor = Color.White,
+            focusedLeadingIconColor = Color.White,
+            focusedPlaceholderColor = Color.White,
+            focusedTrailingIconColor = Color.White
+        ),
         isError = viewModel.stateError.value,
         singleLine = true
     )
@@ -820,7 +857,8 @@ fun MovieCardComponent(
                 )
                 Row {
                     Text(
-                        text = nameOriginal
+                        text = nameOriginal,
+                        maxLines = 1
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
