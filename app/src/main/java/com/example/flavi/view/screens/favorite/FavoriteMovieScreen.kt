@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +28,7 @@ import androidx.navigation.NavHostController
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
+import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.FavoriteScreenState
 import com.example.flavi.viewmodel.FavoriteScreenViewModel
 import kotlinx.coroutines.delay
@@ -74,7 +73,7 @@ fun FavoriteScreen(
                         onClick = onRefresh
                     ) {
                         Icon(
-                            Icons.Filled.Refresh,
+                            MyIcons.Refresh,
                             contentDescription = "Обновление списка"
                         )
                     }

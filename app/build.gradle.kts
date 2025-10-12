@@ -27,7 +27,7 @@ private val apiKeyKinopoiskDev = keystoreProperties.getProperty(
 
 android {
     namespace = "com.example.flavi"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.flavi"
