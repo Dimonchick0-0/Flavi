@@ -1,5 +1,6 @@
 package com.example.flavi.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,7 @@ import com.example.flavi.model.data.database.map.toActor
 import com.example.flavi.model.data.database.map.toMovieCard
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.database.map.toPosterEntity
+import com.example.flavi.model.data.datasource.rental.RentalMovie
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
@@ -28,7 +30,7 @@ class MovieDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _movieDetailState: MutableStateFlow<MovieDetailState> =
-        MutableStateFlow(MovieDetailState.LoadMovieDetail(MovieDetail(), listOf()))
+        MutableStateFlow(MovieDetailState.LoadMovieDetail(MovieDetail(), listOf(), setOf()))
 
     val movieDetailState: StateFlow<MovieDetailState> = _movieDetailState.asStateFlow()
 
@@ -36,14 +38,26 @@ class MovieDetailViewModel @Inject constructor(
 
     val checkMovieInFavorite = mutableStateOf(false)
 
+    private val rentalList = mutableSetOf<RentalMovie>()
+
     fun mapMovieDetailToMovieCard(movie: MovieDetail): MovieCard = movie.toMovieCard()
 
     fun getActors(filmId: Int) {
         viewModelScope.launch {
-            repositoryImpl.getActorsFromMovie(filmId)
-                .body()?.forEach { actorDto ->
-                    listActors.add(actorDto.toActor())
-                }
+            repositoryImpl.getActorsFromMovie(filmId).body()?.forEach { actorDto ->
+                listActors.add(actorDto.toActor())
+            }
+        }
+    }
+
+    fun getRental(id: Int) {
+        viewModelScope.launch {
+            repositoryImpl.getRentalMovies(id).body()?.items
+                ?.distinctBy { it.country }
+                ?.sortedBy { it.country?.country }
+                ?.filter { it.country?.country != null }
+                ?.toHashSet()
+                ?.forEach { rentalList.add(it) }
         }
     }
 
@@ -95,7 +109,7 @@ class MovieDetailViewModel @Inject constructor(
     fun getMovieById(filmId: Int) {
         viewModelScope.launch {
             repositoryImpl.getMovieDetailById(filmId).body()?.let {
-                _movieDetailState.emit(MovieDetailState.LoadMovieDetail(it, listActors))
+                _movieDetailState.emit(MovieDetailState.LoadMovieDetail(it, listActors, rentalList))
             }
         }
     }

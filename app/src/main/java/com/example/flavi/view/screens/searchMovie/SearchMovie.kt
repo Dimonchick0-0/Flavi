@@ -28,12 +28,6 @@ import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -682,27 +676,28 @@ private fun SearchMovieComponent(
                 viewModel.clearQuery()
             }) {
                 Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = "Очистить запрос"
+                    imageVector = MyIcons.Cleaning_services,
+                    contentDescription = "Очистить запрос",
+                    tint = Color.White
                 )
             }
         },
         trailingIcon = {
             IconButton(onClick = onEmitValue) {
                 Icon(
-                    imageVector = Icons.Filled.Search,
+                    imageVector = MyIcons.Search,
                     contentDescription = ""
                 )
             }
         },
         colors = TextFieldDefaults.colors(
             unfocusedContainerColor = Color.Gray,
-            unfocusedLeadingIconColor = Color.White,
             unfocusedPlaceholderColor = Color.White,
             unfocusedTrailingIconColor = Color.White,
-            focusedLeadingIconColor = Color.White,
+            unfocusedLeadingIconColor = Color.White,
             focusedPlaceholderColor = Color.White,
-            focusedTrailingIconColor = Color.White
+            focusedTrailingIconColor = Color.White,
+            focusedLeadingIconColor = Color.White
         ),
         isError = viewModel.stateError.value,
         singleLine = true
@@ -796,7 +791,7 @@ private fun SearchHistoryList(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Clear,
+                            imageVector = MyIcons.Cleaning_services,
                             contentDescription = "Очистить запрос",
                             tint = Color.White
                         )
@@ -887,7 +882,7 @@ fun MovieCardComponent(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
+                            imageVector = MyIcons.EllipsisVertical,
                             contentDescription = ""
                         )
                     }
@@ -914,13 +909,13 @@ fun MovieCardComponent(
                                 ) {
                                     if (searchMovie) {
                                         Icon(
-                                            imageVector = Icons.Default.Favorite,
+                                            imageVector = MyIcons.Heart_minus,
                                             contentDescription = ""
                                         )
                                     }
                                     if (!searchMovie) {
                                         Icon(
-                                            imageVector = Icons.Default.FavoriteBorder,
+                                            imageVector = MyIcons.Heart_plus,
                                             contentDescription = ""
                                         )
                                     }

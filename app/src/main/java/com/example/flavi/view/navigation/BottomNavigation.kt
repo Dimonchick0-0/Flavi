@@ -2,20 +2,13 @@ package com.example.flavi.view.navigation
 
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.ShortNavigationBar
+import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -30,16 +23,16 @@ object BottomNavigation {
         navHostController: NavHostController
     ) {
         val listNavigation = listOf(
-            FlaviBottomNavigation("Поиск", Screens.SearchMovie.route, Icons.Filled.Search),
-            FlaviBottomNavigation("Аккаунт", Screens.Profile.route, Icons.Filled.AccountCircle),
+            FlaviBottomNavigation("Поиск", Screens.SearchMovie.route, MyIcons.Search),
+            FlaviBottomNavigation("Аккаунт", Screens.Profile.route, MyIcons.AccountCircle),
             FlaviBottomNavigation("Избранные", Screens.Favorite.route, MyIcons.Favorite_Movies)
         )
-        BottomNavigation(
-            backgroundColor = MaterialTheme.colorScheme.onSecondary
+        ShortNavigationBar (
+            containerColor = MaterialTheme.colorScheme.onSecondary
         ) {
             val navBackStackEntry by navHostController.currentBackStackEntryAsState()
             listNavigation.forEach { flaviNavItem ->
-                BottomNavigationItem(
+                ShortNavigationBarItem(
                     icon = {
                         Icon(
                             imageVector = flaviNavItem.icon,

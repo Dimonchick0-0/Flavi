@@ -3,9 +3,6 @@ package com.example.flavi.view.screens.movieDetail
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.rememberScrollableState
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,17 +19,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
-import androidx.compose.material.Surface
 import androidx.compose.material.TextButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -45,7 +35,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -53,7 +43,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
-import com.example.flavi.R
+import com.example.flavi.model.data.datasource.rental.RentalMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
@@ -63,9 +53,8 @@ import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
 import com.example.flavi.view.state.MovieDetailState
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailViewModel
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.measureTime
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -78,6 +67,12 @@ fun MovieDetail(
 
     val state = viewModel.movieDetailState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
+
+    viewModel.apply {
+        getMovieById(filmId)
+        getActors(filmId)
+        getRental(filmId)
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize()
@@ -93,10 +88,8 @@ fun MovieDetail(
                 when (val currentState = state.value) {
 
                     is MovieDetailState.LoadMovieDetail -> {
-                        viewModel.getMovieById(filmId)
                         coroutineScope.launch {
                             viewModel.apply {
-                                getActors(filmId)
                                 processLoadMovieDetailState()
                                 if (checkMovieInFavorite(currentState.movie.kinopoiskId)) {
                                     checkMovieInFavorite.value = true
@@ -133,17 +126,18 @@ fun MovieDetail(
                             viewModel = viewModel,
                             filmId = filmId,
                             loadAllImageMovieClick = loadAllImageMovieClick,
-                            actors = currentState.actors
+                            actors = currentState.actors,
+                            rentalMovie = currentState.rental
                         )
                     }
                 }
             }
         }
 
-
     }
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun MovieDetailComponent(
@@ -151,6 +145,7 @@ private fun MovieDetailComponent(
     viewModel: MovieDetailViewModel,
     filmId: Int,
     actors: List<Actor>,
+    rentalMovie: Set<RentalMovie>,
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
     loadAllImageMovieClick: () -> Unit,
@@ -159,7 +154,7 @@ private fun MovieDetailComponent(
     val maxLines = remember { mutableIntStateOf(3) }
     val coroutineScope = rememberCoroutineScope()
     val listTypeImage = listOf("Кадры", "Постеры", "Фан-арты")
-    val listPoster = mutableListOf<Poster>()
+    val listPoster = remember { mutableListOf<Poster>() }
     val checkImageInList = remember { mutableStateOf(false) }
 
     GlideImage(
@@ -276,51 +271,116 @@ private fun MovieDetailComponent(
         color = Color.Black
     )
     if (actors.isNotEmpty()) {
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyHorizontalGrid(
-            rows = GridCells.Fixed(count = 3),
-            modifier = Modifier
-                .height(height = 250.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            actors.forEach {
-                item {
-                    Card(
-                        modifier = Modifier.size(width = 300.dp, height = 64.dp),
-                        backgroundColor = Color.Black
-                    ) {
-                        Row {
-                            GlideImage(
-                                modifier = Modifier.fillMaxHeight(),
-                                model = it.posterUrl,
-                                contentDescription = ""
+        ActorsComponent(actors = actors)
+    }
+    if (rentalMovie.isNotEmpty()) {
+        Spacer(modifier = Modifier.height(height = 15.dp))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Премьеры",
+            color = Color.Black,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(height = 15.dp))
+        RentalMovieComponent(listRental = rentalMovie)
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun ActorsComponent(
+    modifier: Modifier = Modifier,
+    actors: List<Actor>
+) {
+    Spacer(modifier = Modifier.height(16.dp))
+
+    LazyHorizontalGrid(
+        rows = GridCells.Fixed(count = 3),
+        modifier = modifier
+            .height(height = 250.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        actors.forEach {
+            item {
+                Card(
+                    modifier = Modifier.size(width = 300.dp, height = 64.dp),
+                    backgroundColor = Color.Black
+                ) {
+                    Row {
+                        GlideImage(
+                            modifier = Modifier.fillMaxHeight(),
+                            model = it.posterUrl,
+                            contentDescription = ""
+                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp)
+                        ) {
+                            Text(
+                                text = it.nameRu,
+                                color = Color.White
                             )
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 16.dp)
-                            ) {
-                                Text(
-                                    text = it.nameRu,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = it.nameEn,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = it.professionText,
-                                    color = Color.White
-                                )
-                            }
+                            Text(
+                                text = it.nameEn,
+                                color = Color.White
+                            )
+                            Text(
+                                text = it.professionText,
+                                color = Color.White
+                            )
                         }
                     }
                 }
             }
         }
     }
+
+}
+
+@Composable
+private fun RentalMovieComponent(
+    modifier: Modifier = Modifier,
+    listRental: Set<RentalMovie>
+) {
+
+    LazyRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(70.dp)
+    ) {
+        listRental.forEach {
+            item {
+                Card(
+                    modifier = Modifier
+                        .width(width = 200.dp)
+                        .padding(end = 15.dp),
+                    backgroundColor = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Column {
+                        it.country?.let {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = it.country,
+                                color = MaterialTheme.colorScheme.primary,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = "Премьера: ${it.date}",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -461,7 +521,7 @@ private fun CardFunctionMovieComponent(
             ) {
                 if (checkMovieInFavorite) {
                     Icon(
-                        imageVector = Icons.Default.Favorite,
+                        imageVector = MyIcons.Heart_minus,
                         contentDescription = "",
                         tint = Color.Black
                     )
@@ -473,7 +533,7 @@ private fun CardFunctionMovieComponent(
                 }
                 if (!checkMovieInFavorite) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = MyIcons.Heart_plus,
                         contentDescription = "",
                         tint = Color.Black
                     )

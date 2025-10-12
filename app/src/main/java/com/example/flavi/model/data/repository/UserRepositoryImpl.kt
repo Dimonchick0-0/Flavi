@@ -9,6 +9,7 @@ import com.example.flavi.model.data.database.map.toMoviesDbModel
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ListActor
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
+import com.example.flavi.model.data.datasource.rental.Rental
 import com.example.flavi.model.data.datasource.services.KinoposikService
 import com.example.flavi.model.data.datasource.services.MovieService
 import com.example.flavi.model.domain.entity.HistorySearch
@@ -46,6 +47,10 @@ class UserRepositoryImpl @Inject constructor(
 
     suspend fun getActorsFromMovie(filmId: Int): Response<List<ActorDTO>> {
         return movieService.getActorByMovieId(filmId)
+    }
+
+    suspend fun getRentalMovies(id: Int): Response<Rental> {
+        return movieService.getRentalMovie(id)
     }
 
     suspend fun getSearchActors(nameActor: String): Response<ListActor> {
