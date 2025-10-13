@@ -19,7 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
@@ -54,7 +55,6 @@ import com.example.flavi.view.state.MovieDetailState
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailViewModel
 import kotlinx.coroutines.launch
-import kotlin.time.measureTime
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -62,7 +62,8 @@ fun MovieDetail(
     modifier: Modifier = Modifier,
     filmId: Int,
     viewModel: MovieDetailViewModel = hiltViewModel(),
-    loadAllImageMovieClick: () -> Unit
+    loadAllImageMovieClick: () -> Unit,
+    getAwardsByMovie: () -> Unit
 ) {
 
     val state = viewModel.movieDetailState.collectAsStateWithLifecycle()
@@ -122,6 +123,7 @@ fun MovieDetail(
                                     }
                                 }
                             },
+                            getAwardsByMovie = getAwardsByMovie,
                             checkMovieInFavorite = viewModel.checkMovieInFavorite.value,
                             viewModel = viewModel,
                             filmId = filmId,
@@ -149,6 +151,7 @@ private fun MovieDetailComponent(
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
     loadAllImageMovieClick: () -> Unit,
+    getAwardsByMovie: () -> Unit,
     checkMovieInFavorite: Boolean
 ) {
     val maxLines = remember { mutableIntStateOf(3) }
@@ -255,9 +258,7 @@ private fun MovieDetailComponent(
                                     previewUrl = it.previewUrl
                                 )
                                 if (listPoster[3].previewUrl == it.previewUrl) {
-                                    GetMorePhotosMovie(
-                                        onClickGetMorePhotos = loadAllImageMovieClick
-                                    )
+                                    GetMorePhotosMovie(onClickGetMorePhotos = loadAllImageMovieClick)
                                 }
                             }
                         }
@@ -266,11 +267,11 @@ private fun MovieDetailComponent(
         }
     )
     Spacer(modifier = Modifier.height(16.dp))
-    Text(
-        text = "Актёры",
-        color = Color.Black
-    )
     if (actors.isNotEmpty()) {
+        Text(
+            text = "Актёры",
+            color = Color.Black
+        )
         ActorsComponent(actors = actors)
     }
     if (rentalMovie.isNotEmpty()) {
@@ -283,6 +284,26 @@ private fun MovieDetailComponent(
         )
         Spacer(modifier = Modifier.height(height = 15.dp))
         RentalMovieComponent(listRental = rentalMovie)
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Button(
+            onClick = getAwardsByMovie,
+            modifier = Modifier.width(width = 250.dp),
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Text(
+                text = "Посмотреть награды",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
