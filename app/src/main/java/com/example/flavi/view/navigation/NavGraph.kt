@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.example.flavi.view.screens.AwardsScreen
 import com.example.flavi.view.screens.auth.AuthUser
 import com.example.flavi.view.screens.favorite.FavoriteScreen
 import com.example.flavi.view.screens.movieDetail.MovieDetail
@@ -81,19 +82,24 @@ fun NavGraph() {
             )
         }
         composable(Screens.MovieDetail.route) {
-            val filmId = it.arguments?.getString("film_id")?.toInt() ?: 0
+            val filmId = getArguments(it)
             MovieDetail(
                 filmId = filmId,
                 loadAllImageMovieClick = {
                     navController.navigate(Screens.Poster.createRoute(filmId))
+                },
+                getAwardsByMovie = {
+                    navController.navigate(Screens.Awards.createRoute(filmId))
                 }
             )
         }
         composable(Screens.Poster.route) {
             val filmId = getArguments(it)
-            PosterScreen(
-                filmId = filmId
-            )
+            PosterScreen(filmId = filmId)
+        }
+        composable(Screens.Awards.route) {
+            val filmId = getArguments(it)
+            AwardsScreen(filmId = filmId)
         }
     }
 }
@@ -133,5 +139,10 @@ sealed class Screens(val route: String) {
         fun createRoute(filmId: Int): String {
             return "image_screen/$filmId"
         }
+    }
+
+    @Serializable
+    data object Awards: Screens(route = "awards_screen/{film_id}") {
+        fun createRoute(filmId: Int) = "awards_screen/$filmId"
     }
 }

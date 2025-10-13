@@ -5,6 +5,7 @@ import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ActorSearchDTO
+import com.example.flavi.model.data.datasource.awards.AwardsDTO
 import com.example.flavi.model.data.datasource.countries.CountriesDTO
 import com.example.flavi.model.data.datasource.countries.CountriesDTOKinopoisk
 import com.example.flavi.model.data.datasource.genres.GenresDTO
@@ -14,6 +15,7 @@ import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Awards
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
@@ -29,6 +31,28 @@ fun List<PosterDTO>.toListPosterEntity(): List<Poster> {
     return map {
         Poster(
             previewUrl = it.previewUrl
+        )
+    }
+}
+
+fun List<AwardsDTO>.toListEntityAwards(): List<Awards> {
+    return map {
+        Awards(
+            name = it.name,
+            nominationName = it.nominationName,
+            year = it.year,
+            persons = it.persons.toListPersons()
+        )
+    }
+}
+
+private fun List<ActorSearchDTO?>.toListPersons(): List<SearchActor> {
+    return map {
+        SearchActor(
+            kinopoiskId = it?.kinopoiskId!!,
+            nameRu = it.nameRu,
+            nameEn = it.nameEn,
+            posterUrl = it.posterUrl
         )
     }
 }
@@ -72,21 +96,6 @@ fun MovieCard.toMoviesDbModel(userId: String) = MoviesDbModel(
     genres = genres,
     countries = countries,
     isFavorite = isFavorite
-)
-
-fun MoviesDbModel.toMoviesCardEntity() = MovieCard(
-    id = id,
-    userMovieId = userMovieId,
-    filmId = filmId,
-    nameRu = nameRu,
-    nameEn = nameEn,
-    posterUrlPreview = posterUrlPreview,
-    year = year,
-    rating = rating,
-    genres = genres,
-    countries = countries,
-    isFavorite = isFavorite
-
 )
 
 fun MovieDetail.toMovieCard() = MovieCard(

@@ -2,6 +2,7 @@ package com.example.flavi.model.data.datasource.services
 
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ListActor
+import com.example.flavi.model.data.datasource.awards.AwardsListDTO
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.data.datasource.rental.Rental
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
@@ -43,4 +44,9 @@ interface MovieService {
     suspend fun getRentalMovie(
         @Path("id") id: Int
     ): Response<Rental>
+
+    @GET("/api/v2.2/films/{id}/awards")
+    suspend fun getAwardsMovieByMovieId(
+        @Path("id") id: Int
+    ): Response<AwardsListDTO>
 }
