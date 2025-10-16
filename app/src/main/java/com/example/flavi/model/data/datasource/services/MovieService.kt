@@ -5,6 +5,7 @@ import com.example.flavi.model.data.datasource.actors.ListActor
 import com.example.flavi.model.data.datasource.awards.AwardsListDTO
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.data.datasource.rental.Rental
+import com.example.flavi.model.data.datasource.reviews.ReviewListDTO
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
 import retrofit2.Response
@@ -49,4 +50,9 @@ interface MovieService {
     suspend fun getAwardsMovieByMovieId(
         @Path("id") id: Int
     ): Response<AwardsListDTO>
+
+    @GET("/api/v2.2/films/{id}/reviews?page=1&order=DATE_ASC")
+    suspend fun getReviewsMovieById(
+        @Path("id") id: Int
+    ): Response<ReviewListDTO>
 }

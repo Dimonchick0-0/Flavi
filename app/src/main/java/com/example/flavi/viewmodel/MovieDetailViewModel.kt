@@ -8,12 +8,14 @@ import com.example.flavi.model.data.database.map.toActor
 import com.example.flavi.model.data.database.map.toMovieCard
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.database.map.toPosterEntity
+import com.example.flavi.model.data.database.map.toReview
 import com.example.flavi.model.data.datasource.rental.RentalMovie
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.MovieDetailState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,7 +32,14 @@ class MovieDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _movieDetailState: MutableStateFlow<MovieDetailState> =
-        MutableStateFlow(MovieDetailState.LoadMovieDetail(MovieDetail(), listOf(), setOf()))
+        MutableStateFlow(
+            MovieDetailState.LoadMovieDetail(
+                MovieDetail(),
+                listOf(),
+                setOf(),
+                listOf()
+            )
+        )
 
     val movieDetailState: StateFlow<MovieDetailState> = _movieDetailState.asStateFlow()
 
@@ -40,12 +49,24 @@ class MovieDetailViewModel @Inject constructor(
 
     private val rentalList = mutableSetOf<RentalMovie>()
 
+    private val reviewList = mutableListOf<Review>()
+    val checkLoadReviewComponent = mutableStateOf(false)
+
     fun mapMovieDetailToMovieCard(movie: MovieDetail): MovieCard = movie.toMovieCard()
 
     fun getActors(filmId: Int) {
         viewModelScope.launch {
             repositoryImpl.getActorsFromMovie(filmId).body()?.forEach { actorDto ->
                 listActors.add(actorDto.toActor())
+            }
+        }
+    }
+
+    fun getReviews(id: Int) {
+        viewModelScope.launch {
+            repositoryImpl.getReviewsListByMovieId(id).body()?.items?.forEach {
+                reviewList.add(it.toReview())
+                checkLoadReviewComponent.value = true
             }
         }
     }
@@ -86,7 +107,7 @@ class MovieDetailViewModel @Inject constructor(
                 if (checkMovieInFavorite(state.movie.kinopoiskId)) {
                     movie.checkListMovie.value = true
                 }
-                state.copy(movie = state.movie, listActors)
+                state.copy(movie = state.movie, listActors, rentalList, reviewList)
             } else {
                 state
             }
@@ -109,7 +130,14 @@ class MovieDetailViewModel @Inject constructor(
     fun getMovieById(filmId: Int) {
         viewModelScope.launch {
             repositoryImpl.getMovieDetailById(filmId).body()?.let {
-                _movieDetailState.emit(MovieDetailState.LoadMovieDetail(it, listActors, rentalList))
+                _movieDetailState.emit(
+                    MovieDetailState.LoadMovieDetail(
+                        it,
+                        listOf(),
+                        setOf(),
+                        listOf()
+                    )
+                )
             }
         }
     }

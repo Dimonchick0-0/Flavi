@@ -10,6 +10,165 @@ import androidx.compose.ui.unit.dp
 
 object MyIcons {
 
+    val NeutralEmoji: ImageVector
+        get() {
+            if (_EmojiNeutral != null) return _EmojiNeutral!!
+
+            _EmojiNeutral = ImageVector.Builder(
+                name = "EmojiNeutral",
+                defaultWidth = 16.dp,
+                defaultHeight = 16.dp,
+                viewportWidth = 16f,
+                viewportHeight = 16f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black)
+                ) {
+                    moveTo(8f, 15f)
+                    arcTo(7f, 7f, 0f, true, true, 8f, 1f)
+                    arcToRelative(7f, 7f, 0f, false, true, 0f, 14f)
+                    moveToRelative(0f, 1f)
+                    arcTo(8f, 8f, 0f, true, false, 8f, 0f)
+                    arcToRelative(8f, 8f, 0f, false, false, 0f, 16f)
+                }
+                path(
+                    fill = SolidColor(Color.Black)
+                ) {
+                    moveTo(4f, 10.5f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, false, 0.5f, 0.5f)
+                    horizontalLineToRelative(7f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, false, 0f, -1f)
+                    horizontalLineToRelative(-7f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, false, -0.5f, 0.5f)
+                    moveToRelative(3f, -4f)
+                    curveTo(7f, 5.672f, 6.552f, 5f, 6f, 5f)
+                    reflectiveCurveToRelative(-1f, 0.672f, -1f, 1.5f)
+                    reflectiveCurveTo(5.448f, 8f, 6f, 8f)
+                    reflectiveCurveToRelative(1f, -0.672f, 1f, -1.5f)
+                    moveToRelative(4f, 0f)
+                    curveToRelative(0f, -0.828f, -0.448f, -1.5f, -1f, -1.5f)
+                    reflectiveCurveToRelative(-1f, 0.672f, -1f, 1.5f)
+                    reflectiveCurveTo(9.448f, 8f, 10f, 8f)
+                    reflectiveCurveToRelative(1f, -0.672f, 1f, -1.5f)
+                }
+            }.build()
+
+            return _EmojiNeutral!!
+        }
+
+    private var _EmojiNeutral: ImageVector? = null
+
+
+
+    val NegativeEmoji: ImageVector
+        get() {
+            if (_EmojiFrown != null) return _EmojiFrown!!
+
+            _EmojiFrown = ImageVector.Builder(
+                name = "EmojiFrown",
+                defaultWidth = 16.dp,
+                defaultHeight = 16.dp,
+                viewportWidth = 16f,
+                viewportHeight = 16f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black)
+                ) {
+                    moveTo(8f, 15f)
+                    arcTo(7f, 7f, 0f, true, true, 8f, 1f)
+                    arcToRelative(7f, 7f, 0f, false, true, 0f, 14f)
+                    moveToRelative(0f, 1f)
+                    arcTo(8f, 8f, 0f, true, false, 8f, 0f)
+                    arcToRelative(8f, 8f, 0f, false, false, 0f, 16f)
+                }
+                path(
+                    fill = SolidColor(Color.Black)
+                ) {
+                    moveTo(4.285f, 12.433f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, false, 0.683f, -0.183f)
+                    arcTo(3.5f, 3.5f, 0f, false, true, 8f, 10.5f)
+                    curveToRelative(1.295f, 0f, 2.426f, 0.703f, 3.032f, 1.75f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, false, 0.866f, -0.5f)
+                    arcTo(4.5f, 4.5f, 0f, false, false, 8f, 9.5f)
+                    arcToRelative(4.5f, 4.5f, 0f, false, false, -3.898f, 2.25f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, false, 0.183f, 0.683f)
+                    moveTo(7f, 6.5f)
+                    curveTo(7f, 7.328f, 6.552f, 8f, 6f, 8f)
+                    reflectiveCurveToRelative(-1f, -0.672f, -1f, -1.5f)
+                    reflectiveCurveTo(5.448f, 5f, 6f, 5f)
+                    reflectiveCurveToRelative(1f, 0.672f, 1f, 1.5f)
+                    moveToRelative(4f, 0f)
+                    curveToRelative(0f, 0.828f, -0.448f, 1.5f, -1f, 1.5f)
+                    reflectiveCurveToRelative(-1f, -0.672f, -1f, -1.5f)
+                    reflectiveCurveTo(9.448f, 5f, 10f, 5f)
+                    reflectiveCurveToRelative(1f, 0.672f, 1f, 1.5f)
+                }
+            }.build()
+
+            return _EmojiFrown!!
+        }
+
+    private var _EmojiFrown: ImageVector? = null
+
+
+
+    val PositiveEmoji: ImageVector
+        get() {
+            if (_EmojiHeartEyes != null) return _EmojiHeartEyes!!
+
+            _EmojiHeartEyes = ImageVector.Builder(
+                name = "EmojiHeartEyes",
+                defaultWidth = 16.dp,
+                defaultHeight = 16.dp,
+                viewportWidth = 16f,
+                viewportHeight = 16f
+            ).apply {
+                path(
+                    fill = SolidColor(Color.Black)
+                ) {
+                    moveTo(8f, 15f)
+                    arcTo(7f, 7f, 0f, true, true, 8f, 1f)
+                    arcToRelative(7f, 7f, 0f, false, true, 0f, 14f)
+                    moveToRelative(0f, 1f)
+                    arcTo(8f, 8f, 0f, true, false, 8f, 0f)
+                    arcToRelative(8f, 8f, 0f, false, false, 0f, 16f)
+                }
+                path(
+                    fill = SolidColor(Color.Black)
+                ) {
+                    moveTo(11.315f, 10.014f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, true, 0.548f, 0.736f)
+                    arcTo(4.5f, 4.5f, 0f, false, true, 7.965f, 13f)
+                    arcToRelative(4.5f, 4.5f, 0f, false, true, -3.898f, -2.25f)
+                    arcToRelative(0.5f, 0.5f, 0f, false, true, 0.548f, -0.736f)
+                    horizontalLineToRelative(0.005f)
+                    lineToRelative(0.017f, 0.005f)
+                    lineToRelative(0.067f, 0.015f)
+                    lineToRelative(0.252f, 0.055f)
+                    curveToRelative(0.215f, 0.046f, 0.515f, 0.108f, 0.857f, 0.169f)
+                    curveToRelative(0.693f, 0.124f, 1.522f, 0.242f, 2.152f, 0.242f)
+                    reflectiveCurveToRelative(1.46f, -0.118f, 2.152f, -0.242f)
+                    arcToRelative(27f, 27f, 0f, false, false, 1.109f, -0.224f)
+                    lineToRelative(0.067f, -0.015f)
+                    lineToRelative(0.017f, -0.004f)
+                    lineToRelative(0.005f, -0.002f)
+                    close()
+                    moveTo(4.756f, 4.566f)
+                    curveToRelative(0.763f, -1.424f, 4.02f, -0.12f, 0.952f, 3.434f)
+                    curveToRelative(-4.496f, -1.596f, -2.35f, -4.298f, -0.952f, -3.434f)
+                    moveToRelative(6.488f, 0f)
+                    curveToRelative(1.398f, -0.864f, 3.544f, 1.838f, -0.952f, 3.434f)
+                    curveToRelative(-3.067f, -3.554f, 0.19f, -4.858f, 0.952f, -3.434f)
+                }
+            }.build()
+
+            return _EmojiHeartEyes!!
+        }
+
+    private var _EmojiHeartEyes: ImageVector? = null
+
+
+
     val Heart_minus: ImageVector
         get() {
             if (_Heart_minus != null) return _Heart_minus!!
