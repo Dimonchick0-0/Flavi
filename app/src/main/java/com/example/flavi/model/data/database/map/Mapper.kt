@@ -11,6 +11,9 @@ import com.example.flavi.model.data.datasource.countries.CountriesDTOKinopoisk
 import com.example.flavi.model.data.datasource.genres.GenresDTO
 import com.example.flavi.model.data.datasource.genres.GenresDTOKinopoisk
 import com.example.flavi.model.data.datasource.images.PosterDTO
+import com.example.flavi.model.data.datasource.reviews.ReviewDTO
+import com.example.flavi.model.data.datasource.reviews.ReviewListDTO
+import com.example.flavi.model.data.datasource.reviews.ReviewTypeDTO
 import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
@@ -19,6 +22,9 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Awards
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewList
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewType
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
 
 fun UserDbModel.toEntity() = User(userId, name, password, email)
@@ -60,6 +66,51 @@ private fun List<ActorSearchDTO?>.toListPersons(): List<SearchActor> {
 fun PosterDTO.toPosterEntity(): Poster {
     return Poster(
         previewUrl = previewUrl
+    )
+}
+
+private fun ReviewTypeDTO.toReviewType(): ReviewType {
+    return when (this) {
+        ReviewTypeDTO.POSITIVE -> ReviewType.POSITIVE
+        ReviewTypeDTO.NEGATIVE -> ReviewType.NEGATIVE
+        ReviewTypeDTO.NEUTRAL -> ReviewType.NEUTRAL
+        ReviewTypeDTO.NOT_SELECTED -> ReviewType.NOT_SELECTED
+    }
+}
+
+private fun List<ReviewDTO>.toReviewListEntity(): List<Review> {
+    return map {
+        Review(
+            type = it.type.toReviewType(),
+            date = it.date,
+            positiveRating = it.positiveRating,
+            negativeRating = it.negativeRating,
+            author = it.author,
+            title = it.title,
+            description = it.description
+        )
+    }
+}
+
+fun ReviewListDTO.toReviewList(): ReviewList {
+    return ReviewList(
+        total = total,
+        totalPositiveReviews = totalPositiveReviews,
+        totalNegativeReviews = totalNegativeReviews,
+        totalNeutralReviews = totalNeutralReviews,
+        items = items.toReviewListEntity()
+    )
+}
+
+fun ReviewDTO.toReview(): Review {
+    return Review(
+        type = type.toReviewType(),
+        date = date,
+        positiveRating = positiveRating,
+        negativeRating = negativeRating,
+        author = author,
+        title = title,
+        description = description
     )
 }
 

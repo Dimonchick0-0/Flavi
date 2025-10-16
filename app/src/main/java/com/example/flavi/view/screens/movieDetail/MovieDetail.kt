@@ -1,7 +1,7 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
-import android.util.Log
+import android.graphics.drawable.Icon
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,6 +49,8 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewType
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
 import com.example.flavi.view.state.MovieDetailState
@@ -63,7 +65,8 @@ fun MovieDetail(
     filmId: Int,
     viewModel: MovieDetailViewModel = hiltViewModel(),
     loadAllImageMovieClick: () -> Unit,
-    getAwardsByMovie: () -> Unit
+    getAwardsByMovie: () -> Unit,
+    getReviewsByMovie: () -> Unit
 ) {
 
     val state = viewModel.movieDetailState.collectAsStateWithLifecycle()
@@ -73,6 +76,7 @@ fun MovieDetail(
         getMovieById(filmId)
         getActors(filmId)
         getRental(filmId)
+        getReviews(filmId)
     }
 
     Scaffold(
@@ -129,8 +133,11 @@ fun MovieDetail(
                             filmId = filmId,
                             loadAllImageMovieClick = loadAllImageMovieClick,
                             actors = currentState.actors,
-                            rentalMovie = currentState.rental
+                            rentalMovie = currentState.rental,
+                            reviewList = currentState.review,
+                            getAllReviewsClick = getReviewsByMovie
                         )
+
                     }
                 }
             }
@@ -148,10 +155,12 @@ private fun MovieDetailComponent(
     filmId: Int,
     actors: List<Actor>,
     rentalMovie: Set<RentalMovie>,
+    reviewList: List<Review>,
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
     loadAllImageMovieClick: () -> Unit,
     getAwardsByMovie: () -> Unit,
+    getAllReviewsClick: () -> Unit,
     checkMovieInFavorite: Boolean
 ) {
     val maxLines = remember { mutableIntStateOf(3) }
@@ -258,7 +267,9 @@ private fun MovieDetailComponent(
                                     previewUrl = it.previewUrl
                                 )
                                 if (listPoster[3].previewUrl == it.previewUrl) {
-                                    GetMorePhotosMovie(onClickGetMorePhotos = loadAllImageMovieClick)
+                                    GetMoreInformationMovie(
+                                        onClickGetMoreInformation = loadAllImageMovieClick
+                                    )
                                 }
                             }
                         }
@@ -304,6 +315,120 @@ private fun MovieDetailComponent(
                 textAlign = TextAlign.Center
             )
         }
+    }
+    Spacer(modifier = Modifier.height(height = 15.dp))
+    Text(
+        modifier = Modifier.fillMaxWidth(),
+        text = "Рецензии",
+        color = Color.Black,
+        textAlign = TextAlign.Center
+    )
+    Spacer(modifier = Modifier.height(height = 15.dp))
+    if (viewModel.checkLoadReviewComponent.value) {
+        ReviewsComponent(
+            reviews = reviewList,
+            getAllReviewsClick = getAllReviewsClick
+        )
+    }
+}
+
+@Composable
+private fun ReviewsComponent(
+    modifier: Modifier = Modifier,
+    getAllReviewsClick: () -> Unit,
+    reviews: List<Review>
+) {
+
+    LazyRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height = 150.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        reviews
+            .take(5)
+            .forEach {
+                item {
+                    Card(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .size(width = 250.dp, height = 125.dp),
+                        backgroundColor = Color.Black
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier.padding(top = 8.dp)
+                            ) {
+                                Text(
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
+                                        .weight(1f),
+                                    text = "Автор: ${it.author}",
+                                    color = Color.White,
+                                    fontSize = 14.sp
+                                )
+                                GetEmojiByReviewType(
+                                    modifier = Modifier.padding(end = 16.dp),
+                                    reviewType = it.type
+                                )
+                            }
+                            Text(
+                                modifier = Modifier.padding(start = 8.dp),
+                                text = "Дата: ${it.date.removeRange(startIndex = 9, endIndex = 18)}",
+                                color = Color.White,
+                                fontSize = 14.sp
+                            )
+                            Text(
+                                text = it.description,
+                                maxLines = 5,
+                                color = Color.White,
+                                overflow = TextOverflow.Ellipsis,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
+                    if (reviews[4].author == it.author) {
+                        GetMoreInformationMovie(onClickGetMoreInformation = getAllReviewsClick)
+                    }
+                }
+            }
+    }
+
+}
+
+@Composable
+fun GetEmojiByReviewType(
+    modifier: Modifier = Modifier,
+    reviewType: ReviewType
+) {
+    when (reviewType) {
+        ReviewType.POSITIVE -> {
+            Icon(
+                modifier = modifier.size(size = 24.dp),
+                imageVector = MyIcons.PositiveEmoji,
+                contentDescription = "",
+                tint = Color.Green
+            )
+        }
+        ReviewType.NEGATIVE -> {
+            Icon(
+                modifier = modifier.size(size = 24.dp),
+                imageVector = MyIcons.NegativeEmoji,
+                contentDescription = "",
+                tint = Color.Red
+            )
+        }
+        ReviewType.NEUTRAL -> {
+            Icon(
+                modifier = modifier.size(size = 24.dp),
+                imageVector = MyIcons.NeutralEmoji,
+                contentDescription = "",
+                tint = Color.Gray
+            )
+        }
+
+        ReviewType.NOT_SELECTED -> TODO()
     }
 }
 
@@ -405,13 +530,13 @@ private fun RentalMovieComponent(
 }
 
 @Composable
-private fun GetMorePhotosMovie(
+private fun GetMoreInformationMovie(
     modifier: Modifier = Modifier,
-    onClickGetMorePhotos: () -> Unit
+    onClickGetMoreInformation: () -> Unit
 ) {
     IconButton(
         modifier = modifier.padding(all = 16.dp),
-        onClick = onClickGetMorePhotos
+        onClick = onClickGetMoreInformation
     ) {
         Icon(
             modifier = Modifier.size(45.dp),

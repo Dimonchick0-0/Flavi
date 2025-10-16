@@ -12,6 +12,7 @@ import com.example.flavi.view.screens.auth.AuthUser
 import com.example.flavi.view.screens.favorite.FavoriteScreen
 import com.example.flavi.view.screens.movieDetail.MovieDetail
 import com.example.flavi.view.screens.movieDetail.poster.PosterScreen
+import com.example.flavi.view.screens.movieDetail.review.ReviewScreen
 import com.example.flavi.view.screens.profile.Profile
 import com.example.flavi.view.screens.registration.RegistrationScreen
 import com.example.flavi.view.screens.searchMovie.SearchMovie
@@ -90,6 +91,9 @@ fun NavGraph() {
                 },
                 getAwardsByMovie = {
                     navController.navigate(Screens.Awards.createRoute(filmId))
+                },
+                getReviewsByMovie = {
+                    navController.navigate(Screens.Reviews.createRoute(filmId))
                 }
             )
         }
@@ -100,6 +104,10 @@ fun NavGraph() {
         composable(Screens.Awards.route) {
             val filmId = getArguments(it)
             AwardsScreen(filmId = filmId)
+        }
+        composable(Screens.Reviews.route) {
+            val filmId = getArguments(it)
+            ReviewScreen(filmId = filmId)
         }
     }
 }
@@ -144,5 +152,9 @@ sealed class Screens(val route: String) {
     @Serializable
     data object Awards: Screens(route = "awards_screen/{film_id}") {
         fun createRoute(filmId: Int) = "awards_screen/$filmId"
+    }
+
+    data object Reviews: Screens(route = "reviews_screen/{film_id}") {
+        fun createRoute(filmId: Int) = "reviews_screen/$filmId"
     }
 }

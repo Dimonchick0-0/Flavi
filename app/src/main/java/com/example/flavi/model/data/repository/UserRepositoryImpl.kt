@@ -45,6 +45,8 @@ class UserRepositoryImpl @Inject constructor(
         userDao.insertUserToDB(userDbModel)
     }
 
+    suspend fun getReviewsListByMovieId(id: Int) = movieService.getReviewsMovieById(id)
+
     suspend fun getAwardsByMovieId(id: Int) = movieService.getAwardsMovieByMovieId(id)
 
     suspend fun getActorsFromMovie(filmId: Int): Response<List<ActorDTO>> {
