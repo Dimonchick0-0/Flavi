@@ -1,6 +1,5 @@
 package com.example.flavi.view.navigation
 
-import android.os.Bundle
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
@@ -94,6 +93,9 @@ fun NavGraph() {
                 },
                 getReviewsByMovie = {
                     navController.navigate(Screens.Reviews.createRoute(filmId))
+                },
+                getNewMovieById = { id ->
+                    navController.navigate(Screens.MovieDetail.createRoute(id))
                 }
             )
         }
@@ -154,6 +156,7 @@ sealed class Screens(val route: String) {
         fun createRoute(filmId: Int) = "awards_screen/$filmId"
     }
 
+    @Serializable
     data object Reviews: Screens(route = "reviews_screen/{film_id}") {
         fun createRoute(filmId: Int) = "reviews_screen/$filmId"
     }

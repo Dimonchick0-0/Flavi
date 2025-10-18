@@ -6,6 +6,8 @@ import com.example.flavi.model.data.datasource.awards.AwardsListDTO
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.data.datasource.rental.Rental
 import com.example.flavi.model.data.datasource.reviews.ReviewListDTO
+import com.example.flavi.model.data.datasource.sequelsandprequels.MoviesSequelAndPrequelDTO
+import com.example.flavi.model.data.datasource.similars.SimilarsDTO
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
 import retrofit2.Response
@@ -55,4 +57,14 @@ interface MovieService {
     suspend fun getReviewsMovieById(
         @Path("id") id: Int
     ): Response<ReviewListDTO>
+
+    @GET("/api/v2.2/films/{id}/similars")
+    suspend fun getMovieSimilars(
+        @Path("id") id: Int
+    ): Response<SimilarsDTO>
+
+    @GET("/api/v2.1/films/{id}/sequels_and_prequels")
+    suspend fun getSequelsAndPrequelsMovieById(
+        @Path("id") id: Int
+    ): Response<List<MoviesSequelAndPrequelDTO>>
 }
