@@ -1,8 +1,9 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
-import android.graphics.drawable.Icon
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,21 +37,25 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.datasource.rental.RentalMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MoviesSequelAndPrequel
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewType
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SimilarMovie
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
 import com.example.flavi.view.state.MovieDetailState
@@ -66,18 +71,17 @@ fun MovieDetail(
     viewModel: MovieDetailViewModel = hiltViewModel(),
     loadAllImageMovieClick: () -> Unit,
     getAwardsByMovie: () -> Unit,
-    getReviewsByMovie: () -> Unit
+    getReviewsByMovie: () -> Unit,
+    getNewMovieById: (Int) -> Unit
 ) {
 
     val state = viewModel.movieDetailState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-
-    viewModel.apply {
-        getMovieById(filmId)
-        getActors(filmId)
-        getRental(filmId)
-        getReviews(filmId)
-    }
+    
+    loadMovies(
+        viewModel = viewModel,
+        filmId = filmId
+    )
 
     Scaffold(
         modifier = modifier.fillMaxSize()
@@ -135,7 +139,10 @@ fun MovieDetail(
                             actors = currentState.actors,
                             rentalMovie = currentState.rental,
                             reviewList = currentState.review,
-                            getAllReviewsClick = getReviewsByMovie
+                            getAllReviewsClick = getReviewsByMovie,
+                            similar = currentState.similars,
+                            sequelAndPrequel = currentState.sequelsAndPreques,
+                            getNewMovieById = getNewMovieById
                         )
 
                     }
@@ -143,6 +150,20 @@ fun MovieDetail(
             }
         }
 
+    }
+}
+
+private fun loadMovies(
+    viewModel: MovieDetailViewModel,
+    filmId: Int
+) {
+    viewModel.apply {
+        getMovieById(filmId)
+        getActors(filmId)
+        getRental(filmId)
+        getReviews(filmId)
+        getSimilars(filmId)
+        getSequelsAndPrequelsMovie(filmId)
     }
 }
 
@@ -156,11 +177,14 @@ private fun MovieDetailComponent(
     actors: List<Actor>,
     rentalMovie: Set<RentalMovie>,
     reviewList: List<Review>,
+    similar: List<SimilarMovie>,
+    sequelAndPrequel: List<MoviesSequelAndPrequel>,
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
     loadAllImageMovieClick: () -> Unit,
     getAwardsByMovie: () -> Unit,
     getAllReviewsClick: () -> Unit,
+    getNewMovieById: (Int) -> Unit,
     checkMovieInFavorite: Boolean
 ) {
     val maxLines = remember { mutableIntStateOf(3) }
@@ -281,7 +305,8 @@ private fun MovieDetailComponent(
     if (actors.isNotEmpty()) {
         Text(
             text = "Актёры",
-            color = Color.Black
+            color = Color.Black,
+            fontSize = 18.sp
         )
         ActorsComponent(actors = actors)
     }
@@ -291,7 +316,8 @@ private fun MovieDetailComponent(
             modifier = Modifier.fillMaxWidth(),
             text = "Премьеры",
             color = Color.Black,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp
         )
         Spacer(modifier = Modifier.height(height = 15.dp))
         RentalMovieComponent(listRental = rentalMovie)
@@ -321,7 +347,8 @@ private fun MovieDetailComponent(
         modifier = Modifier.fillMaxWidth(),
         text = "Рецензии",
         color = Color.Black,
-        textAlign = TextAlign.Center
+        textAlign = TextAlign.Center,
+        fontSize = 18.sp
     )
     Spacer(modifier = Modifier.height(height = 15.dp))
     if (viewModel.checkLoadReviewComponent.value) {
@@ -330,6 +357,152 @@ private fun MovieDetailComponent(
             getAllReviewsClick = getAllReviewsClick
         )
     }
+    if (viewModel.checkLoadSimilarList.value) {
+        Spacer(modifier = Modifier.height(height = 15.dp))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Похожие фильмы",
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp
+        )
+        Spacer(modifier = Modifier.height(height = 15.dp))
+        SimilarMovieComponent(
+            similarMovie = similar,
+            getMovieById = getNewMovieById
+        )
+    }
+    if (viewModel.checkLoadSequelAndPrequelList.value) {
+        Spacer(modifier = Modifier.height(height = 15.dp))
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Сиквелы и приквелы",
+            color = Color.Black,
+            textAlign = TextAlign.Center,
+            fontSize = 18.sp
+        )
+        Spacer(modifier = Modifier.height(height = 15.dp))
+        SequelsAndPrequelsMovieComponent(
+            sequelAndPrequel = sequelAndPrequel,
+            getNewMovieById = getNewMovieById
+        )
+    }
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun SequelsAndPrequelsMovieComponent(
+    modifier: Modifier = Modifier,
+    sequelAndPrequel: List<MoviesSequelAndPrequel>,
+    getNewMovieById: (Int) -> Unit
+) {
+
+    LazyRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    ) {
+        sequelAndPrequel.forEach {
+            item {
+                Spacer(modifier = Modifier.width(width = 8.dp))
+                Card(
+                    modifier = Modifier
+                        .width(140.dp)
+                        .fillMaxHeight()
+                        .clickable { getNewMovieById(it.filmId) },
+                    backgroundColor = Color.Black
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            GlideImage(
+                                modifier = Modifier
+                                    .height(100.dp),
+                                model = it.posterUrlPreview,
+                                contentDescription = "",
+                                contentScale = ContentScale.FillBounds
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = it.nameRu,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = it.nameEn,
+                            fontSize = 13.sp,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun SimilarMovieComponent(
+    modifier: Modifier = Modifier,
+    similarMovie: List<SimilarMovie>,
+    getMovieById: (id: Int) -> Unit
+) {
+
+    LazyRow(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height = 200.dp),
+    ) {
+        similarMovie.forEach { similarMovie ->
+            item {
+                Spacer(modifier = Modifier.width(width = 8.dp))
+                Card(
+                    modifier = Modifier
+                        .width(140.dp)
+                        .fillMaxHeight()
+                        .clickable { getMovieById(similarMovie.filmId) },
+                    backgroundColor = Color.Black
+                ) {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            GlideImage(
+                                modifier = Modifier
+                                    .height(100.dp),
+                                model = similarMovie.posterUrlPreview,
+                                contentDescription = "",
+                                contentScale = ContentScale.FillBounds
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = similarMovie.nameRu,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        similarMovie.nameEn?.let {
+                            Text(
+                                text = it,
+                                fontSize = 13.sp,
+                                color = Color.White,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -375,7 +548,12 @@ private fun ReviewsComponent(
                             }
                             Text(
                                 modifier = Modifier.padding(start = 8.dp),
-                                text = "Дата: ${it.date.removeRange(startIndex = 9, endIndex = 18)}",
+                                text = "Дата: ${
+                                    it.date.removeRange(
+                                        startIndex = 9,
+                                        endIndex = 18
+                                    )
+                                }",
                                 color = Color.White,
                                 fontSize = 14.sp
                             )
@@ -411,6 +589,7 @@ fun GetEmojiByReviewType(
                 tint = Color.Green
             )
         }
+
         ReviewType.NEGATIVE -> {
             Icon(
                 modifier = modifier.size(size = 24.dp),
@@ -419,6 +598,7 @@ fun GetEmojiByReviewType(
                 tint = Color.Red
             )
         }
+
         ReviewType.NEUTRAL -> {
             Icon(
                 modifier = modifier.size(size = 24.dp),
@@ -495,7 +675,7 @@ private fun RentalMovieComponent(
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
-            .height(70.dp)
+            .height(100.dp)
     ) {
         listRental.forEach {
             item {

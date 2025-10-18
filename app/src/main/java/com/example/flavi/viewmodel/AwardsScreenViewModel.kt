@@ -22,8 +22,6 @@ class AwardsScreenViewModel @Inject constructor(
     )
     val state = _state.asStateFlow()
 
-    private val awards = mutableListOf(Awards())
-
     fun getAwards(filmId: Int) {
         viewModelScope.launch {
             repositoryImpl.getAwardsByMovieId(filmId).body()?.items

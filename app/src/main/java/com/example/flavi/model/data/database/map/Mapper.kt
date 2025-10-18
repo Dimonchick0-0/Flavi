@@ -14,6 +14,9 @@ import com.example.flavi.model.data.datasource.images.PosterDTO
 import com.example.flavi.model.data.datasource.reviews.ReviewDTO
 import com.example.flavi.model.data.datasource.reviews.ReviewListDTO
 import com.example.flavi.model.data.datasource.reviews.ReviewTypeDTO
+import com.example.flavi.model.data.datasource.sequelsandprequels.MoviesSequelAndPrequelDTO
+import com.example.flavi.model.data.datasource.sequelsandprequels.RelationsTypeDTO
+import com.example.flavi.model.data.datasource.similars.SimilarMovieDTO
 import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
@@ -21,11 +24,14 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Awards
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MoviesSequelAndPrequel
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.RelationsType
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewList
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewType
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SimilarMovie
 
 fun UserDbModel.toEntity() = User(userId, name, password, email)
 
@@ -39,6 +45,32 @@ fun List<PosterDTO>.toListPosterEntity(): List<Poster> {
             previewUrl = it.previewUrl
         )
     }
+}
+
+private fun RelationsTypeDTO.toRelationType(): RelationsType {
+    return when(this) {
+        RelationsTypeDTO.PREQUEL -> RelationsType.PREQUEL
+        RelationsTypeDTO.SEQUEL -> RelationsType.SEQUEL
+    }
+}
+
+fun MoviesSequelAndPrequelDTO.toSequelsAndPrequels(): MoviesSequelAndPrequel {
+    return MoviesSequelAndPrequel(
+        filmId = filmId,
+        nameRu = nameRu,
+        nameEn = nameEn,
+        posterUrlPreview = posterUrlPreview,
+        relationsType = relationType.toRelationType()
+    )
+}
+
+fun SimilarMovieDTO.toSimilar(): SimilarMovie {
+    return SimilarMovie(
+        filmId = filmId,
+        nameRu = nameRu,
+        nameEn = nameEn,
+        posterUrlPreview = posterUrlPreview
+    )
 }
 
 fun List<AwardsDTO>.toListEntityAwards(): List<Awards> {

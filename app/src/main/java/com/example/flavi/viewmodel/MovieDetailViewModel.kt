@@ -9,13 +9,17 @@ import com.example.flavi.model.data.database.map.toMovieCard
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.database.map.toPosterEntity
 import com.example.flavi.model.data.database.map.toReview
+import com.example.flavi.model.data.database.map.toSequelsAndPrequels
+import com.example.flavi.model.data.database.map.toSimilar
 import com.example.flavi.model.data.datasource.rental.RentalMovie
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MoviesSequelAndPrequel
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SimilarMovie
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.MovieDetailState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,6 +41,8 @@ class MovieDetailViewModel @Inject constructor(
                 MovieDetail(),
                 listOf(),
                 setOf(),
+                listOf(),
+                listOf(),
                 listOf()
             )
         )
@@ -52,7 +58,34 @@ class MovieDetailViewModel @Inject constructor(
     private val reviewList = mutableListOf<Review>()
     val checkLoadReviewComponent = mutableStateOf(false)
 
+    private val similarList = mutableListOf<SimilarMovie>()
+    val checkLoadSimilarList = mutableStateOf(false)
+
+    private val sequelsAndPrequelsList = mutableListOf<MoviesSequelAndPrequel>()
+    val checkLoadSequelAndPrequelList = mutableStateOf(false)
+
     fun mapMovieDetailToMovieCard(movie: MovieDetail): MovieCard = movie.toMovieCard()
+
+    fun getSequelsAndPrequelsMovie(filmId: Int) {
+        viewModelScope.launch {
+            repositoryImpl.getSequelsAndPrequelsMovie(filmId).body()?.forEach {
+                sequelsAndPrequelsList.add(it.toSequelsAndPrequels())
+                checkLoadSequelAndPrequelList.value = true
+            }
+        }
+    }
+
+    fun getSimilars(filmId: Int) {
+        viewModelScope.launch {
+            repositoryImpl.getSimilarsMovie(filmId).body()?.items
+                ?.distinctBy { it.filmId }
+                ?.filter { it.nameEn != null }
+                ?.forEach {
+                similarList.add(it.toSimilar())
+                checkLoadSimilarList.value = true
+            }
+        }
+    }
 
     fun getActors(filmId: Int) {
         viewModelScope.launch {
@@ -107,7 +140,14 @@ class MovieDetailViewModel @Inject constructor(
                 if (checkMovieInFavorite(state.movie.kinopoiskId)) {
                     movie.checkListMovie.value = true
                 }
-                state.copy(movie = state.movie, listActors, rentalList, reviewList)
+                state.copy(
+                    movie = state.movie,
+                    actors =  listActors,
+                    rental =  rentalList,
+                    review =  reviewList,
+                    similars = similarList,
+                    sequelsAndPreques = sequelsAndPrequelsList
+                )
             } else {
                 state
             }
@@ -135,6 +175,8 @@ class MovieDetailViewModel @Inject constructor(
                         it,
                         listOf(),
                         setOf(),
+                        listOf(),
+                        listOf(),
                         listOf()
                     )
                 )

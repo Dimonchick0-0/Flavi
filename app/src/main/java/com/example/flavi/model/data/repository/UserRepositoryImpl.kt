@@ -10,6 +10,7 @@ import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ListActor
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.data.datasource.rental.Rental
+import com.example.flavi.model.data.datasource.sequelsandprequels.MoviesSequelAndPrequelDTO
 import com.example.flavi.model.data.datasource.services.KinoposikService
 import com.example.flavi.model.data.datasource.services.MovieService
 import com.example.flavi.model.domain.entity.HistorySearch
@@ -44,6 +45,12 @@ class UserRepositoryImpl @Inject constructor(
         )
         userDao.insertUserToDB(userDbModel)
     }
+
+    suspend fun getSequelsAndPrequelsMovie(id: Int): Response<List<MoviesSequelAndPrequelDTO>> {
+        return movieService.getSequelsAndPrequelsMovieById(id)
+    }
+
+    suspend fun getSimilarsMovie(id: Int) = movieService.getMovieSimilars(id)
 
     suspend fun getReviewsListByMovieId(id: Int) = movieService.getReviewsMovieById(id)
 
