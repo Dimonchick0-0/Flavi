@@ -38,6 +38,4 @@ class ReviewScreenViewModel @Inject constructor(
 
 }
 
-data class ReviewsScreenState(
-    val reviews: ReviewList
-)
+data class ReviewsScreenState(val reviews: ReviewList)

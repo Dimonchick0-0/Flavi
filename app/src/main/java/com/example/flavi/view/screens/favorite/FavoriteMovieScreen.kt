@@ -28,8 +28,8 @@ import androidx.navigation.NavHostController
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.searchMovie.MovieCardComponent
+import com.example.flavi.view.state.FavoriteScreenState
 import com.example.flavi.view.ui.theme.MyIcons
-import com.example.flavi.viewmodel.FavoriteScreenState
 import com.example.flavi.viewmodel.FavoriteScreenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

@@ -15,9 +15,12 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
+
+    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUserToDB(userDbModel: UserDbModel)
 
+    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMovieToDb(movies: MoviesDbModel)
 
@@ -39,6 +42,7 @@ interface UserDao {
     @Query("delete from movies where filmId =:movieId")
     suspend fun removeMovieFromDatabase(movieId: Int)
 
+    @Transaction
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTitleMovieInToDatabase(title: HistorySearchDb)
 

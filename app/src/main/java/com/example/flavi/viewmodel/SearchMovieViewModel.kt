@@ -53,11 +53,7 @@ class SearchMovieViewModel @Inject constructor(
 
     val showDialog = mutableStateOf(false)
 
-    val stateError = mutableStateOf(false)
-
-    val oldQuery = mutableStateOf("")
-
-    val currentQuery = mutableStateOf("")
+    private val oldQuery = mutableStateOf("")
 
     val networkState = mutableStateOf(false)
 
@@ -93,37 +89,31 @@ class SearchMovieViewModel @Inject constructor(
                 checkActor.value = false
             }
         }
-        val time = measureTime {
-            getMovie(oldQuery.value).body()?.also { movies ->
-                val filteredList = movies.films.filterList {
-                    if (nameEn == listActor.value.nameEn) {
-                        checkActor.value = false
-                    }
-                    rating != "null"
+        getMovie(oldQuery.value).body()?.also { movies ->
+            val filteredList = movies.films.filterList {
+                if (nameEn == listActor.value.nameEn) {
+                    checkActor.value = false
                 }
-                if (filteredList.isNotFoundMovies()) {
-                    _stateSearchMovie.emit(SearchMovieState.NotFound)
-                }
-
-                _stateSearchMovie.emit(
-                    SearchMovieState.LoadMovieAndActors(
-                        movie = filteredList,
-                        searchActor = listActor.value
-                    )
-                )
+                rating != "null"
             }
+
+            if (filteredList.isNotFoundMovies()) {
+                _stateSearchMovie.emit(SearchMovieState.NotFound)
+            }
+
+            _stateSearchMovie.emit(
+                SearchMovieState.LoadMovieAndActors(
+                    movie = filteredList,
+                    searchActor = listActor.value
+                )
+            )
         }
-        Log.d("Auth", time.toString())
     }
 
     private suspend fun getActors(nameActor: String): Response<ListActor> {
         return withContext(Dispatchers.Default) {
             repositoryImpl.getSearchActors(nameActor)
         }
-    }
-
-    suspend fun emitToHistorySearchState() {
-        _stateSearchMovie.emit(SearchMovieState.HistorySearchList(historySearch = listHistorySearch.value))
     }
 
     suspend fun removeHistorySearch(title: String) {
@@ -135,6 +125,8 @@ class SearchMovieViewModel @Inject constructor(
             listHistorySearch.value = it.map { historySearch ->
                 historySearch.title
             }.distinct()
+            if (listHistorySearch.value.isEmpty())
+                processInitial()
         }
     }
 
@@ -166,34 +158,6 @@ class SearchMovieViewModel @Inject constructor(
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
         return isEmpty()
-    }
-
-    fun clearQuery() {
-        oldQuery.value = ""
-    }
-
-    fun processNotFoundMovie(query: String) {
-        _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.NotFound) {
-                oldQuery.value = query
-                currentQuery.value = oldQuery.value
-                state
-            } else {
-                state
-            }
-        }
-    }
-
-    fun updateQuery(newQuery: String) {
-        _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.LoadMovieAndActors) {
-                oldQuery.value = newQuery
-                currentQuery.value = oldQuery.value
-                state.copy(movie = state.movie)
-            } else {
-                state
-            }
-        }
     }
 
     fun processNotificationOfInternetLoss() {
@@ -291,16 +255,6 @@ class SearchMovieViewModel @Inject constructor(
         _stateSearchMovie.update { state ->
             if (state is SearchMovieState.LoadListMovieWithFilters) {
                 state.copy(listMovie = state.listMovie)
-            } else {
-                state
-            }
-        }
-    }
-
-    fun processQuery(query: String) {
-        _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.InputQuery) {
-                state.copy(query = query)
             } else {
                 state
             }
