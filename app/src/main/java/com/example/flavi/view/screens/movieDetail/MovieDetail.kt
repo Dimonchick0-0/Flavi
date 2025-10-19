@@ -400,53 +400,23 @@ private fun SequelsAndPrequelsMovieComponent(
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(220.dp)
     ) {
         sequelAndPrequel.forEach {
             item {
                 Spacer(modifier = Modifier.width(width = 8.dp))
-                Card(
-                    modifier = Modifier
-                        .width(140.dp)
-                        .fillMaxHeight()
-                        .clickable { getNewMovieById(it.filmId) },
-                    backgroundColor = Color.Black
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            GlideImage(
-                                modifier = Modifier
-                                    .height(100.dp),
-                                model = it.posterUrlPreview,
-                                contentDescription = "",
-                                contentScale = ContentScale.FillBounds
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = it.nameRu,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = it.nameEn,
-                            fontSize = 13.sp,
-                            color = Color.White,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                MovieCardComponent(
+                    modifier = Modifier.clickable { getNewMovieById(it.filmId) },
+                    image = it.posterUrlPreview,
+                    nameRu = it.nameRu,
+                    nameEn = it.nameEn
+                )
             }
         }
     }
 
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun SimilarMovieComponent(
     modifier: Modifier = Modifier,
@@ -457,52 +427,68 @@ private fun SimilarMovieComponent(
     LazyRow(
         modifier = modifier
             .fillMaxWidth()
-            .height(height = 200.dp),
+            .height(height = 220.dp),
     ) {
         similarMovie.forEach { similarMovie ->
             item {
                 Spacer(modifier = Modifier.width(width = 8.dp))
-                Card(
-                    modifier = Modifier
-                        .width(140.dp)
-                        .fillMaxHeight()
-                        .clickable { getMovieById(similarMovie.filmId) },
-                    backgroundColor = Color.Black
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            GlideImage(
-                                modifier = Modifier
-                                    .height(100.dp),
-                                model = similarMovie.posterUrlPreview,
-                                contentDescription = "",
-                                contentScale = ContentScale.FillBounds
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = similarMovie.nameRu,
-                            fontSize = 16.sp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        similarMovie.nameEn?.let {
-                            Text(
-                                text = it,
-                                fontSize = 13.sp,
-                                color = Color.White,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
+                similarMovie.nameEn?.let {
+                    MovieCardComponent(
+                        modifier = Modifier.clickable { getMovieById(similarMovie.filmId) },
+                        image = similarMovie.posterUrlPreview,
+                        nameRu = similarMovie.nameRu,
+                        nameEn = similarMovie.nameEn
+                    )
                 }
+
             }
         }
     }
 
+}
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun MovieCardComponent(
+    modifier: Modifier = Modifier,
+    image: String,
+    nameRu: String,
+    nameEn: String
+) {
+    Card(
+        modifier = modifier
+            .width(140.dp)
+            .fillMaxHeight(),
+        backgroundColor = Color.Black
+    ) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                GlideImage(
+                    modifier = Modifier
+                        .height(100.dp),
+                    model = image,
+                    contentDescription = "",
+                    contentScale = ContentScale.FillBounds
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = nameRu,
+                fontSize = 16.sp,
+                color = Color.White
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = nameEn,
+                fontSize = 13.sp,
+                color = Color.White,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
 }
 
 @Composable

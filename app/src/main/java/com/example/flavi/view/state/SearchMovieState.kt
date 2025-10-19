@@ -29,6 +29,4 @@ sealed interface SearchMovieState {
     data class SwitchingFiltersState(val filter: String): SearchMovieState
 
     data class LoadListMovieWithFilters(val listMovie: List<MovieCardKinopoisk>): SearchMovieState
-
-    data class HistorySearchList(val historySearch: List<String>): SearchMovieState
 }

@@ -3,7 +3,7 @@
 package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
-import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.DropdownMenu
@@ -32,18 +32,25 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldColors
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TooltipAnchorPosition
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSearchBarState
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,7 +58,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -103,25 +116,7 @@ fun SearchMovie(
                 }
 
                 SearchMovieState.NotFound -> {
-                    SearchMovieComponent(
-                        value = viewModel.oldQuery.value,
-                        onValueChange = {
-                            viewModel.processNotFoundMovie(query = it)
-                        },
-                        onEmitValue = {
-                            coroutineScope.launch {
-                                viewModel.apply {
-                                    query.emit(value = currentQuery.value)
-                                    saveHistorySearch(title = currentQuery.value)
-                                }
-                            }
-                        },
-                        viewModel = viewModel,
-                        color = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                        )
-                    )
+                    SearchMovieComponent(viewModel = viewModel,)
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -135,76 +130,11 @@ fun SearchMovie(
                 }
 
                 is SearchMovieState.InputQuery -> {
-                    val color = if (currentState.query.isEmpty()) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onBackground
-                    }
-                    SearchMovieComponent(
-                        value = currentState.query,
-                        onValueChange = {
-                            viewModel.processQuery(it)
-                            viewModel.stateError.value = false
-                            color.value
-                        },
-                        viewModel = viewModel,
-                        onEmitValue = {
-                            viewModel.apply {
-                                if (currentState.query.isEmpty()) {
-                                    stateError.value = true
-                                    color.value
-                                } else {
-                                    coroutineScope.launch {
-                                        query.emit(currentState.query)
-                                        viewModel.gettingTheEnteredQuery()
-                                        saveHistorySearch(title = currentState.query)
-                                    }
-                                }
-                            }
-                        },
-                        color = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                            errorContainerColor = color
-                        )
-                    )
-
+                    SearchMovieComponent(viewModel = viewModel,)
                 }
 
                 is SearchMovieState.LoadMovieAndActors -> {
-                    val color = if (viewModel.currentQuery.value.isEmpty()) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onBackground
-                    }
-                    SearchMovieComponent(
-                        value = viewModel.oldQuery.value,
-                        onValueChange = {
-                            viewModel.updateQuery(newQuery = it)
-                            viewModel.stateError.value = false
-                        },
-                        viewModel = viewModel,
-                        onEmitValue = {
-                            coroutineScope.launch {
-                                viewModel.apply {
-                                    if (currentQuery.value.isEmpty()) {
-                                        stateError.value = true
-                                        color.value
-                                    }
-                                    if (currentQuery.value.isNotEmpty()) {
-                                        query.emit(value = viewModel.currentQuery.value)
-                                        saveHistorySearch(title = currentQuery.value)
-                                    }
-                                }
-
-                            }
-                        },
-                        color = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.onBackground,
-                            errorContainerColor = color
-                        )
-                    )
+                    SearchMovieComponent(viewModel = viewModel,)
 
                     LazyColumn {
                         item {
@@ -276,20 +206,7 @@ fun SearchMovie(
 
                 is SearchMovieState.NotificationOfInternetLoss -> {
                     viewModel.processNotificationOfInternetLoss()
-                    SearchMovieComponent(
-                        value = viewModel.oldQuery.value,
-                        onValueChange = {
-                            viewModel.updateQuery(it)
-                        },
-                        onEmitValue = {
-                            coroutineScope.launch {
-                                viewModel.apply {
-                                    query.emit(value = currentQuery.value)
-                                }
-                            }
-                        },
-                        viewModel = viewModel
-                    )
+                    SearchMovieComponent(viewModel = viewModel)
                     Spacer(modifier = Modifier.height(50.dp))
                     Text(
                         text = viewModel.notificationOfInternetLoss.value,
@@ -299,35 +216,12 @@ fun SearchMovie(
 
                 is SearchMovieState.SwitchingFiltersState -> {
                     coroutineScope.launch { viewModel.processGetFilters(currentState.filter) }
-                    SearchMovieComponent(
-                        value = viewModel.oldQuery.value,
-                        onValueChange = {
-                            viewModel.updateQuery(it)
-                            viewModel.stateError.value = false
-                        },
-                        onEmitValue = {
-                            coroutineScope.launch {
-                                viewModel.query.emit(value = viewModel.currentQuery.value)
-                            }
-                        },
-                        viewModel = viewModel
-                    )
+                    SearchMovieComponent(viewModel = viewModel)
                 }
 
                 is SearchMovieState.LoadListMovieWithFilters -> {
                     viewModel.processLoadMovieListWithFilters()
-                    SearchMovieComponent(
-                        value = viewModel.oldQuery.value,
-                        onValueChange = {
-                            viewModel.updateQuery(it)
-                        },
-                        onEmitValue = {
-                            coroutineScope.launch {
-                                viewModel.query.emit(value = viewModel.currentQuery.value)
-                            }
-                        },
-                        viewModel = viewModel
-                    )
+                    SearchMovieComponent(viewModel = viewModel)
 
                     LazyColumn {
                         currentState.listMovie.forEach { filterMovie ->
@@ -387,23 +281,176 @@ fun SearchMovie(
                     }
                 }
 
-                is SearchMovieState.HistorySearchList -> {
-                    coroutineScope.launch { viewModel.showHistorySearch() }
-                    SearchMovieComponent(
-                        value = viewModel.oldQuery.value,
-                        onValueChange = {
-                            viewModel.updateQuery(it)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+private fun SearchMovieComponent(
+    modifier: Modifier = Modifier,
+    viewModel: SearchMovieViewModel,
+) {
+    val coroutineScope = rememberCoroutineScope()
+    val searchBarState = rememberSearchBarState()
+    val textFieldState = rememberTextFieldState()
+
+    val inputField = @Composable {
+        SearchBarDefaults.InputField(
+            modifier = modifier.fillMaxWidth(),
+            searchBarState = searchBarState,
+            textFieldState = textFieldState,
+            onSearch = {
+                coroutineScope.launch {
+                    searchBarState.animateToCollapsed()
+                }
+            },
+            placeholder = {
+                Text(
+                    modifier = Modifier.clearAndSetSemantics {  }, text = "Поиск..."
+                )
+            },
+            leadingIcon = {
+                if (searchBarState.currentValue == SearchBarValue.Expanded) {
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
+                            TooltipAnchorPosition.Above
+                        ),
+                        tooltip = {
+                            PlainTooltip { Text(text = "Back") }
                         },
-                        onEmitValue = {
-                            coroutineScope.launch {
-                                viewModel.query.emit(value = viewModel.currentQuery.value)
+                        state = rememberTooltipState()
+                    ) {
+                        IconButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    searchBarState.animateToCollapsed()
+                                }
                             }
-                        },
-                        viewModel = viewModel
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(28.dp),
+                                imageVector = MyIcons.KeyboardArrowLeft,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            viewModel.apply {
+                                query.emit(textFieldState.text.toString())
+                                gettingTheEnteredQuery()
+                                saveHistorySearch(textFieldState.text.toString())
+                            }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = MyIcons.Search,
+                        contentDescription = ""
                     )
-                    SearchHistoryList(viewModel = viewModel)
                 }
             }
+        )
+    }
+    Spacer(modifier = Modifier.height(height = 16.dp))
+    SearchBar(
+        state = searchBarState,
+        inputField = inputField
+    )
+    ExpandedFullScreenSearchBar(
+        state = searchBarState,
+        inputField = inputField
+    ) {
+        Spacer(modifier = Modifier.height(height = 8.dp))
+        Text(
+            text = "История поиска...",
+            color = Color.White
+        )
+        Spacer(modifier = Modifier.height(height = 8.dp))
+        coroutineScope.launch { viewModel.showHistorySearch() }
+        if (viewModel.listHistorySearch.value.isNotEmpty()) {
+            LazyColumn {
+                viewModel.listHistorySearch.value.forEach {
+                    item {
+
+                        HistoryList(
+                            onEmittedText = {
+                                coroutineScope.launch {
+                                    viewModel.apply {
+                                        query.emit(it)
+                                        gettingTheEnteredQuery()
+                                    }
+                                }
+                            },
+                            clearHistorySearchClick = {
+                                coroutineScope.launch {
+                                    viewModel.removeHistorySearch(it)
+                                }
+                            },
+                            text = it
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+private fun Modifier.bottomBorder(strokeWidth: Dp, color: Color) = composed(
+    factory = {
+        val density = LocalDensity.current
+        val strokeWidthPx = density.run { strokeWidth.toPx() }
+
+        Modifier.drawBehind {
+            val width = size.width
+            val height = size.height - strokeWidthPx/2
+
+            drawLine(
+                color = color,
+                start = Offset(x = 0f, y = height),
+                end = Offset(x = width , y = height),
+                strokeWidth = strokeWidthPx
+            )
+        }
+    }
+)
+
+@SuppressLint("CoroutineCreationDuringComposition")
+@Composable
+private fun HistoryList(
+    modifier: Modifier = Modifier,
+    onEmittedText: () -> Unit,
+    clearHistorySearchClick: () -> Unit,
+    text: String,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .bottomBorder(strokeWidth = 2.dp, color = Color.White)
+    ) {
+        TextButton(
+            modifier = Modifier.weight(1f),
+            onClick = onEmittedText
+        ) {
+            Text(
+                text = text,
+                color = Color.White
+            )
+        }
+        IconButton(onClick = clearHistorySearchClick) {
+            Icon(
+                imageVector = MyIcons.Cleaning_services,
+                contentDescription = "",
+                tint = Color.White
+            )
         }
     }
 }
@@ -638,7 +685,7 @@ private fun ListGenres(
         modifier = modifier
             .padding(vertical = 8.dp)
             .fillMaxWidth()
-            .border(width = 1.dp, color = Color.White)
+            .bottomBorder(strokeWidth = 2.dp, color = Color.White)
             .clickable { onClickToElement() }
     ) {
         Text(
@@ -646,84 +693,6 @@ private fun ListGenres(
                 .padding(8.dp),
             text = genres.name,
             fontSize = 16.sp
-        )
-    }
-}
-
-@SuppressLint("CoroutineCreationDuringComposition")
-@Composable
-private fun SearchMovieComponent(
-    value: String,
-    onValueChange: (String) -> Unit,
-    viewModel: SearchMovieViewModel,
-    onEmitValue: () -> Unit,
-    color: TextFieldColors = TextFieldDefaults.colors()
-) {
-    val coroutineScope = rememberCoroutineScope()
-
-    TextField(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 16.dp, start = 8.dp, end = 8.dp),
-        value = value,
-        onValueChange = { onValueChange(it) },
-        shape = RoundedCornerShape(6.dp),
-        placeholder = {
-            Text(text = "Поиск фильмов...")
-        },
-        leadingIcon = {
-            IconButton(onClick = {
-                viewModel.clearQuery()
-            }) {
-                Icon(
-                    imageVector = MyIcons.Cleaning_services,
-                    contentDescription = "Очистить запрос",
-                    tint = Color.White
-                )
-            }
-        },
-        trailingIcon = {
-            IconButton(onClick = onEmitValue) {
-                Icon(
-                    imageVector = MyIcons.Search,
-                    contentDescription = ""
-                )
-            }
-        },
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.Gray,
-            unfocusedPlaceholderColor = Color.White,
-            unfocusedTrailingIconColor = Color.White,
-            unfocusedLeadingIconColor = Color.White,
-            focusedPlaceholderColor = Color.White,
-            focusedTrailingIconColor = Color.White,
-            focusedLeadingIconColor = Color.White
-        ),
-        isError = viewModel.stateError.value,
-        singleLine = true
-    )
-    Spacer(modifier = Modifier.height(15.dp))
-    GetHistorySearchList(
-        getListHistorySearchClick = {
-            coroutineScope.launch {
-                viewModel.emitToHistorySearchState()
-            }
-        }
-    )
-}
-
-@Composable
-private fun GetHistorySearchList(
-    modifier: Modifier = Modifier,
-    getListHistorySearchClick: () -> Unit
-) {
-    TextButton(
-        modifier = modifier,
-        onClick = getListHistorySearchClick
-    ) {
-        Text(
-            text = "Посмотреть историю поиска",
-            color = Color.Black
         )
     }
 }
@@ -742,63 +711,6 @@ fun CardHistorySearch(
             verticalAlignment = Alignment.CenterVertically,
             content = content
         )
-    }
-}
-
-@SuppressLint("CoroutineCreationDuringComposition")
-@Composable
-private fun SearchHistoryList(
-    modifier: Modifier = Modifier,
-    viewModel: SearchMovieViewModel
-) {
-    val coroutineScope = rememberCoroutineScope()
-    val listHistorySearch = remember { mutableStateOf(listOf<String>()) }
-    coroutineScope.launch {
-        listHistorySearch.value = viewModel.listHistorySearch.value
-    }
-    Log.d("Auth", viewModel.listHistorySearch.value.size.toString())
-    LazyColumn(modifier = modifier.fillMaxSize()) {
-        listHistorySearch.value.forEach {
-            item {
-                CardHistorySearch(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp, start = 8.dp, end = 8.dp)
-                        .border(
-                            width = 1.dp,
-                            color = Color.Black,
-                            shape = RoundedCornerShape(10.dp)
-                        ),
-                    colors = CardDefaults.cardColors(containerColor = Color.Black)
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(start = 8.dp, top = 16.dp, bottom = 16.dp)
-                            .weight(1f)
-                            .clickable {
-                                coroutineScope.launch {
-                                    viewModel.query.emit(it)
-                                }
-                            },
-                        text = it,
-                        color = Color.White
-                    )
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                viewModel.removeHistorySearch(title = it)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = MyIcons.Cleaning_services,
-                            contentDescription = "Очистить запрос",
-                            tint = Color.White
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 

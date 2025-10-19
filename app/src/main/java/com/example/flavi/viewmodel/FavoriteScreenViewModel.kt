@@ -7,6 +7,7 @@ import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
+import com.example.flavi.view.state.FavoriteScreenState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -89,12 +90,3 @@ class FavoriteScreenViewModel @Inject constructor(
     }
 }
 
-sealed interface FavoriteScreenState {
-    data class LoadMovies(
-        val movieList: List<MovieCard>
-    ): FavoriteScreenState
-
-    data class EmptyList(
-        val movieList: List<MovieCard>
-    ): FavoriteScreenState
-}

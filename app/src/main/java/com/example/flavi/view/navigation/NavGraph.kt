@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
-import com.example.flavi.view.screens.AwardsScreen
+import com.example.flavi.view.screens.movieDetail.awards.AwardsScreen
 import com.example.flavi.view.screens.auth.AuthUser
 import com.example.flavi.view.screens.favorite.FavoriteScreen
 import com.example.flavi.view.screens.movieDetail.MovieDetail

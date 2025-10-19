@@ -11,17 +11,17 @@ import javax.inject.Inject
 class Network @Inject constructor (
     @ApplicationContext context: Context
 ) {
-    private val connectivityManager = context.getSystemService(
+    val connectivityManager = context.getSystemService(
         Context.CONNECTIVITY_SERVICE
     ) as ConnectivityManager
 
-    fun lostNetwork(actionWhenChangeTheNetwork: () -> Unit) {
+    inline fun lostNetwork(crossinline actionWhenChangeTheNetwork: () -> Unit) {
         connectivityManager.registerDefaultNetworkCallback(object : NetworkCallback() {
             override fun onLost(network: Network) { actionWhenChangeTheNetwork() }
         })
     }
 
-    fun onAvailableNetwork(actionWhenChangeTheNetwork: () -> Unit) {
+    inline fun onAvailableNetwork(crossinline actionWhenChangeTheNetwork: () -> Unit) {
         connectivityManager.registerDefaultNetworkCallback(object : NetworkCallback() {
             override fun onAvailable(network: Network) { actionWhenChangeTheNetwork() }
         })
@@ -29,7 +29,7 @@ class Network @Inject constructor (
 
     fun stateNetwork(): Boolean {
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
-        Log.d("Auth", activeNetworkInfo?.isConnectedOrConnecting.toString())
+        Log.d("Auth", "Сеть: ${activeNetworkInfo?.isConnectedOrConnecting.toString()}")
         return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting
     }
 }
