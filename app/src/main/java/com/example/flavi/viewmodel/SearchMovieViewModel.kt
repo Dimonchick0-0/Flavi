@@ -2,19 +2,27 @@ package com.example.flavi.viewmodel
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.flavi.model.data.database.map.toActorEntity
+import com.example.flavi.model.data.database.map.toFilterMovie
+import com.example.flavi.model.data.database.map.toFilterMovieList
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.actors.ListActor
 import com.example.flavi.model.data.datasource.network.Network
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.FilterMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.OrderFilterMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.TypeFilterMovie
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
 import com.example.flavi.view.state.SearchMovieState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,8 +53,6 @@ class SearchMovieViewModel @Inject constructor(
 
     val query = MutableSharedFlow<String>()
 
-    val filters = MutableSharedFlow<String>()
-
     private val _stateSearchMovie: MutableStateFlow<SearchMovieState> =
         MutableStateFlow(SearchMovieState.Initial)
     val stateSearchMovie: StateFlow<SearchMovieState> = _stateSearchMovie.asStateFlow()
@@ -67,6 +73,16 @@ class SearchMovieViewModel @Inject constructor(
 
     val checkActor = mutableStateOf(false)
 
+    val genreMovie = mutableStateOf("")
+
+    var order by mutableStateOf(OrderFilterMovie.NOT_SELECTED)
+
+    var typeMovie by mutableStateOf(TypeFilterMovie.NOT_SELECTED)
+
+    val checkLoadFilterMovie = mutableStateOf(false)
+
+    val checkResetFilters = mutableStateOf(false)
+
     init {
         changeStateByConnection(context)
         query
@@ -76,6 +92,67 @@ class SearchMovieViewModel @Inject constructor(
             }
             .retry(retries = 3L)
             .launchIn(viewModelScope)
+    }
+
+    private fun updateStateFilterMovie(filterMovie: List<FilterMovie>) {
+        _stateSearchMovie.update { state ->
+            if (state is SearchMovieState.LoadListMovieWithFilters) {
+                state.copy(listMovie = filterMovie)
+            } else {
+                state
+            }
+        }
+    }
+
+    fun resetFilters() {
+        order = OrderFilterMovie.NOT_SELECTED
+        typeMovie = TypeFilterMovie.NOT_SELECTED
+        genreMovie.value = ""
+        checkLoadFilterMovie.value = false
+        updateStateFilterMovie(filterMovie = emptyList())
+        checkResetFilters.value = true
+    }
+
+    fun getMovieByFilter(
+        order: String,
+        type: String,
+        keyword: String
+    ): List<FilterMovie> {
+        val filterListMovie = mutableListOf<FilterMovie>()
+
+        viewModelScope.launch {
+            repositoryImpl.getMovieByFilter(
+                order = order,
+                type = type,
+                keyword = keyword
+            ).body()?.items?.forEach {
+                filterListMovie.add(it.toFilterMovie())
+                checkLoadFilterMovie.value = true
+            }
+        }
+
+        return filterListMovie
+    }
+
+    suspend fun setStateLoadFilterMovie(filterMovie: List<FilterMovie>) {
+        _stateSearchMovie.emit(
+            value = SearchMovieState.LoadListMovieWithFilters(
+                listMovie = filterMovie
+            )
+        )
+    }
+
+    fun getMovieByFiltersOnlyByName(query: String): List<FilterMovie> {
+        val filterListMovie = mutableListOf<FilterMovie>()
+
+        viewModelScope.launch {
+            repositoryImpl.getMovieFilter(query = query).body()?.docs?.forEach {
+                filterListMovie.add(it.toFilterMovieList())
+                checkLoadFilterMovie.value = true
+            }
+        }
+
+        return filterListMovie
     }
 
     suspend fun gettingTheEnteredQuery() {
@@ -152,8 +229,8 @@ class SearchMovieViewModel @Inject constructor(
         repositoryImpl.insertTitleMovieInToDatabase(title)
     }
 
-    fun mapFilterMovieCardToMovieCardEntity(movieCardKinopoisk: MovieCardKinopoisk): MovieCard {
-        return movieCardKinopoisk.toMovieCardEntity()
+    fun mapFilterMovieCardToMovieCardEntity(filterMovie: FilterMovie): MovieCard {
+        return filterMovie.toMovieCardEntity()
     }
 
     private fun List<MovieCard>.isNotFoundMovies(): Boolean {
@@ -232,33 +309,8 @@ class SearchMovieViewModel @Inject constructor(
         }
     }
 
-    fun setFiltersToMovies() {
-        filters.onEach {
-            _stateSearchMovie.emit(SearchMovieState.SwitchingFiltersState(it))
-        }.launchIn(viewModelScope)
-    }
-
-    suspend fun processGetFilters(genresName: String) {
-        _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.SwitchingFiltersState) {
-                repositoryImpl.getMovieFilter(genresName).body()?.let { filterMovies ->
-                    _stateSearchMovie.emit(SearchMovieState.LoadListMovieWithFilters(filterMovies.docs))
-                }
-                state.copy(filter = genresName)
-            } else {
-                state
-            }
-        }
-    }
-
-    fun processLoadMovieListWithFilters() {
-        _stateSearchMovie.update { state ->
-            if (state is SearchMovieState.LoadListMovieWithFilters) {
-                state.copy(listMovie = state.listMovie)
-            } else {
-                state
-            }
-        }
+    fun getMovieGenres() {
+        viewModelScope.launch { _stateSearchMovie.emit(value = SearchMovieState.GenresMovie) }
     }
 
     fun processInitial() {

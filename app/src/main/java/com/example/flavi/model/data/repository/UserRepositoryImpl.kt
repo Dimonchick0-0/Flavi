@@ -8,6 +8,7 @@ import com.example.flavi.model.data.database.map.toListPosterEntity
 import com.example.flavi.model.data.database.map.toMoviesDbModel
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ListActor
+import com.example.flavi.model.data.datasource.filter.FilterMoviesDTO
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.data.datasource.rental.Rental
 import com.example.flavi.model.data.datasource.sequelsandprequels.MoviesSequelAndPrequelDTO
@@ -15,6 +16,7 @@ import com.example.flavi.model.data.datasource.services.KinoposikService
 import com.example.flavi.model.data.datasource.services.MovieService
 import com.example.flavi.model.domain.entity.HistorySearch
 import com.example.flavi.model.domain.entity.User
+import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.kinopoiskDev.MoviesKinopoiskDev
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
@@ -44,6 +46,14 @@ class UserRepositoryImpl @Inject constructor(
             password = password
         )
         userDao.insertUserToDB(userDbModel)
+    }
+
+    suspend fun getMovieByFilter(
+        order: String,
+        type: String,
+        keyword: String
+    ): Response<FilterMoviesDTO> {
+        return movieService.getMovieByFilter(order, type, keyword)
     }
 
     suspend fun getSequelsAndPrequelsMovie(id: Int): Response<List<MoviesSequelAndPrequelDTO>> {
@@ -127,7 +137,7 @@ class UserRepositoryImpl @Inject constructor(
         return movieService.getListMoviesByQuery(keyword, page)
     }
 
-    suspend fun getMovieFilter(query: String): Response<MoviesKinopoiskDev> {
+    suspend fun getMovieFilter(query: String): Response<MoviesKinopoiskDev<MovieCardKinopoisk>> {
         return kinoposikService.getListMovie(query)
     }
 }

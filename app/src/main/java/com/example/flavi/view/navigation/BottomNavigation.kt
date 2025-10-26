@@ -1,7 +1,5 @@
 package com.example.flavi.view.navigation
 
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShortNavigationBar
@@ -28,7 +26,7 @@ object BottomNavigation {
             FlaviBottomNavigation("Избранные", Screens.Favorite.route, MyIcons.Favorite_Movies)
         )
         ShortNavigationBar (
-            containerColor = MaterialTheme.colorScheme.onSecondary
+            containerColor = MaterialTheme.colorScheme.secondary
         ) {
             val navBackStackEntry by navHostController.currentBackStackEntryAsState()
             listNavigation.forEach { flaviNavItem ->
@@ -37,13 +35,13 @@ object BottomNavigation {
                         Icon(
                             imageVector = flaviNavItem.icon,
                             contentDescription = flaviNavItem.name,
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     label = {
                         Text(
                             text = flaviNavItem.name,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     },
                     selected = navBackStackEntry?.destination?.hierarchy?.any {
