@@ -8,6 +8,7 @@ import com.example.flavi.model.data.datasource.actors.ActorSearchDTO
 import com.example.flavi.model.data.datasource.awards.AwardsDTO
 import com.example.flavi.model.data.datasource.countries.CountriesDTO
 import com.example.flavi.model.data.datasource.countries.CountriesDTOKinopoisk
+import com.example.flavi.model.data.datasource.filter.FilterMovieDTO
 import com.example.flavi.model.data.datasource.genres.GenresDTO
 import com.example.flavi.model.data.datasource.genres.GenresDTOKinopoisk
 import com.example.flavi.model.data.datasource.images.PosterDTO
@@ -22,6 +23,9 @@ import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Awards
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Country
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.FilterMovie
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Genre
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MoviesSequelAndPrequel
@@ -47,6 +51,33 @@ fun List<PosterDTO>.toListPosterEntity(): List<Poster> {
     }
 }
 
+private fun List<GenresDTOKinopoisk>.toGenreFilter(): List<Genre> {
+    return map {
+        Genre(genre = it.name)
+    }
+}
+
+private fun List<CountriesDTOKinopoisk>.toCountryFilter(): List<Country> {
+    return map {
+        Country(country = it.name)
+    }
+}
+
+fun MovieCardKinopoisk.toFilterMovieList(): FilterMovie {
+    return FilterMovie(
+        movieId = movieId,
+        kinopoiskId = id,
+        nameRu = name,
+        nameOriginal = alternativeName,
+        genres = genres.toGenreFilter(),
+        countries = countries.toCountryFilter(),
+        year = year,
+        type = "",
+        posterUrlPreview = poster.previewUrl,
+        ratingImdb = rating.imdb
+    )
+}
+
 private fun RelationsTypeDTO.toRelationType(): RelationsType {
     return when(this) {
         RelationsTypeDTO.PREQUEL -> RelationsType.PREQUEL
@@ -60,7 +91,38 @@ fun MoviesSequelAndPrequelDTO.toSequelsAndPrequels(): MoviesSequelAndPrequel {
         nameRu = nameRu,
         nameEn = nameEn,
         posterUrlPreview = posterUrlPreview,
-        relationsType = relationType.toRelationType()
+        relationsType = relationType?.toRelationType()
+    )
+}
+
+private fun List<GenresDTO>.toListFilterMovieGenre(): List<Genre> {
+    return map {
+        Genre(
+            genre = it.genre
+        )
+    }
+}
+
+private fun List<CountriesDTO>.toListFilterCountriesMovie(): List<Country> {
+    return map {
+        Country(
+            country = it.country
+        )
+    }
+}
+
+fun FilterMovieDTO.toFilterMovie(): FilterMovie {
+    return FilterMovie(
+        movieId = movieId,
+        kinopoiskId = kinopoiskId,
+        nameRu = nameRu,
+        nameOriginal = nameOriginal,
+        genres = genres.toListFilterMovieGenre(),
+        countries = countries.toListFilterCountriesMovie(),
+        year = year,
+        type = type,
+        posterUrlPreview = posterUrlPreview,
+        ratingImdb = ratingImdb
     )
 }
 
@@ -194,25 +256,24 @@ fun MovieDetail.toMovieCard() = MovieCard(
     isFavorite = isFavorite
 )
 
-fun MovieCardKinopoisk.toMovieCardEntity() = MovieCard(
+fun FilterMovie.toMovieCardEntity() = MovieCard(
     id = movieId,
-    filmId = id,
-    nameRu = name,
-    nameEn = alternativeName,
+    filmId = kinopoiskId,
+    nameRu = nameRu,
+    nameEn = nameOriginal,
     year = year.toString(),
-    posterUrlPreview = poster.previewUrl,
-    rating = rating.imdb.toString(),
+    posterUrlPreview = posterUrlPreview,
+    rating = ratingImdb.toString(),
     genres = genres.toListGenresDTO(),
     countries = countries.toListCountrieDTO(),
-    isFavorite = isFavorite
 )
 
-private fun List<GenresDTOKinopoisk>.toListGenresDTO(): List<GenresDTO> {
-    return map { GenresDTO(genre = it.name) }
+private fun List<Genre>.toListGenresDTO(): List<GenresDTO> {
+    return map { GenresDTO(genre = it.genre) }
 }
 
-private fun List<CountriesDTOKinopoisk>.toListCountrieDTO(): List<CountriesDTO> {
-    return map { CountriesDTO(it.name) }
+private fun List<Country>.toListCountrieDTO(): List<CountriesDTO> {
+    return map { CountriesDTO(it.country) }
 }
 
 fun MovieDetail.toMovieCardEntity() = MovieCard(

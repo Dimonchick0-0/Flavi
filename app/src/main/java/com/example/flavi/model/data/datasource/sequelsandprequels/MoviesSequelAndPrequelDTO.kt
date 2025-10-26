@@ -9,7 +9,7 @@ data class MoviesSequelAndPrequelDTO(
     @SerialName("nameRu") val nameRu: String,
     @SerialName("nameEn") val nameEn: String,
     @SerialName("posterUrlPreview") val posterUrlPreview: String,
-    @SerialName("relationType") val relationType: RelationsTypeDTO
+    @SerialName("relationType") val relationType: RelationsTypeDTO?
 )
 
 @Serializable

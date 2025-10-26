@@ -4,6 +4,4 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class MoviesKinopoiskDev(
-    @SerialName("docs") val docs: List<MovieCardKinopoisk>
-)
+data class MoviesKinopoiskDev<T>(@SerialName("docs") val docs: List<T>)

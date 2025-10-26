@@ -12,7 +12,7 @@ data class MoviesDbModel(
     val userMovieId: String = UNKNOWN_USER_MOVIE_ID,
     val filmId: Int,
     val nameRu: String,
-    val nameEn: String,
+    val nameEn: String?,
     val posterUrlPreview: String,
     val year: String,
     val rating: String,

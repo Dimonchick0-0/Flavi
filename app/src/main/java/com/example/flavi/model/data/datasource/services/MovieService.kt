@@ -3,6 +3,7 @@ package com.example.flavi.model.data.datasource.services
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ListActor
 import com.example.flavi.model.data.datasource.awards.AwardsListDTO
+import com.example.flavi.model.data.datasource.filter.FilterMoviesDTO
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
 import com.example.flavi.model.data.datasource.rental.Rental
 import com.example.flavi.model.data.datasource.reviews.ReviewListDTO
@@ -67,4 +68,11 @@ interface MovieService {
     suspend fun getSequelsAndPrequelsMovieById(
         @Path("id") id: Int
     ): Response<List<MoviesSequelAndPrequelDTO>>
+
+    @GET("/api/v2.2/films?page=1")
+    suspend fun getMovieByFilter(
+        @Query("order") order: String,
+        @Query("type") type: String,
+        @Query("keyword") keyword: String
+    ): Response<FilterMoviesDTO>
 }

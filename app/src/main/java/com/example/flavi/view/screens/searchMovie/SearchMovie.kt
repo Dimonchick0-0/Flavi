@@ -3,10 +3,12 @@
 package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +46,7 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
@@ -52,14 +55,21 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSearchBarState
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -75,7 +85,9 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.domain.entity.Genres
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.OrderFilterMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.TypeFilterMovie
 import com.example.flavi.view.navigation.BottomNavigation
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.SearchMovieState
@@ -95,6 +107,7 @@ fun SearchMovie(
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.surface,
         bottomBar = {
             BottomNavigation.BottomNav(navHostController = navHostController)
         },
@@ -106,9 +119,7 @@ fun SearchMovie(
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.onBackground)
         ) {
-            viewModel.setFiltersToMovies()
             when (val currentState = state.value) {
 
                 SearchMovieState.Initial -> {
@@ -116,7 +127,7 @@ fun SearchMovie(
                 }
 
                 SearchMovieState.NotFound -> {
-                    SearchMovieComponent(viewModel = viewModel,)
+                    SearchMovieComponent(viewModel = viewModel)
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Center,
@@ -130,11 +141,11 @@ fun SearchMovie(
                 }
 
                 is SearchMovieState.InputQuery -> {
-                    SearchMovieComponent(viewModel = viewModel,)
+                    SearchMovieComponent(viewModel = viewModel)
                 }
 
                 is SearchMovieState.LoadMovieAndActors -> {
-                    SearchMovieComponent(viewModel = viewModel,)
+                    SearchMovieComponent(viewModel = viewModel)
 
                     LazyColumn {
                         item {
@@ -147,49 +158,51 @@ fun SearchMovie(
                                 val colorRating =
                                     if (movie.rating > "5.0") Color.Green else Color.Red
 
-                                MovieCardComponent(
-                                    onClickSaveMovie = {
-                                        viewModel.saveMovieInTheFavorites(
-                                            movie.copy(isFavorite = true)
-                                        )
-                                        val checkMovie = CheckFavoriteMovieList<MovieCard>()
-                                        checkMovie.apply {
-                                            list.add(movie)
-                                            checkListMovie.value = true
-                                        }
-                                        viewModel.searchMovieInTheDB.value = true
-                                    },
-                                    onClickCheckingMovie = {
-                                        coroutineScope.launch {
-                                            if (viewModel.checkMovieByTitle(movieId = movie.filmId)) {
-                                                viewModel.searchMovieInTheDB.value = true
+                                movie.nameEn?.let {
+                                    MovieCardComponent(
+                                        onClickSaveMovie = {
+                                            viewModel.saveMovieInTheFavorites(
+                                                movie.copy(isFavorite = true)
+                                            )
+                                            val checkMovie = CheckFavoriteMovieList<MovieCard>()
+                                            checkMovie.apply {
+                                                list.add(movie)
+                                                checkListMovie.value = true
                                             }
-                                            if (!viewModel.checkMovieByTitle(movieId = movie.filmId)) {
-                                                viewModel.searchMovieInTheDB.value = false
+                                            viewModel.searchMovieInTheDB.value = true
+                                        },
+                                        onClickCheckingMovie = {
+                                            coroutineScope.launch {
+                                                if (viewModel.checkMovieByTitle(movieId = movie.filmId)) {
+                                                    viewModel.searchMovieInTheDB.value = true
+                                                }
+                                                if (!viewModel.checkMovieByTitle(movieId = movie.filmId)) {
+                                                    viewModel.searchMovieInTheDB.value = false
+                                                }
                                             }
-                                        }
-                                    },
-                                    onClickRemoveMovie = {
-                                        coroutineScope.launch {
-                                            viewModel.apply {
-                                                removeMovieFromFavorites(movieId = movie.filmId)
-                                                searchMovieInTheDB.value = false
+                                        },
+                                        onClickRemoveMovie = {
+                                            coroutineScope.launch {
+                                                viewModel.apply {
+                                                    removeMovieFromFavorites(movieId = movie.filmId)
+                                                    searchMovieInTheDB.value = false
+                                                }
                                             }
-                                        }
-                                    },
-                                    onClickGetMovieDetail = {
-                                        onClickToMovieDetailScreen(movie)
-                                    },
-                                    searchMovie = viewModel.searchMovieInTheDB.value,
-                                    movieImage = movie.posterUrlPreview,
-                                    movieNameRu = movie.nameRu,
-                                    nameOriginal = movie.nameEn,
-                                    movieYear = movie.year,
-                                    movieGenre = movie.genres.first().genre,
-                                    movieCountrie = movie.countries.first().country,
-                                    movieRating = movie.rating,
-                                    movieColorRating = colorRating
-                                )
+                                        },
+                                        onClickGetMovieDetail = {
+                                            onClickToMovieDetailScreen(movie)
+                                        },
+                                        searchMovie = viewModel.searchMovieInTheDB.value,
+                                        movieImage = movie.posterUrlPreview,
+                                        movieNameRu = movie.nameRu,
+                                        nameOriginal = movie.nameEn,
+                                        movieYear = movie.year,
+                                        movieGenre = movie.genres.first().genre,
+                                        movieCountrie = movie.countries.first().country,
+                                        movieRating = movie.rating,
+                                        movieColorRating = colorRating
+                                    )
+                                }
                             }
                         }
                     }
@@ -214,71 +227,93 @@ fun SearchMovie(
                     )
                 }
 
-                is SearchMovieState.SwitchingFiltersState -> {
-                    coroutineScope.launch { viewModel.processGetFilters(currentState.filter) }
-                    SearchMovieComponent(viewModel = viewModel)
-                }
-
                 is SearchMovieState.LoadListMovieWithFilters -> {
-                    viewModel.processLoadMovieListWithFilters()
                     SearchMovieComponent(viewModel = viewModel)
 
                     LazyColumn {
-                        currentState.listMovie.forEach { filterMovie ->
-                            val colorRating = if (filterMovie.rating.imdb > 5.0)
-                                Color.Green
-                            else
-                                Color.Red
-                            val checkMovieObserver = CheckFavoriteMovieList<MovieCard>()
-                            item {
-                                MovieCardComponent(
-                                    onClickSaveMovie = {
-                                        coroutineScope.launch {
-                                            viewModel.apply {
-                                                saveMovieInTheFavorites(
-                                                    mapFilterMovieCardToMovieCardEntity(filterMovie)
-                                                )
-                                                checkMovieObserver.list.add(
-                                                    mapFilterMovieCardToMovieCardEntity(filterMovie)
-                                                )
-                                            }
-                                            viewModel.searchMovieInTheDB.value = true
+                        Log.d("Auth", "Список не пустой: ${currentState.listMovie.isNotEmpty()}")
+                        Log.d("Auth", "Загрузка списка: ${viewModel.checkLoadFilterMovie.value}")
+                        if (viewModel.checkLoadFilterMovie.value
+                            && currentState.listMovie.isNotEmpty()) {
+
+                            currentState.listMovie
+                                .filter { it.ratingImdb != null }
+                                .forEach { filterMovie ->
+                                    val color = filterMovie.ratingImdb?.let { colorRating ->
+                                        if (colorRating > 5.0)
+                                            Color.Green
+                                        else
+                                            Color.Red
+                                    }
+
+                                    val checkMovieObserver = CheckFavoriteMovieList<MovieCard>()
+                                    item {
+                                        filterMovie.nameOriginal?.let {
+
+                                            MovieCardComponent(
+                                                onClickSaveMovie = {
+                                                    coroutineScope.launch {
+                                                        viewModel.apply {
+                                                            saveMovieInTheFavorites(
+                                                                mapFilterMovieCardToMovieCardEntity(
+                                                                    filterMovie
+                                                                )
+                                                            )
+                                                            checkMovieObserver.list.add(
+                                                                mapFilterMovieCardToMovieCardEntity(
+                                                                    filterMovie
+                                                                )
+                                                            )
+                                                        }
+                                                        viewModel.searchMovieInTheDB.value = true
+                                                    }
+                                                },
+                                                onClickCheckingMovie = {
+                                                    coroutineScope.launch {
+                                                        if (viewModel.checkMovieByTitle(
+                                                                movieId = filterMovie.kinopoiskId
+                                                            )
+                                                        ) {
+                                                            viewModel.searchMovieInTheDB.value = true
+                                                        }
+                                                        if (!viewModel.checkMovieByTitle(
+                                                                movieId = filterMovie.kinopoiskId
+                                                            )
+                                                        ) {
+                                                            viewModel.searchMovieInTheDB.value = false
+                                                        }
+                                                    }
+                                                },
+                                                onClickRemoveMovie = {
+                                                    coroutineScope.launch {
+                                                        viewModel.apply {
+                                                            removeMovieFromFavorites(filterMovie.kinopoiskId)
+                                                            searchMovieInTheDB.value = false
+                                                        }
+                                                    }
+                                                },
+                                                onClickGetMovieDetail = {
+                                                    onClickToMovieDetailScreen(filterMovie.toMovieCardEntity())
+                                                },
+                                                searchMovie = viewModel.searchMovieInTheDB.value,
+                                                movieImage = filterMovie.posterUrlPreview,
+                                                movieNameRu = filterMovie.nameRu,
+                                                nameOriginal = filterMovie.nameOriginal,
+                                                movieYear = filterMovie.year.toString(),
+                                                movieCountrie = filterMovie.countries.first().country,
+                                                movieGenre = filterMovie.genres.first().genre,
+                                                movieRating = filterMovie.ratingImdb.toString(),
+                                                movieColorRating = color!!
+                                            )
                                         }
-                                    },
-                                    onClickCheckingMovie = {
-                                        coroutineScope.launch {
-                                            if (viewModel.checkMovieByTitle(movieId = filterMovie.id)) {
-                                                viewModel.searchMovieInTheDB.value = true
-                                            }
-                                            if (!viewModel.checkMovieByTitle(movieId = filterMovie.id)) {
-                                                viewModel.searchMovieInTheDB.value = false
-                                            }
-                                        }
-                                    },
-                                    onClickRemoveMovie = {
-                                        coroutineScope.launch {
-                                            viewModel.apply {
-                                                removeMovieFromFavorites(filterMovie.id)
-                                                searchMovieInTheDB.value = false
-                                            }
-                                        }
-                                    },
-                                    onClickGetMovieDetail = {
-                                        onClickToMovieDetailScreen(filterMovie.toMovieCardEntity())
-                                    },
-                                    searchMovie = viewModel.searchMovieInTheDB.value,
-                                    movieImage = filterMovie.poster.previewUrl,
-                                    movieNameRu = filterMovie.name,
-                                    nameOriginal = filterMovie.alternativeName,
-                                    movieYear = filterMovie.year.toString(),
-                                    movieCountrie = filterMovie.countries.first().name,
-                                    movieGenre = filterMovie.genres.first().name,
-                                    movieRating = filterMovie.rating.imdb.toString(),
-                                    movieColorRating = colorRating
-                                )
-                            }
+                                    }
+                                }
                         }
                     }
+                }
+
+                SearchMovieState.GenresMovie -> {
+                    GenresMovie(viewModel = viewModel)
                 }
 
             }
@@ -309,7 +344,7 @@ private fun SearchMovieComponent(
             },
             placeholder = {
                 Text(
-                    modifier = Modifier.clearAndSetSemantics {  }, text = "Поиск..."
+                    modifier = Modifier.clearAndSetSemantics { }, text = "Поиск..."
                 )
             },
             leadingIcon = {
@@ -411,12 +446,12 @@ private fun Modifier.bottomBorder(strokeWidth: Dp, color: Color) = composed(
 
         Modifier.drawBehind {
             val width = size.width
-            val height = size.height - strokeWidthPx/2
+            val height = size.height - strokeWidthPx / 2
 
             drawLine(
                 color = color,
                 start = Offset(x = 0f, y = height),
-                end = Offset(x = width , y = height),
+                end = Offset(x = width, y = height),
                 strokeWidth = strokeWidthPx
             )
         }
@@ -618,12 +653,7 @@ private fun FAB(
     val sheetState = rememberModalBottomSheetState()
     val showBottomSheet = remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
-    val listOfGenres = listOf(
-        Genres(idGenres = 0, name = "ужасы"),
-        Genres(idGenres = 1, name = "драма"),
-        Genres(idGenres = 2, name = "мелодрама"),
-        Genres(idGenres = 3, name = "триллер")
-    )
+
     FloatingActionButton(
         modifier = modifier,
         onClick = {
@@ -659,20 +689,303 @@ private fun FAB(
             },
             sheetState = sheetState
         ) {
-            LazyColumn {
-                listOfGenres.forEach {
-                    item {
-                        ListGenres(
-                            onClickToElement = {
-                                coroutineScope.launch { viewModel.filters.emit(value = it.name) }
-                            },
-                            genres = it
+            Column {
+                TextButton(
+                    onClick = {
+                        viewModel.resetFilters()
+                    }
+                ) {
+                    Text(
+                        text = "Сбросить фильтры",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                TextButton(
+                    onClick = { viewModel.getMovieGenres() }
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        text = "Жанры",
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    if (viewModel.genreMovie.value.isEmpty()) {
+                        Text(
+                            text = "Все жанры",
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(
+                            text = viewModel.genreMovie.value,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
+
                 }
+                SortedMovie(viewModel = viewModel)
+                SortedMovieType(viewModel = viewModel)
+            }
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.apply {
+
+                            if (order != OrderFilterMovie.NOT_SELECTED
+                                && typeMovie != TypeFilterMovie.NOT_SELECTED
+                                && genreMovie.value != "") {
+
+                                val list = getMovieByFilter(
+                                    order = order.toString(),
+                                    type = typeMovie.toString(),
+                                    keyword = genreMovie.value
+                                )
+                                setStateLoadFilterMovie(filterMovie = list)
+
+                            }
+
+                            if (order == OrderFilterMovie.NOT_SELECTED
+                                && typeMovie == TypeFilterMovie.NOT_SELECTED
+                                && genreMovie.value != "") {
+                                val filterMovieList = getMovieByFiltersOnlyByName(
+                                    genreMovie.value
+                                )
+                                setStateLoadFilterMovie(filterMovie = filterMovieList)
+                            }
+
+                        }
+
+                    }
+
+                }
+            ) {
+                Text(
+                    text = "Применить фильтры",
+                    color = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
+}
+
+@Composable
+private fun SortedMovieType(viewModel: SearchMovieViewModel) {
+
+    Spacer(modifier = Modifier.height(height = 8.dp))
+    Text(
+        modifier = Modifier.padding(start = 8.dp),
+        text = "Выбрать тип",
+        color = MaterialTheme.colorScheme.primary,
+        fontSize = 18.sp
+    )
+    Spacer(modifier = Modifier.height(height = 8.dp))
+    Column {
+
+        GetSortedMovieType(
+            text = "Всё",
+            viewModel = viewModel
+        )
+        GetSortedMovieType(
+            text = "Фильмы",
+            viewModel = viewModel
+        )
+        GetSortedMovieType(
+            text = "ТелеШоу",
+            viewModel = viewModel
+        )
+        GetSortedMovieType(
+            text = "ТелеСериал",
+            viewModel = viewModel
+        )
+        GetSortedMovieType(
+            text = "МиниСериал",
+            viewModel = viewModel
+        )
+
+    }
+}
+
+@Composable
+private fun GetSortedMovieType(
+    modifier: Modifier = Modifier,
+    viewModel: SearchMovieViewModel,
+    text: String
+) {
+
+    var typeMovie by remember { mutableStateOf(TypeFilterMovie.NOT_SELECTED) }
+    var checked by remember { mutableStateOf(false) }
+
+    if (viewModel.checkResetFilters.value) {
+        checked = false
+    }
+
+    Row {
+        Text(
+            modifier = modifier
+                .weight(1f)
+                .padding(start = 8.dp),
+            text = text,
+            color = MaterialTheme.colorScheme.primary
+        )
+        Switch(
+            checked = checked,
+            onCheckedChange = {
+                viewModel.checkResetFilters.value = false
+                viewModel.checkLoadFilterMovie.value = false
+                checked = it
+                when (text) {
+                    "Всё" -> {
+                        if (it) {
+                            typeMovie = TypeFilterMovie.ALL
+                        }
+                    }
+
+                    "Фильмы" -> {
+                        if (it) {
+                            typeMovie = TypeFilterMovie.FILM
+                        }
+                    }
+
+                    "ТелеШоу" -> {
+                        if (it) {
+                            typeMovie = TypeFilterMovie.TV_SHOW
+                        }
+                    }
+
+                    "ТелеСериал" -> {
+                        if (it) {
+                            typeMovie = TypeFilterMovie.TV_SERIES
+                        }
+                    }
+
+                    "МиниСериал" -> {
+                        if (it) {
+                            typeMovie = TypeFilterMovie.MINI_SERIES
+                        }
+                    }
+                }
+                viewModel.typeMovie = typeMovie
+            }
+        )
+    }
+
+}
+
+@Composable
+private fun SortedMovie(
+    modifier: Modifier = Modifier,
+    viewModel: SearchMovieViewModel
+) {
+    Spacer(modifier = Modifier.height(height = 8.dp))
+    Text(
+        modifier = Modifier.padding(start = 8.dp),
+        text = "Сортировать по",
+        color = MaterialTheme.colorScheme.primary,
+        fontSize = 18.sp
+    )
+    Spacer(modifier = Modifier.height(height = 8.dp))
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        SortedTextMovie(
+            text = "Рейтингу",
+            viewModel = viewModel
+        )
+        SortedTextMovie(
+            text = "Популярности",
+            viewModel = viewModel
+        )
+        SortedTextMovie(
+            text = "Дате",
+            viewModel = viewModel
+        )
+    }
+}
+
+@Composable
+private fun SortedTextMovie(
+    modifier: Modifier = Modifier,
+    viewModel: SearchMovieViewModel,
+    text: String
+) {
+    val colorIsFocused = remember { mutableStateOf(Color.White) }
+    val isFocused = remember { mutableStateOf(false) }
+    val requester = remember { FocusRequester() }
+    var order by remember { mutableStateOf(OrderFilterMovie.NOT_SELECTED) }
+
+    if (viewModel.checkResetFilters.value) {
+        isFocused.value = false
+    }
+
+    Box(
+        modifier = modifier
+            .clickable {
+                viewModel.checkResetFilters.value = false
+                viewModel.checkLoadFilterMovie.value = false
+                requester.requestFocus(focusDirection = FocusDirection.Enter)
+                when (text) {
+                    "Рейтингу" -> order = OrderFilterMovie.RATING
+                    "Популярности" -> order = OrderFilterMovie.NUM_VOTE
+                    "Дате" -> order = OrderFilterMovie.YEAR
+                }
+                viewModel.order = order
+            }
+            .focusRequester(requester)
+            .onFocusChanged {
+                colorIsFocused.value = if (it.isFocused) Color.Black else Color.White
+                isFocused.value = it.isFocused
+            }
+            .focusable()
+            .bottomBorder(
+                strokeWidth = 2.dp,
+                color = if (isFocused.value) Color.White else Color.Black
+            )
+    ) {
+        Text(
+            text = text,
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun GenresMovie(
+    modifier: Modifier = Modifier,
+    viewModel: SearchMovieViewModel
+) {
+
+    val coroutineScope = rememberCoroutineScope()
+    val listOfGenres = listOf(
+        Genres(idGenres = 0, name = "ужасы"),
+        Genres(idGenres = 1, name = "драма"),
+        Genres(idGenres = 2, name = "мелодрама"),
+        Genres(idGenres = 3, name = "триллер")
+    )
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize()
+    ) {
+        listOfGenres.forEach {
+            item {
+                ListGenres(
+                    onClickToElement = {
+                        coroutineScope.launch {
+                            viewModel.apply {
+                                genreMovie.value = it.name
+                                processInitial()
+                            }
+                        }
+                    },
+                    genres = it
+                )
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -692,24 +1005,8 @@ private fun ListGenres(
             modifier = Modifier
                 .padding(8.dp),
             text = genres.name,
-            fontSize = 16.sp
-        )
-    }
-}
-
-@Composable
-fun CardHistorySearch(
-    modifier: Modifier = Modifier,
-    colors: CardColors = CardDefaults.cardColors(),
-    content: @Composable RowScope.() -> Unit
-) {
-    Surface(
-        modifier = modifier,
-        color = colors.containerColor
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            content = content
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
@@ -744,7 +1041,8 @@ fun MovieCardComponent(
             },
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 5.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -760,25 +1058,30 @@ fun MovieCardComponent(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = movieNameRu
+                    text = movieNameRu,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Row {
                     Text(
                         text = nameOriginal,
+                        color = MaterialTheme.colorScheme.primary,
                         maxLines = 1
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = movieYear
+                        text = movieYear,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 Row {
                     Text(
-                        text = movieCountrie
+                        text = movieCountrie,
+                        color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier.width(16.dp))
                     Text(
-                        text = movieGenre
+                        text = movieGenre,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -816,7 +1119,6 @@ fun MovieCardComponent(
                                         if (searchMovie) {
                                             onClickRemoveMovie()
                                         }
-                                        searchMovie
                                     }
                                 ) {
                                     if (searchMovie) {

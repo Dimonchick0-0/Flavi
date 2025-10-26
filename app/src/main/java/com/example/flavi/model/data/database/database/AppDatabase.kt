@@ -15,7 +15,7 @@ import com.example.flavi.model.data.database.entitydb.UserDbModel
         MoviesDbModel::class,
         HistorySearchDb::class
     ],
-    version = 41,
+    version = 42,
     exportSchema = false
 )
 @TypeConverters(FlaviConverter::class)

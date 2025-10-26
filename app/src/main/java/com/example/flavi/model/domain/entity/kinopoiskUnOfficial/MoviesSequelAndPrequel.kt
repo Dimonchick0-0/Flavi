@@ -5,7 +5,7 @@ data class MoviesSequelAndPrequel(
     val nameRu: String,
     val nameEn: String,
     val posterUrlPreview: String,
-    val relationsType: RelationsType
+    val relationsType: RelationsType?
 )
 
 enum class RelationsType {

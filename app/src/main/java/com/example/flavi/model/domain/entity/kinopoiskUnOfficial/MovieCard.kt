@@ -11,7 +11,7 @@ data class MovieCard(
     val userMovieId: String = UNKNOWN_USER_MOVIE_ID,
     @SerialName("filmId") val filmId: Int = UNKNOWN_ID,
     @SerialName("nameRu") val nameRu: String = UNKNOWN_NAME,
-    @SerialName("nameEn") val nameEn: String = UNKNOWN_ALTERNATIVE_NAME,
+    @SerialName("nameEn") val nameEn: String? = UNKNOWN_ALTERNATIVE_NAME,
     @SerialName("year") val year: String = UNKNOWN_YEAR,
     @SerialName("posterUrlPreview") val posterUrlPreview: String = UNKNOWN_POSTER,
     @SerialName("rating") val rating: String = UNKNOWN_RATING,

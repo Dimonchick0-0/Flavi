@@ -1,7 +1,6 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -389,7 +388,6 @@ private fun MovieDetailComponent(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun SequelsAndPrequelsMovieComponent(
     modifier: Modifier = Modifier,

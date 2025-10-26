@@ -101,45 +101,48 @@ fun FavoriteScreen(
                         currentState.movieList.forEach { movie ->
                             val colorRating = if (movie.rating > "5.0") Color.Green else Color.Red
                             item {
-                                MovieCardComponent(
-                                    onClickSaveMovie = {
-                                        viewModel.apply {
-                                            saveMovieToFavorite(movie)
-                                            checkMovieInFavorite.value = true
-                                        }
-                                    },
-                                    onClickCheckingMovie = {
-                                        coroutineScope.launch {
-                                            if (viewModel.checkingMovieInFavorite(movie.filmId)) {
-                                                viewModel.checkMovieInFavorite.value = true
-                                            }
-                                            if (!viewModel.checkingMovieInFavorite(movieId = movie.filmId)) {
-                                                viewModel.checkMovieInFavorite.value = false
-                                            }
-                                        }
-                                    },
-                                    onClickRemoveMovie = {
-                                        coroutineScope.launch {
+                                movie.nameEn?.let {
+                                    MovieCardComponent(
+                                        onClickSaveMovie = {
                                             viewModel.apply {
-                                                removeMovieInFavoriteById(movie.filmId)
-                                                checkMovieInFavorite.value = false
-                                                checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
+                                                saveMovieToFavorite(movie)
+                                                checkMovieInFavorite.value = true
                                             }
-                                        }
-                                    },
-                                    onClickGetMovieDetail = {
-                                        onClickToMovieDetailScreen(movie)
-                                    },
-                                    searchMovie = viewModel.checkMovieInFavorite.value,
-                                    movieImage = movie.posterUrlPreview,
-                                    movieNameRu = movie.nameRu,
-                                    nameOriginal = movie.nameEn,
-                                    movieYear = movie.year,
-                                    movieGenre = movie.genres.first().genre,
-                                    movieCountrie = movie.countries.first().country,
-                                    movieRating = movie.rating,
-                                    movieColorRating = colorRating
-                                )
+                                        },
+                                        onClickCheckingMovie = {
+                                            coroutineScope.launch {
+                                                if (viewModel.checkingMovieInFavorite(movie.filmId)) {
+                                                    viewModel.checkMovieInFavorite.value = true
+                                                }
+                                                if (!viewModel.checkingMovieInFavorite(movieId = movie.filmId)) {
+                                                    viewModel.checkMovieInFavorite.value = false
+                                                }
+                                            }
+                                        },
+                                        onClickRemoveMovie = {
+                                            coroutineScope.launch {
+                                                viewModel.apply {
+                                                    removeMovieInFavoriteById(movie.filmId)
+                                                    checkMovieInFavorite.value = false
+                                                    checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
+                                                }
+                                            }
+                                        },
+                                        onClickGetMovieDetail = {
+                                            onClickToMovieDetailScreen(movie)
+                                        },
+                                        searchMovie = viewModel.checkMovieInFavorite.value,
+                                        movieImage = movie.posterUrlPreview,
+                                        movieNameRu = movie.nameRu,
+                                        nameOriginal = movie.nameEn,
+                                        movieYear = movie.year,
+                                        movieGenre = movie.genres.first().genre,
+                                        movieCountrie = movie.countries.first().country,
+                                        movieRating = movie.rating,
+                                        movieColorRating = colorRating
+                                    )
+                                }
+
                             }
                         }
 
