@@ -13,6 +13,7 @@ import com.example.flavi.view.screens.movieDetail.MovieDetail
 import com.example.flavi.view.screens.movieDetail.poster.PosterScreen
 import com.example.flavi.view.screens.movieDetail.review.ReviewScreen
 import com.example.flavi.view.screens.profile.Profile
+import com.example.flavi.view.screens.profile.UpdateAccountScreen
 import com.example.flavi.view.screens.registration.RegistrationScreen
 import com.example.flavi.view.screens.searchMovie.SearchMovie
 import com.google.firebase.Firebase
@@ -61,8 +62,15 @@ fun NavGraph() {
                             }
                         }
                     )
+                },
+                onUpdateAccountClick = {
+                    navController.navigate(Screens.UpdateAccount.route)
                 }
             )
+        }
+
+        composable(Screens.UpdateAccount.route) {
+            UpdateAccountScreen()
         }
 
         composable(Screens.SearchMovie.route) {
@@ -134,6 +142,9 @@ sealed class Screens(val route: String) {
 
     @Serializable
     data object Favorite : Screens("favorite")
+
+    @Serializable
+    data object UpdateAccount: Screens("update_account")
 
     @Serializable
     data object MovieDetail: Screens("movie_detail/{film_id}") {
