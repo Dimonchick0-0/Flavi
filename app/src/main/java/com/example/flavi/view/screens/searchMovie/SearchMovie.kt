@@ -231,8 +231,6 @@ fun SearchMovie(
                     SearchMovieComponent(viewModel = viewModel)
 
                     LazyColumn {
-                        Log.d("Auth", "Список не пустой: ${currentState.listMovie.isNotEmpty()}")
-                        Log.d("Auth", "Загрузка списка: ${viewModel.checkLoadFilterMovie.value}")
                         if (viewModel.checkLoadFilterMovie.value
                             && currentState.listMovie.isNotEmpty()) {
 

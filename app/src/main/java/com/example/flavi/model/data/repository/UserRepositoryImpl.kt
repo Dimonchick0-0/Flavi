@@ -48,6 +48,8 @@ class UserRepositoryImpl @Inject constructor(
         userDao.insertUserToDB(userDbModel)
     }
 
+    fun getCurrentUser() = getFirebaseAuth.getCurrentUser()
+
     suspend fun getMovieByFilter(
         order: String,
         type: String,
