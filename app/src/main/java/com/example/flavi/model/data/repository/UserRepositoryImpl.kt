@@ -48,6 +48,8 @@ class UserRepositoryImpl @Inject constructor(
         userDao.insertUserToDB(userDbModel)
     }
 
+    suspend fun getPersonDetail(id: Int) = movieService.getPersonDetail(id)
+
     fun getCurrentUser() = getFirebaseAuth.getCurrentUser()
 
     suspend fun getMovieByFilter(
