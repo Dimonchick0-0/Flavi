@@ -2,6 +2,7 @@ package com.example.flavi.model.data.datasource.services
 
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ListActor
+import com.example.flavi.model.data.datasource.actors.PersonDTO
 import com.example.flavi.model.data.datasource.awards.AwardsListDTO
 import com.example.flavi.model.data.datasource.filter.FilterMoviesDTO
 import com.example.flavi.model.data.datasource.images.ImageMovieDTO
@@ -75,4 +76,9 @@ interface MovieService {
         @Query("type") type: String,
         @Query("keyword") keyword: String
     ): Response<FilterMoviesDTO>
+
+    @GET("/api/v1/staff/{id}")
+    suspend fun getPersonDetail(
+        @Path("id") id: Int
+    ): Response<PersonDTO>
 }

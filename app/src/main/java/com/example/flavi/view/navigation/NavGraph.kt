@@ -1,5 +1,6 @@
 package com.example.flavi.view.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
@@ -12,6 +13,7 @@ import com.example.flavi.view.screens.favorite.FavoriteScreen
 import com.example.flavi.view.screens.movieDetail.MovieDetail
 import com.example.flavi.view.screens.movieDetail.poster.PosterScreen
 import com.example.flavi.view.screens.movieDetail.review.ReviewScreen
+import com.example.flavi.view.screens.person.PersonsScreen
 import com.example.flavi.view.screens.profile.Profile
 import com.example.flavi.view.screens.profile.UpdateAccountScreen
 import com.example.flavi.view.screens.registration.RegistrationScreen
@@ -90,7 +92,7 @@ fun NavGraph() {
             )
         }
         composable(Screens.MovieDetail.route) {
-            val filmId = getArguments(it)
+            val filmId = getArgumentsFilms(it)
             MovieDetail(
                 filmId = filmId,
                 loadAllImageMovieClick = {
@@ -104,26 +106,39 @@ fun NavGraph() {
                 },
                 getNewMovieById = { id ->
                     navController.navigate(Screens.MovieDetail.createRoute(id))
+                },
+                getDetailInfoAboutPersonClick = { personId ->
+                    navController.navigate(Screens.Person.createRoute(personId = personId))
                 }
             )
         }
+
+        composable(Screens.Person.route) {
+            val id = getArgumentsPerson(it)
+            PersonsScreen(personId = id)
+        }
+
         composable(Screens.Poster.route) {
-            val filmId = getArguments(it)
+            val filmId = getArgumentsFilms(it)
             PosterScreen(filmId = filmId)
         }
         composable(Screens.Awards.route) {
-            val filmId = getArguments(it)
+            val filmId = getArgumentsFilms(it)
             AwardsScreen(filmId = filmId)
         }
         composable(Screens.Reviews.route) {
-            val filmId = getArguments(it)
+            val filmId = getArgumentsFilms(it)
             ReviewScreen(filmId = filmId)
         }
     }
 }
 
-private fun getArguments(navBackStackEntry: NavBackStackEntry): Int {
+private fun getArgumentsFilms(navBackStackEntry: NavBackStackEntry): Int {
     return navBackStackEntry.arguments?.getString("film_id")?.toInt() ?: 0
+}
+
+private fun getArgumentsPerson(navBackStackEntry: NavBackStackEntry): Int {
+    return navBackStackEntry.arguments?.getString("person_id")?.toInt() ?: 0
 }
 
 @Serializable
@@ -145,6 +160,15 @@ sealed class Screens(val route: String) {
 
     @Serializable
     data object UpdateAccount: Screens("update_account")
+
+    @Serializable
+    data object Person: Screens("person/{person_id}") {
+
+        fun createRoute(personId: Int): String {
+            return "person/$personId"
+        }
+
+    }
 
     @Serializable
     data object MovieDetail: Screens("movie_detail/{film_id}") {

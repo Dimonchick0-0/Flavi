@@ -5,6 +5,10 @@ import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.datasource.actors.ActorDTO
 import com.example.flavi.model.data.datasource.actors.ActorSearchDTO
+import com.example.flavi.model.data.datasource.actors.MoviePersonDTO
+import com.example.flavi.model.data.datasource.actors.PersonDTO
+import com.example.flavi.model.data.datasource.actors.ProfessionKeyDTO
+import com.example.flavi.model.data.datasource.actors.SEXDTO
 import com.example.flavi.model.data.datasource.awards.AwardsDTO
 import com.example.flavi.model.data.datasource.countries.CountriesDTO
 import com.example.flavi.model.data.datasource.countries.CountriesDTOKinopoisk
@@ -28,12 +32,16 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.FilterMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Genre
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieDetail
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MoviePerson
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MoviesSequelAndPrequel
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Person
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ProfessionKey
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.RelationsType
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewList
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewType
+import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SEX
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SearchActor
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SimilarMovie
 
@@ -49,6 +57,56 @@ fun List<PosterDTO>.toListPosterEntity(): List<Poster> {
             previewUrl = it.previewUrl
         )
     }
+}
+
+private fun ProfessionKeyDTO.toProfessionKey(): ProfessionKey {
+    return when(this) {
+        ProfessionKeyDTO.DIRECTOR -> ProfessionKey.DIRECTOR
+        ProfessionKeyDTO.WRITER -> ProfessionKey.WRITER
+        ProfessionKeyDTO.ACTOR -> ProfessionKey.ACTOR
+        ProfessionKeyDTO.HIMSELF -> ProfessionKey.HIMSELF
+        ProfessionKeyDTO.PRODUCER -> ProfessionKey.PRODUCER
+        ProfessionKeyDTO.HRONO_TITR_MALE -> ProfessionKey.HRONO_TITR_MALE
+        ProfessionKeyDTO.HRONO_TITR_FEMALE -> ProfessionKey.HRONO_TITR_FEMALE
+        ProfessionKeyDTO.HERSELF -> ProfessionKey.HERSELF
+        ProfessionKeyDTO.NOT_SELECTED -> ProfessionKey.NOT_SELECTED
+    }
+}
+
+private fun List<MoviePersonDTO>.toMoviePerson(): List<MoviePerson> {
+    return map {
+        MoviePerson(
+            filmId = it.filmId,
+            nameRu = it.nameRu,
+            nameEn = it.nameEn,
+            rating = it.rating,
+            professionKey = it.professionKey.toProfessionKey()
+        )
+    }
+}
+
+private fun SEXDTO.toSex(): SEX {
+    return when(this) {
+        SEXDTO.MALE -> SEX.MALE
+        SEXDTO.FEMALE -> SEX.FEMALE
+    }
+}
+
+fun PersonDTO.toPerson(): Person {
+    return Person(
+        personId = personId,
+        nameRu = nameRu,
+        nameEn = nameEn,
+        sex = sex.toSex(),
+        posterUrl = posterUrl,
+        birthday = birthday,
+        death = death,
+        age = age,
+        birthplace = birthplace,
+        deathplace = deathplace,
+        profession = profession,
+        films = films.toMoviePerson()
+    )
 }
 
 private fun List<GenresDTOKinopoisk>.toGenreFilter(): List<Genre> {

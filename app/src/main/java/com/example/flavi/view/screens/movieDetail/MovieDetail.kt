@@ -43,7 +43,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.example.flavi.model.data.datasource.rental.RentalMovie
@@ -71,6 +70,7 @@ fun MovieDetail(
     loadAllImageMovieClick: () -> Unit,
     getAwardsByMovie: () -> Unit,
     getReviewsByMovie: () -> Unit,
+    getDetailInfoAboutPersonClick: (Int) -> Unit,
     getNewMovieById: (Int) -> Unit
 ) {
 
@@ -135,6 +135,7 @@ fun MovieDetail(
                             viewModel = viewModel,
                             filmId = filmId,
                             loadAllImageMovieClick = loadAllImageMovieClick,
+                            getDetailInfoAboutPersonClick = getDetailInfoAboutPersonClick,
                             actors = currentState.actors,
                             rentalMovie = currentState.rental,
                             reviewList = currentState.review,
@@ -183,6 +184,7 @@ private fun MovieDetailComponent(
     loadAllImageMovieClick: () -> Unit,
     getAwardsByMovie: () -> Unit,
     getAllReviewsClick: () -> Unit,
+    getDetailInfoAboutPersonClick: (Int) -> Unit,
     getNewMovieById: (Int) -> Unit,
     checkMovieInFavorite: Boolean
 ) {
@@ -307,7 +309,10 @@ private fun MovieDetailComponent(
             color = Color.Black,
             fontSize = 18.sp
         )
-        ActorsComponent(actors = actors)
+        ActorsComponent(
+            actors = actors,
+            getDetailInfoAboutPersonClick = getDetailInfoAboutPersonClick
+        )
     }
     if (rentalMovie.isNotEmpty()) {
         Spacer(modifier = Modifier.height(height = 15.dp))
@@ -600,6 +605,7 @@ fun GetEmojiByReviewType(
 @Composable
 private fun ActorsComponent(
     modifier: Modifier = Modifier,
+    getDetailInfoAboutPersonClick: (Int) -> Unit,
     actors: List<Actor>
 ) {
     Spacer(modifier = Modifier.height(16.dp))
@@ -615,7 +621,9 @@ private fun ActorsComponent(
         actors.forEach {
             item {
                 Card(
-                    modifier = Modifier.size(width = 300.dp, height = 64.dp),
+                    modifier = Modifier
+                        .clickable { getDetailInfoAboutPersonClick(it.staffId) }
+                        .size(width = 300.dp, height = 64.dp),
                     backgroundColor = Color.Black
                 ) {
                     Row {
