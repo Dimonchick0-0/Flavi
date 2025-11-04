@@ -6,6 +6,7 @@ import androidx.room.TypeConverters
 import com.example.flavi.model.data.database.converter.FlaviConverter
 import com.example.flavi.model.data.database.dao.UserDao
 import com.example.flavi.model.data.database.entitydb.HistorySearchDb
+import com.example.flavi.model.data.database.entitydb.MovieDetailDb
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 
@@ -13,9 +14,10 @@ import com.example.flavi.model.data.database.entitydb.UserDbModel
     entities = [
         UserDbModel::class,
         MoviesDbModel::class,
-        HistorySearchDb::class
+        HistorySearchDb::class,
+        MovieDetailDb::class
     ],
-    version = 42,
+    version = 46,
     exportSchema = false
 )
 @TypeConverters(FlaviConverter::class)

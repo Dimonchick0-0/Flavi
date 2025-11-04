@@ -1,6 +1,7 @@
 package com.example.flavi.view.screens.movieDetail
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -76,11 +77,20 @@ fun MovieDetail(
 
     val state = viewModel.movieDetailState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-    
-    loadMovies(
-        viewModel = viewModel,
-        filmId = filmId
-    )
+
+    viewModel.apply {
+        coroutineScope.launch {
+            if (!checkIfThereIsMovieInDb(movieId = filmId)) {
+                loadMovies(
+                    viewModel = viewModel,
+                    filmId = filmId
+                )
+            } else {
+                Log.d("Auth", "Загрузка с бд")
+                loadMovieFromDatabase(movieId = filmId)
+            }
+        }
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize()
@@ -104,6 +114,12 @@ fun MovieDetail(
                                 }
                                 if (!checkMovieInFavorite(currentState.movie.kinopoiskId)) {
                                     checkMovieInFavorite.value = false
+                                }
+                                if (!checkIfThereIsMovieInDb(movieId = currentState.movie.kinopoiskId)) {
+                                    insertMovieDetailToDb(
+                                        movie = currentState.movie,
+                                        movieId = currentState.movie.kinopoiskId
+                                    )
                                 }
                             }
                         }
@@ -361,36 +377,32 @@ private fun MovieDetailComponent(
             getAllReviewsClick = getAllReviewsClick
         )
     }
-    if (viewModel.checkLoadSimilarList.value) {
-        Spacer(modifier = Modifier.height(height = 15.dp))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Похожие фильмы",
-            color = Color.Black,
-            textAlign = TextAlign.Center,
-            fontSize = 18.sp
-        )
-        Spacer(modifier = Modifier.height(height = 15.dp))
-        SimilarMovieComponent(
-            similarMovie = similar,
-            getMovieById = getNewMovieById
-        )
-    }
-    if (viewModel.checkLoadSequelAndPrequelList.value) {
-        Spacer(modifier = Modifier.height(height = 15.dp))
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            text = "Сиквелы и приквелы",
-            color = Color.Black,
-            textAlign = TextAlign.Center,
-            fontSize = 18.sp
-        )
-        Spacer(modifier = Modifier.height(height = 15.dp))
-        SequelsAndPrequelsMovieComponent(
-            sequelAndPrequel = sequelAndPrequel,
-            getNewMovieById = getNewMovieById
-        )
-    }
+    Spacer(modifier = Modifier.height(height = 15.dp))
+    Text(
+        modifier = Modifier.fillMaxWidth(),
+        text = "Похожие фильмы",
+        color = Color.Black,
+        textAlign = TextAlign.Center,
+        fontSize = 18.sp
+    )
+    Spacer(modifier = Modifier.height(height = 15.dp))
+    SimilarMovieComponent(
+        similarMovie = similar,
+        getMovieById = getNewMovieById
+    )
+    Spacer(modifier = Modifier.height(height = 15.dp))
+    Text(
+        modifier = Modifier.fillMaxWidth(),
+        text = "Сиквелы и приквелы",
+        color = Color.Black,
+        textAlign = TextAlign.Center,
+        fontSize = 18.sp
+    )
+    Spacer(modifier = Modifier.height(height = 15.dp))
+    SequelsAndPrequelsMovieComponent(
+        sequelAndPrequel = sequelAndPrequel,
+        getNewMovieById = getNewMovieById
+    )
 }
 
 @Composable
