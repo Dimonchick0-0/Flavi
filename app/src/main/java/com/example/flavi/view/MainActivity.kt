@@ -30,7 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
+import com.example.flavi.model.data.repository.MovieRepository
 import com.example.flavi.view.navigation.NavGraph
+import com.example.flavi.view.screens.components.CheckIsItClosedApp
 import com.example.flavi.view.ui.theme.FlaviTheme
 import com.example.flavi.view.ui.theme.MyIcons
 import com.google.firebase.Firebase
@@ -38,10 +40,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
@@ -62,4 +66,5 @@ class MainActivity : ComponentActivity() {
             Log.d("Auth", "Пользователь вошёл в систему ")
         }
     }
+
 }

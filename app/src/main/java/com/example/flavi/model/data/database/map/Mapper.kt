@@ -1,6 +1,7 @@
 package com.example.flavi.model.data.database.map
 
 import com.example.flavi.model.data.database.entitydb.HistorySearchDb
+import com.example.flavi.model.data.database.entitydb.MovieDetailDb
 import com.example.flavi.model.data.database.entitydb.MoviesDbModel
 import com.example.flavi.model.data.database.entitydb.UserDbModel
 import com.example.flavi.model.data.datasource.actors.ActorDTO
@@ -23,6 +24,7 @@ import com.example.flavi.model.data.datasource.sequelsandprequels.MoviesSequelAn
 import com.example.flavi.model.data.datasource.sequelsandprequels.RelationsTypeDTO
 import com.example.flavi.model.data.datasource.similars.SimilarMovieDTO
 import com.example.flavi.model.domain.entity.HistorySearch
+import com.example.flavi.model.domain.entity.Movie
 import com.example.flavi.model.domain.entity.User
 import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
@@ -71,6 +73,17 @@ private fun ProfessionKeyDTO.toProfessionKey(): ProfessionKey {
         ProfessionKeyDTO.HERSELF -> ProfessionKey.HERSELF
         ProfessionKeyDTO.NOT_SELECTED -> ProfessionKey.NOT_SELECTED
     }
+}
+
+fun MovieDetailDb.toMovie(): Movie {
+    return Movie(
+        movieDetail = movieDetail,
+        actors = actors,
+        rentals = rentals,
+        reviews = reviews,
+        similars = similars,
+        sequalsAndPrequals = sequalsAndPrequals
+    )
 }
 
 private fun List<MoviePersonDTO>.toMoviePerson(): List<MoviePerson> {
