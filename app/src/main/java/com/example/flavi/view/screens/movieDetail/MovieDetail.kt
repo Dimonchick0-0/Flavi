@@ -371,12 +371,10 @@ private fun MovieDetailComponent(
         fontSize = 18.sp
     )
     Spacer(modifier = Modifier.height(height = 15.dp))
-    if (viewModel.checkLoadReviewComponent.value) {
-        ReviewsComponent(
-            reviews = reviewList,
-            getAllReviewsClick = getAllReviewsClick
-        )
-    }
+    ReviewsComponent(
+        reviews = reviewList,
+        getAllReviewsClick = getAllReviewsClick
+    )
     Spacer(modifier = Modifier.height(height = 15.dp))
     Text(
         modifier = Modifier.fillMaxWidth(),
