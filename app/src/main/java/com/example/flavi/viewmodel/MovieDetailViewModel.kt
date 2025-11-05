@@ -1,6 +1,5 @@
 package com.example.flavi.viewmodel
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -22,7 +21,6 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Poster
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Review
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SimilarMovie
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
-import com.example.flavi.view.screens.components.CheckIsItClosedApp
 import com.example.flavi.view.state.MovieDetailState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,13 +29,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.measureTime
 
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     private val repositoryImpl: UserRepositoryImpl,
-    private val movieRepository: MovieRepository,
-    private val checkIsItClosedApp: CheckIsItClosedApp
+    private val movieRepository: MovieRepository
 ) : ViewModel() {
 
     private val _movieDetailState: MutableStateFlow<MovieDetailState> =
@@ -61,7 +57,6 @@ class MovieDetailViewModel @Inject constructor(
     private val rentalList = mutableSetOf<RentalMovie>()
 
     private val reviewList = mutableListOf<Review>()
-    val checkLoadReviewComponent = mutableStateOf(false)
 
     private val similarList = mutableListOf<SimilarMovie>()
 
@@ -123,7 +118,6 @@ class MovieDetailViewModel @Inject constructor(
         viewModelScope.launch {
             repositoryImpl.getReviewsListByMovieId(id).body()?.items?.forEach {
                 reviewList.add(it.toReview())
-                checkLoadReviewComponent.value = true
             }
         }
     }
