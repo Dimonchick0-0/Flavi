@@ -11,7 +11,7 @@ class GetFirebaseAuth @Inject constructor() {
 
     fun getIdUser(): String {
         val user = Firebase.auth.currentUser
-        return user?.uid!!
+        return user?.uid ?: ""
     }
 
     fun getCurrentUser() = Firebase.auth.currentUser

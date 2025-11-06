@@ -4,16 +4,13 @@ package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +19,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -31,7 +30,6 @@ import androidx.compose.material.DropdownMenu
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.TextButton
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExpandedFullScreenSearchBar
@@ -45,7 +43,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarValue
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -61,7 +58,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -200,7 +196,8 @@ fun SearchMovie(
                                         movieGenre = movie.genres.first().genre,
                                         movieCountrie = movie.countries.first().country,
                                         movieRating = movie.rating,
-                                        movieColorRating = colorRating
+                                        movieColorRating = colorRating,
+                                        checkRegisterUser = viewModel.checkRegisterUserOrNot
                                     )
                                 }
                             }
@@ -232,7 +229,8 @@ fun SearchMovie(
 
                     LazyColumn {
                         if (viewModel.checkLoadFilterMovie.value
-                            && currentState.listMovie.isNotEmpty()) {
+                            && currentState.listMovie.isNotEmpty()
+                        ) {
 
                             currentState.listMovie
                                 .filter { it.ratingImdb != null }
@@ -272,13 +270,15 @@ fun SearchMovie(
                                                                 movieId = filterMovie.kinopoiskId
                                                             )
                                                         ) {
-                                                            viewModel.searchMovieInTheDB.value = true
+                                                            viewModel.searchMovieInTheDB.value =
+                                                                true
                                                         }
                                                         if (!viewModel.checkMovieByTitle(
                                                                 movieId = filterMovie.kinopoiskId
                                                             )
                                                         ) {
-                                                            viewModel.searchMovieInTheDB.value = false
+                                                            viewModel.searchMovieInTheDB.value =
+                                                                false
                                                         }
                                                     }
                                                 },
@@ -301,7 +301,8 @@ fun SearchMovie(
                                                 movieCountrie = filterMovie.countries.first().country,
                                                 movieGenre = filterMovie.genres.first().genre,
                                                 movieRating = filterMovie.ratingImdb.toString(),
-                                                movieColorRating = color!!
+                                                movieColorRating = color!!,
+                                                checkRegisterUser = viewModel.checkRegisterUserOrNot
                                             )
                                         }
                                     }
@@ -732,7 +733,8 @@ private fun FAB(
 
                             if (order != OrderFilterMovie.NOT_SELECTED
                                 && typeMovie != TypeFilterMovie.NOT_SELECTED
-                                && genreMovie.value != "") {
+                                && genreMovie.value != ""
+                            ) {
 
                                 val list = getMovieByFilter(
                                     order = order.toString(),
@@ -745,7 +747,8 @@ private fun FAB(
 
                             if (order == OrderFilterMovie.NOT_SELECTED
                                 && typeMovie == TypeFilterMovie.NOT_SELECTED
-                                && genreMovie.value != "") {
+                                && genreMovie.value != ""
+                            ) {
                                 val filterMovieList = getMovieByFiltersOnlyByName(
                                     genreMovie.value
                                 )
@@ -1025,10 +1028,12 @@ fun MovieCardComponent(
     onClickCheckingMovie: () -> Unit,
     onClickRemoveMovie: () -> Unit,
     onClickGetMovieDetail: () -> Unit,
-    searchMovie: Boolean
+    searchMovie: Boolean,
+    checkRegisterUser: Boolean
 ) {
     val stateButtons = remember { mutableStateOf(false) }
-    val showDialog = remember { mutableStateOf(false) }
+    val showDialogEstimate = remember { mutableStateOf(false) }
+    val showDialogIfUserNotRegistered = remember { mutableStateOf(false) }
     val expanded = remember { mutableStateOf(false) }
 
     Card(
@@ -1111,6 +1116,9 @@ fun MovieCardComponent(
                             leadingIcon = {
                                 IconButton(
                                     onClick = {
+                                        if (checkRegisterUser) {
+                                            showDialogIfUserNotRegistered.value = true
+                                        }
                                         if (!searchMovie) {
                                             onClickSaveMovie()
                                         }
@@ -1119,17 +1127,65 @@ fun MovieCardComponent(
                                         }
                                     }
                                 ) {
-                                    if (searchMovie) {
-                                        Icon(
-                                            imageVector = MyIcons.Heart_minus,
-                                            contentDescription = ""
-                                        )
-                                    }
-                                    if (!searchMovie) {
+                                    if (checkRegisterUser) {
                                         Icon(
                                             imageVector = MyIcons.Heart_plus,
                                             contentDescription = ""
                                         )
+                                        if (showDialogIfUserNotRegistered.value) {
+                                            AlertDialog(
+                                                backgroundColor = MaterialTheme.colorScheme.surface,
+                                                onDismissRequest = {
+                                                    showDialogIfUserNotRegistered.value = false
+                                                },
+                                                title = {
+                                                    Text(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .wrapContentWidth(),
+                                                        text = "Вы не вошли в аккаунт",
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                },
+                                                text = {
+                                                    Text(
+                                                        text = """
+                                                            Войдите, чтобы пользоваться дополнительными функциями
+                                                            """,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        fontSize = 14.sp
+                                                    )
+                                                },
+                                                confirmButton = {
+                                                    Button(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .wrapContentHeight(),
+                                                        onClick = {
+                                                            showDialogIfUserNotRegistered.value = false
+                                                        }
+                                                    ) {
+                                                        Text(
+                                                            text = "Закрыть диалоговое окно",
+                                                            color = MaterialTheme.colorScheme.primary
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    } else {
+                                        if (searchMovie) {
+                                            Icon(
+                                                imageVector = MyIcons.Heart_minus,
+                                                contentDescription = ""
+                                            )
+                                        }
+                                        if (!searchMovie) {
+                                            Icon(
+                                                imageVector = MyIcons.Heart_plus,
+                                                contentDescription = ""
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -1140,17 +1196,17 @@ fun MovieCardComponent(
                             leadingIcon = {
                                 IconButton(
                                     onClick = {
-                                        showDialog.value = true
+                                        showDialogEstimate.value = true
                                     }
                                 ) {
                                     Icon(
                                         imageVector = MyIcons.Star,
                                         contentDescription = ""
                                     )
-                                    if (showDialog.value) {
+                                    if (showDialogEstimate.value) {
                                         AlertDialogEstimateMovie(
                                             changeStateShowDialog = {
-                                                showDialog.value = false
+                                                showDialogEstimate.value = false
                                                 stateButtons.value = false
                                             },
                                             enabledButtons = stateButtons.value,
