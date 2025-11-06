@@ -4,7 +4,6 @@ import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,9 +13,9 @@ import com.example.flavi.model.data.database.map.toFilterMovieList
 import com.example.flavi.model.data.database.map.toMovieCardEntity
 import com.example.flavi.model.data.datasource.actors.ListActor
 import com.example.flavi.model.data.datasource.network.Network
+import com.example.flavi.model.data.repository.GetFirebaseAuth
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.HistorySearch
-import com.example.flavi.model.domain.entity.kinopoiskDev.MovieCardKinopoisk
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.FilterMovie
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Movies
@@ -42,12 +41,12 @@ import kotlinx.coroutines.withContext
 import okhttp3.internal.filterList
 import retrofit2.Response
 import javax.inject.Inject
-import kotlin.time.measureTime
 
 @HiltViewModel
 class SearchMovieViewModel @Inject constructor(
     private val removeMovieFromFavoritesUseCase: RemovieMovieFromFavoritesUseCase,
     private val repositoryImpl: UserRepositoryImpl,
+    private val currentUser: GetFirebaseAuth,
     @ApplicationContext context: Context
 ) : ViewModel() {
 
@@ -82,6 +81,8 @@ class SearchMovieViewModel @Inject constructor(
     val checkLoadFilterMovie = mutableStateOf(false)
 
     val checkResetFilters = mutableStateOf(false)
+
+    var checkRegisterUserOrNot by mutableStateOf(false)
 
     init {
         changeStateByConnection(context)
@@ -198,13 +199,18 @@ class SearchMovieViewModel @Inject constructor(
     }
 
     suspend fun showHistorySearch() {
-        getSearchHistoryList().collect {
-            listHistorySearch.value = it.map { historySearch ->
-                historySearch.title
-            }.distinct()
-            if (listHistorySearch.value.isEmpty())
-                processInitial()
+        if (currentUser.getCurrentUser() == null) {
+            checkRegisterUserOrNot = true
+        } else {
+            getSearchHistoryList().collect {
+                listHistorySearch.value = it.map { historySearch ->
+                    historySearch.title
+                }.distinct()
+                if (listHistorySearch.value.isEmpty())
+                    processInitial()
+            }
         }
+
     }
 
     private fun getSearchHistoryList(): Flow<List<HistorySearch>> {
@@ -221,7 +227,11 @@ class SearchMovieViewModel @Inject constructor(
 
     fun saveMovieInTheFavorites(movieCard: MovieCard) {
         viewModelScope.launch {
-            repositoryImpl.saveMovieToDb(movieCard)
+            if (currentUser.getCurrentUser() == null) {
+                Log.d("Auth", "Нет акка")
+            } else {
+                repositoryImpl.saveMovieToDb(movieCard)
+            }
         }
     }
 

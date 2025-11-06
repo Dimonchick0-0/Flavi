@@ -371,10 +371,12 @@ private fun MovieDetailComponent(
         fontSize = 18.sp
     )
     Spacer(modifier = Modifier.height(height = 15.dp))
-    ReviewsComponent(
-        reviews = reviewList,
-        getAllReviewsClick = getAllReviewsClick
-    )
+    if (reviewList.isNotEmpty()) {
+        ReviewsComponent(
+            reviews = reviewList,
+            getAllReviewsClick = getAllReviewsClick
+        )
+    }
     Spacer(modifier = Modifier.height(height = 15.dp))
     Text(
         modifier = Modifier.fillMaxWidth(),
@@ -384,10 +386,12 @@ private fun MovieDetailComponent(
         fontSize = 18.sp
     )
     Spacer(modifier = Modifier.height(height = 15.dp))
-    SimilarMovieComponent(
-        similarMovie = similar,
-        getMovieById = getNewMovieById
-    )
+    if (similar.isNotEmpty()) {
+        SimilarMovieComponent(
+            similarMovie = similar,
+            getMovieById = getNewMovieById
+        )
+    }
     Spacer(modifier = Modifier.height(height = 15.dp))
     Text(
         modifier = Modifier.fillMaxWidth(),
@@ -397,10 +401,12 @@ private fun MovieDetailComponent(
         fontSize = 18.sp
     )
     Spacer(modifier = Modifier.height(height = 15.dp))
-    SequelsAndPrequelsMovieComponent(
-        sequelAndPrequel = sequelAndPrequel,
-        getNewMovieById = getNewMovieById
-    )
+    if (sequelAndPrequel.isNotEmpty()) {
+        SequelsAndPrequelsMovieComponent(
+            sequelAndPrequel = sequelAndPrequel,
+            getNewMovieById = getNewMovieById
+        )
+    }
 }
 
 @Composable

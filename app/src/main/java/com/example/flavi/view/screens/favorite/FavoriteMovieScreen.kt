@@ -46,14 +46,8 @@ fun FavoriteScreen(
 
     val state = viewModel.favoriteState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
-    val isRefreshing = remember { mutableStateOf(false) }
-    val onRefresh: () -> Unit = {
-        isRefreshing.value = true
-        coroutineScope.launch {
-            delay(3000)
-            isRefreshing.value = false
-        }
-    }
+
+    viewModel.getStateScreenIfUserRegisteredOrNotRegistered()
 
     Scaffold(
         bottomBar = {
@@ -67,16 +61,6 @@ fun FavoriteScreen(
                     Text(
                         text = "Ваши любимые фильмы"
                     )
-                },
-                actions = {
-                    IconButton(
-                        onClick = onRefresh
-                    ) {
-                        Icon(
-                            MyIcons.Refresh,
-                            contentDescription = "Обновление списка"
-                        )
-                    }
                 }
             )
         }
@@ -124,7 +108,6 @@ fun FavoriteScreen(
                                                 viewModel.apply {
                                                     removeMovieInFavoriteById(movie.filmId)
                                                     checkMovieInFavorite.value = false
-                                                    checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
                                                 }
                                             }
                                         },
@@ -139,7 +122,8 @@ fun FavoriteScreen(
                                         movieGenre = movie.genres.first().genre,
                                         movieCountrie = movie.countries.first().country,
                                         movieRating = movie.rating,
-                                        movieColorRating = colorRating
+                                        movieColorRating = colorRating,
+                                        checkRegisterUser = true
                                     )
                                 }
 
@@ -152,9 +136,6 @@ fun FavoriteScreen(
                 }
 
                 is FavoriteScreenState.EmptyList -> {
-                    coroutineScope.launch {
-                        viewModel.processEmptyMovieList()
-                    }
                     Text(
                         text = "Нет любимых фильмов...(",
                         color = Color.Black,
@@ -162,38 +143,17 @@ fun FavoriteScreen(
                     )
                 }
 
+                FavoriteScreenState.NotUserRegister -> {
+                    Text(
+                        text = "Вы не вошли в аккаунт",
+                        color = Color.Black
+                    )
+                }
+
+                FavoriteScreenState.Initial -> {}
             }
-            PullToRefreshUpdateMovieFavoriteList(
-                modifier = modifier.fillMaxSize(),
-                viewModel = viewModel,
-                isRefreshing =  isRefreshing.value,
-                onRefresh = onRefresh
-            )
+
         }
     }
 
-}
-
-@SuppressLint("CoroutineCreationDuringComposition")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PullToRefreshUpdateMovieFavoriteList(
-    modifier: Modifier = Modifier,
-    viewModel: FavoriteScreenViewModel,
-    isRefreshing: Boolean,
-    onRefresh: () -> Unit
-) {
-    val state = rememberPullToRefreshState()
-    val coroutineScope = rememberCoroutineScope()
-
-    PullToRefreshBox(
-        modifier = modifier,
-        isRefreshing = isRefreshing,
-        state = state,
-        onRefresh = onRefresh
-    ) {
-        coroutineScope.launch {
-            viewModel.checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList()
-        }
-    }
 }

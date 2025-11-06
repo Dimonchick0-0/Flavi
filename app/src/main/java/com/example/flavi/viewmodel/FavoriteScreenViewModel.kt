@@ -3,6 +3,7 @@ package com.example.flavi.viewmodel
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.repository.GetFirebaseAuth
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.MovieCard
 import com.example.flavi.model.domain.usecase.RemovieMovieFromFavoritesUseCase
@@ -19,46 +20,45 @@ import javax.inject.Inject
 @HiltViewModel
 class FavoriteScreenViewModel @Inject constructor(
     private val repositoryImpl: UserRepositoryImpl,
-    private val removeMovieFromFavoritesUseCase: RemovieMovieFromFavoritesUseCase
+    private val removeMovieFromFavoritesUseCase: RemovieMovieFromFavoritesUseCase,
+    private val getFirebaseAuth: GetFirebaseAuth
 ): ViewModel() {
 
     private val _favoriteState: MutableStateFlow<FavoriteScreenState> = MutableStateFlow(
-        FavoriteScreenState.LoadMovies(emptyList())
+        FavoriteScreenState.Initial
     )
     val favoriteState: StateFlow<FavoriteScreenState> = _favoriteState.asStateFlow()
 
+    private val favoriteMovie = mutableListOf<MovieCard>()
+
     val checkMovieInFavorite = mutableStateOf(false)
+
+    fun getStateScreenIfUserRegisteredOrNotRegistered() {
+        viewModelScope.launch {
+            if (getFirebaseAuth.getCurrentUser() == null) {
+                _favoriteState.emit(
+                    value = FavoriteScreenState.NotUserRegister
+                )
+            } else {
+                _favoriteState.emit(
+                    value = FavoriteScreenState.LoadMovies(
+                        movieList = emptyList()
+                    )
+                )
+            }
+        }
+    }
 
     suspend fun processFavoriteMovieList() {
         _favoriteState.update { state ->
             if (state is FavoriteScreenState.LoadMovies) {
                 if (state.movieList.isNotEmpty()) {
+                    state.movieList.forEach {
+                        favoriteMovie.add(it)
+                    }
                     state.copy(movieList = state.movieList)
                 } else {
-                    _favoriteState.emit(FavoriteScreenState.EmptyList(emptyList()))
-                    state
-                }
-            } else {
-                state
-            }
-        }
-    }
-
-    suspend fun checkingForAnEmptyListAndIfIsEmptyToEmittedEmptyList() {
-        val checkMovie = CheckFavoriteMovieList<MovieCard>()
-        if (checkMovie.getStatusListIfIsEmptyOrNotEmpty()) {
-            _favoriteState.emit(FavoriteScreenState.EmptyList(checkMovie.list))
-        }
-
-    }
-
-    suspend fun processEmptyMovieList() {
-        _favoriteState.update { state ->
-            if (state is FavoriteScreenState.EmptyList) {
-                if (state.movieList.isEmpty()) {
-                    state.copy(movieList = state.movieList)
-                } else {
-                    _favoriteState.emit(FavoriteScreenState.LoadMovies(state.movieList))
+                    _favoriteState.emit(FavoriteScreenState.EmptyList)
                     state
                 }
             } else {
@@ -74,7 +74,14 @@ class FavoriteScreenViewModel @Inject constructor(
     fun getMovieCard() {
         viewModelScope.launch {
             repositoryImpl.getFavoritesMovie().collect {
-                _favoriteState.emit(FavoriteScreenState.LoadMovies(movieList = it))
+                if (it.isNotEmpty()) {
+                    _favoriteState.emit(FavoriteScreenState.LoadMovies(movieList = it))
+                } else {
+                    _favoriteState.emit(
+                        value = FavoriteScreenState.EmptyList
+                    )
+                }
+
             }
         }
     }

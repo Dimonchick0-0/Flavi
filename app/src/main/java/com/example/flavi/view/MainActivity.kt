@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
         if (currentUser == null) {
             Log.d("Auth", "Пользователь не заргестрирован")
         } else {
-            Log.d("Auth", "Пользователь вошёл в систему ")
+            Log.d("Auth", "Пользователь вошёл в систему под именем: ${currentUser.displayName}")
         }
     }
 
@@ -47,10 +47,5 @@ class MainActivity : ComponentActivity() {
         viewModel.apply {
             ifAppClosedThenDeleteMovieDetailFromDatabase()
         }
-    }
-
-    override fun onDestroy() {
-        Log.d("Auth", "Приложение полностью закрыто")
-        super.onDestroy()
     }
 }
