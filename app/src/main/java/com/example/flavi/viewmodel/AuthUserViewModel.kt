@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.io.encoding.Base64
 import javax.inject.Inject
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @HiltViewModel
 class AuthUserViewModel @Inject constructor(
@@ -49,17 +51,19 @@ class AuthUserViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalEncodingApi::class)
     fun authUser() {
         viewModelScope.launch {
             _state.update { authState ->
                 if (authState is AuthUserState.AuthUser) {
                     val password = authState.password
                     val email = authState.email
-                    if (!checkUserByEmailAndPassword(email, password)) {
+                    val decodeEncryptedPassword = Base64.encode(password.toByteArray())
+                    if (!checkUserByEmailAndPassword(email, decodeEncryptedPassword)) {
                         Log.d("Auth", "Not found user")
                         AuthUserState.AuthUser()
                     } else {
-                        signInUser(password, email)
+                        signInUser(decodeEncryptedPassword, email)
                         AuthUserState.Finished
                     }
                 } else {

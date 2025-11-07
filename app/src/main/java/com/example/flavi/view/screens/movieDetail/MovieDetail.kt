@@ -30,10 +30,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,6 +59,7 @@ import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.ReviewType
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.SimilarMovie
 import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.screens.searchMovie.AlertDialogEstimateMovie
+import com.example.flavi.view.screens.searchMovie.ShowAlertDialogIfUserNotRegistered
 import com.example.flavi.view.state.MovieDetailState
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.MovieDetailViewModel
@@ -158,7 +161,8 @@ fun MovieDetail(
                             getAllReviewsClick = getReviewsByMovie,
                             similar = currentState.similars,
                             sequelAndPrequel = currentState.sequelsAndPreques,
-                            getNewMovieById = getNewMovieById
+                            getNewMovieById = getNewMovieById,
+                            checkUserRegistered = viewModel.checkRegisteredUser.value
                         )
 
                     }
@@ -202,7 +206,8 @@ private fun MovieDetailComponent(
     getAllReviewsClick: () -> Unit,
     getDetailInfoAboutPersonClick: (Int) -> Unit,
     getNewMovieById: (Int) -> Unit,
-    checkMovieInFavorite: Boolean
+    checkMovieInFavorite: Boolean,
+    checkUserRegistered: Boolean
 ) {
     val maxLines = remember { mutableIntStateOf(3) }
     val coroutineScope = rememberCoroutineScope()
@@ -267,7 +272,8 @@ private fun MovieDetailComponent(
     CardFunctionMovieComponent(
         onClickRemoveMovieFromFavorite = onClickRemoveMovieFromFavorite,
         onClickSaveToFavoriteMovie = onClickSaveToFavoriteMovie,
-        checkMovieInFavorite = checkMovieInFavorite
+        checkMovieInFavorite = checkMovieInFavorite,
+        checkUserRegistered = checkUserRegistered
     )
     Spacer(modifier = Modifier.height(16.dp))
     Text(
@@ -828,11 +834,13 @@ private fun CardFunctionMovieComponent(
     modifier: Modifier = Modifier,
     onClickSaveToFavoriteMovie: () -> Unit,
     onClickRemoveMovieFromFavorite: () -> Unit,
-    checkMovieInFavorite: Boolean
+    checkMovieInFavorite: Boolean,
+    checkUserRegistered: Boolean
 ) {
 
     val stateButtons = remember { mutableStateOf(false) }
     val showDialog = remember { mutableStateOf(false) }
+    var showDialogIfUserNotRegistered by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier
@@ -845,6 +853,9 @@ private fun CardFunctionMovieComponent(
         ) {
             IconButton(
                 onClick = {
+                    if (checkUserRegistered) {
+                        showDialogIfUserNotRegistered = true
+                    }
                     if (!checkMovieInFavorite) {
                         onClickSaveToFavoriteMovie()
                     }
@@ -853,6 +864,27 @@ private fun CardFunctionMovieComponent(
                     }
                 }
             ) {
+
+                if (checkUserRegistered) {
+                    Icon(
+                        imageVector = MyIcons.Heart_plus,
+                        contentDescription = "",
+                        tint = Color.Black
+                    )
+                    Text(
+                        modifier = Modifier.padding(top = 45.dp),
+                        text = "Сохранить",
+                        color = Color.Black
+                    )
+                    if (showDialogIfUserNotRegistered) {
+                        ShowAlertDialogIfUserNotRegistered(
+                            onCloseDialogClick = {
+                                showDialogIfUserNotRegistered = false
+                            }
+                        )
+                    }
+                }
+
                 if (checkMovieInFavorite) {
                     Icon(
                         imageVector = MyIcons.Heart_minus,
