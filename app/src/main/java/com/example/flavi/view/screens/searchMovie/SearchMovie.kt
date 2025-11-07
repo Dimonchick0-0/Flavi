@@ -3,8 +3,6 @@
 package com.example.flavi.view.screens.searchMovie
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
@@ -1012,6 +1010,48 @@ private fun ListGenres(
     }
 }
 
+@Composable
+fun ShowAlertDialogIfUserNotRegistered(
+    onCloseDialogClick: () -> Unit
+) {
+    val dialogIfUserNotRegistered = remember { mutableStateOf(false) }
+    AlertDialog(
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        onDismissRequest = {
+            dialogIfUserNotRegistered.value = false
+        },
+        title = {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(),
+                text = "Вы не вошли в аккаунт",
+                color = MaterialTheme.colorScheme.primary
+            )
+        },
+        text = {
+            Text(
+                text = "Войдите, чтобы пользоваться дополнительными функциями",
+                color = MaterialTheme.colorScheme.primary,
+                fontSize = 14.sp
+            )
+        },
+        confirmButton = {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                onClick = onCloseDialogClick
+            ) {
+                Text(
+                    text = "Закрыть диалоговое окно",
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    )
+}
+
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun MovieCardComponent(
@@ -1133,43 +1173,9 @@ fun MovieCardComponent(
                                             contentDescription = ""
                                         )
                                         if (showDialogIfUserNotRegistered.value) {
-                                            AlertDialog(
-                                                backgroundColor = MaterialTheme.colorScheme.surface,
-                                                onDismissRequest = {
+                                            ShowAlertDialogIfUserNotRegistered(
+                                                onCloseDialogClick = {
                                                     showDialogIfUserNotRegistered.value = false
-                                                },
-                                                title = {
-                                                    Text(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .wrapContentWidth(),
-                                                        text = "Вы не вошли в аккаунт",
-                                                        color = MaterialTheme.colorScheme.primary
-                                                    )
-                                                },
-                                                text = {
-                                                    Text(
-                                                        text = """
-                                                            Войдите, чтобы пользоваться дополнительными функциями
-                                                            """,
-                                                        color = MaterialTheme.colorScheme.primary,
-                                                        fontSize = 14.sp
-                                                    )
-                                                },
-                                                confirmButton = {
-                                                    Button(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .wrapContentHeight(),
-                                                        onClick = {
-                                                            showDialogIfUserNotRegistered.value = false
-                                                        }
-                                                    ) {
-                                                        Text(
-                                                            text = "Закрыть диалоговое окно",
-                                                            color = MaterialTheme.colorScheme.primary
-                                                        )
-                                                    }
                                                 }
                                             )
                                         }

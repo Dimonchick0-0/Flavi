@@ -11,6 +11,7 @@ import com.example.flavi.model.data.database.map.toReview
 import com.example.flavi.model.data.database.map.toSequelsAndPrequels
 import com.example.flavi.model.data.database.map.toSimilar
 import com.example.flavi.model.data.datasource.rental.RentalMovie
+import com.example.flavi.model.data.repository.GetFirebaseAuth
 import com.example.flavi.model.data.repository.MovieRepository
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.entity.kinopoiskUnOfficial.Actor
@@ -33,7 +34,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MovieDetailViewModel @Inject constructor(
     private val repositoryImpl: UserRepositoryImpl,
-    private val movieRepository: MovieRepository
+    private val movieRepository: MovieRepository,
+    private val getFirebaseAuth: GetFirebaseAuth
 ) : ViewModel() {
 
     private val _movieDetailState: MutableStateFlow<MovieDetailState> =
@@ -61,6 +63,8 @@ class MovieDetailViewModel @Inject constructor(
     private val similarList = mutableListOf<SimilarMovie>()
 
     private val sequelsAndPrequelsList = mutableListOf<MoviesSequelAndPrequel>()
+
+    val checkRegisteredUser = mutableStateOf(false)
 
     suspend fun checkIfThereIsMovieInDb(movieId: Int): Boolean {
         return movieRepository.checkIfThereIsMovieInDb(movieId = movieId)
@@ -210,7 +214,11 @@ class MovieDetailViewModel @Inject constructor(
     }
 
     suspend fun saveMovieToFavorite(movie: MovieDetail) {
-        repositoryImpl.saveMovieToDb(movie.toMovieCardEntity())
+        if (getFirebaseAuth.getCurrentUser() == null) {
+            checkRegisteredUser.value = true
+        } else {
+            repositoryImpl.saveMovieToDb(movie.toMovieCardEntity())
+        }
     }
 
     fun getMovieById(filmId: Int) {

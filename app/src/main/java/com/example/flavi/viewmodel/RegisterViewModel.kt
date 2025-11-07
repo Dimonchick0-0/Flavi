@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.io.encoding.Base64
 import javax.inject.Inject
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor (
@@ -31,6 +33,7 @@ class RegisterViewModel @Inject constructor (
     val errorStatePassword = mutableStateOf(false)
     val errorStateConfirmPassword = mutableStateOf(false)
 
+    @OptIn(ExperimentalEncodingApi::class)
     fun processCommand(registerCommand: RegisterCommand) {
         when (registerCommand) {
             is RegisterCommand.InputConfirmPassword -> {
@@ -80,9 +83,10 @@ class RegisterViewModel @Inject constructor (
                             val name = previousState.name.trim()
                             val email = previousState.email.trim()
                             val password = previousState.password.trim()
+                            val encryptedPassword = Base64.encode(password.toByteArray())
                             registerUser(
                                 name = name,
-                                password = password,
+                                password = encryptedPassword,
                                 email = email
                             )
                             RegisterState.FinishedRegister
