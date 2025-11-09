@@ -67,7 +67,11 @@ fun NavGraph() {
         }
 
         composable(Screens.UpdateAccount.route) {
-            UpdateAccountScreen()
+            UpdateAccountScreen(
+                goToProfileScreenClick = {
+                    navController.navigate(Screens.Profile.route)
+                }
+            )
         }
 
         composable(Screens.SearchMovie.route) {
