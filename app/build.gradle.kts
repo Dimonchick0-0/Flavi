@@ -93,6 +93,8 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.robolectric)
     implementation(libs.androidx.room.runtime)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
@@ -111,6 +113,7 @@ dependencies {
     testImplementation(libs.androidx.espresso.core)
     testImplementation(platform(libs.androidx.compose.bom))
     testImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.androidx.runner)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }
