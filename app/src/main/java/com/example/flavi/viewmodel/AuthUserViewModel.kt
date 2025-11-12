@@ -1,9 +1,13 @@
 package com.example.flavi.viewmodel
 
+import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.flavi.model.data.googleAuth.GoogleAuthAccount
 import com.example.flavi.model.data.repository.UserRepositoryImpl
 import com.example.flavi.model.domain.usecase.AuthUserUseCase
 import com.example.flavi.view.state.AuthUserState
@@ -14,19 +18,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlin.io.encoding.Base64
 import javax.inject.Inject
+import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 @HiltViewModel
 class AuthUserViewModel @Inject constructor(
     private val repository: UserRepositoryImpl,
-    private val authUserUseCase: AuthUserUseCase
+    private val authUserUseCase: AuthUserUseCase,
+    private val googleAuthAccount: GoogleAuthAccount
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<AuthUserState> = MutableStateFlow(AuthUserState.AuthUser())
     val state
         get() = _state.asStateFlow()
+
+    var exceptionDataUser by mutableStateOf(false)
 
     val errorStateEmail = mutableStateOf(false)
     val errorStatePassword = mutableStateOf(false)
@@ -90,6 +97,23 @@ class AuthUserViewModel @Inject constructor(
 
     private suspend fun checkUserByEmailAndPassword(email: String, password: String): Boolean {
         return repository.checkUser(email, password)
+    }
+
+    fun authGoogleAccount(context: Context) {
+        googleAuthAccount.launchCredentialManager(
+            context = context,
+            showException = {
+                exceptionDataUser = true
+            },
+            emittedState = {
+                viewModelScope.launch {
+                    _state.emit(
+                        value = AuthUserState.Finished
+                    )
+                }
+            }
+        )
+
     }
 
 }

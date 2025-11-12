@@ -1,7 +1,6 @@
 package com.example.flavi.model.data.repository
 
 import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import javax.inject.Inject
 import javax.inject.Singleton

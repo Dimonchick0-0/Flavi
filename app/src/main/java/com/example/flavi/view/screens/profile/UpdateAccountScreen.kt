@@ -1,7 +1,6 @@
 package com.example.flavi.view.screens.profile
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,7 +28,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,7 +54,12 @@ fun UpdateAccountScreen(
             Spacer(modifier = Modifier.height(height = 32.dp))
             UpdateProfile(
                 actualDataInProfile = viewModel.getCurrentUser().displayName!!,
-                updateProfileClick = { viewModel.updateProfile(name = it) }
+                updateProfileClick = { viewModel.updateProfileUserName(name = it) }
+            )
+            Spacer(modifier = Modifier.height(height = 32.dp))
+            UpdateProfile(
+                actualDataInProfile = viewModel.getCurrentUser().email!!,
+                updateProfileClick = { viewModel.updateProfileUserEmail(email = it) }
             )
             viewModel.apply {
                 if (showIndicatorIfProfileIsUpdated) {
@@ -167,7 +170,7 @@ private fun UpdateProfile(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Актуальное имя: $actualDataInProfile",
+                    text = "Актуальные данные: $actualDataInProfile",
                     color = MaterialTheme.colorScheme.primary,
                     fontSize = 18.sp
                 )
@@ -181,9 +184,8 @@ private fun UpdateProfile(
             )
             Spacer(modifier = Modifier.height(height = 8.dp))
             Button(
-                onClick = {
-                    updateProfileClick(newDataInProfile)
-                }
+                modifier = Modifier.fillMaxWidth(),
+                onClick = { updateProfileClick(newDataInProfile) }
             ) {
                 Text(
                     text = "Сохранить изменения",

@@ -69,7 +69,7 @@ fun FavoriteScreen(
             modifier = modifier
                 .padding(innerPadding)
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.onBackground)
+                .background(color = MaterialTheme.colorScheme.surface)
         ) {
             when (val currentState = state.value) {
 

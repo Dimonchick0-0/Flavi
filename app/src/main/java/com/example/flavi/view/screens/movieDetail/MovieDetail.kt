@@ -25,6 +25,7 @@ import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Card
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -102,7 +103,7 @@ fun MovieDetail(
             contentPadding = innerPadding,
             modifier = Modifier
                 .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.onBackground),
+                .background(color = MaterialTheme.colorScheme.surface),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
@@ -223,24 +224,24 @@ private fun MovieDetailComponent(
     Text(
         modifier = Modifier.padding(top = 10.dp),
         text = movieDetail.nameRu,
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.primary,
         fontSize = 24.sp
     )
     Text(
         text = movieDetail.nameOriginal,
         fontSize = 16.sp,
-        color = Color.Black
+        color = MaterialTheme.colorScheme.primary
     )
     Row {
         Text(
             text = movieDetail.year.toString() + " ",
             fontSize = 16.sp,
-            color = Color.Black
+            color = MaterialTheme.colorScheme.primary
         )
         movieDetail.genres.forEach {
             Text(
                 text = it.genre + " ",
-                color = Color.Black
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -248,7 +249,7 @@ private fun MovieDetailComponent(
         movieDetail.countries.forEach {
             Text(
                 text = it.country + " ",
-                color = Color.Black
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -278,7 +279,7 @@ private fun MovieDetailComponent(
     Spacer(modifier = Modifier.height(16.dp))
     Text(
         text = "Изображения",
-        color = Color.Black
+        color = MaterialTheme.colorScheme.primary
     )
     Spacer(modifier = Modifier.height(16.dp))
     ComponentMovieDetail.CardInFilterQueryImage(
@@ -301,19 +302,22 @@ private fun MovieDetailComponent(
 
             if (checkImageInList.value) {
                 LazyRow(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     listPoster
-                        .take(4)
+                        .take(3)
                         .forEach {
                             item {
                                 ComponentMovieDetail.ImageCardMovie(
                                     modifier = Modifier.padding(horizontal = 8.dp),
                                     previewUrl = it.previewUrl
                                 )
-                                if (listPoster[3].previewUrl == it.previewUrl) {
+                                if (listPoster[2].previewUrl == it.previewUrl) {
                                     GetMoreInformationMovie(
                                         onClickGetMoreInformation = loadAllImageMovieClick
                                     )
@@ -328,7 +332,7 @@ private fun MovieDetailComponent(
     if (actors.isNotEmpty()) {
         Text(
             text = "Актёры",
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.primary,
             fontSize = 18.sp
         )
         ActorsComponent(
@@ -341,7 +345,7 @@ private fun MovieDetailComponent(
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = "Премьеры",
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center,
             fontSize = 18.sp
         )
@@ -372,7 +376,7 @@ private fun MovieDetailComponent(
     Text(
         modifier = Modifier.fillMaxWidth(),
         text = "Рецензии",
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.primary,
         textAlign = TextAlign.Center,
         fontSize = 18.sp
     )
@@ -387,7 +391,7 @@ private fun MovieDetailComponent(
     Text(
         modifier = Modifier.fillMaxWidth(),
         text = "Похожие фильмы",
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.primary,
         textAlign = TextAlign.Center,
         fontSize = 18.sp
     )
@@ -402,7 +406,7 @@ private fun MovieDetailComponent(
     Text(
         modifier = Modifier.fillMaxWidth(),
         text = "Сиквелы и приквелы",
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.primary,
         textAlign = TextAlign.Center,
         fontSize = 18.sp
     )
@@ -619,7 +623,7 @@ fun GetEmojiByReviewType(
             )
         }
 
-        ReviewType.NOT_SELECTED -> TODO()
+        ReviewType.NOT_SELECTED -> {}
     }
 }
 
@@ -734,7 +738,7 @@ private fun GetMoreInformationMovie(
     ) {
         Icon(
             modifier = Modifier.size(45.dp),
-            tint = Color.Black,
+            tint = MaterialTheme.colorScheme.primary,
             imageVector = MyIcons.ArrowForward,
             contentDescription = ""
         )
@@ -750,7 +754,7 @@ private fun OpenDescriptionMovie(
 ) {
     Text(
         text = movieDetail.description,
-        color = Color.Black,
+        color = MaterialTheme.colorScheme.primary,
         maxLines = maxLines,
         overflow = TextOverflow.Ellipsis
     )
@@ -760,7 +764,7 @@ private fun OpenDescriptionMovie(
         ) {
             Text(
                 text = "Показать описание полностью",
-                color = Color.Red
+                color = MaterialTheme.colorScheme.tertiary
             )
         }
     }
@@ -770,7 +774,7 @@ private fun OpenDescriptionMovie(
         ) {
             Text(
                 text = "Скрыть описание",
-                color = Color.Red
+                color = MaterialTheme.colorScheme.tertiary
             )
         }
     }
@@ -788,19 +792,19 @@ private fun Rating(
             modifier = Modifier
                 .height(64.dp)
                 .width(150.dp),
-            backgroundColor = MaterialTheme.colorScheme.secondary
+            backgroundColor = MaterialTheme.colorScheme.tertiary
         ) {
             Box(
                 contentAlignment = Alignment.TopCenter
             ) {
                 Text(
                     text = movieDetail.ratingImdb.toString(),
-                    color = MaterialTheme.colorScheme.onSecondary
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     modifier = Modifier.padding(top = 25.dp),
                     text = "Рейтинг IMDB",
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp
                 )
             }
@@ -809,19 +813,19 @@ private fun Rating(
             modifier = Modifier
                 .height(64.dp)
                 .width(150.dp),
-            backgroundColor = MaterialTheme.colorScheme.secondary
+            backgroundColor = MaterialTheme.colorScheme.tertiary
         ) {
             Box(
                 contentAlignment = Alignment.TopCenter
             ) {
                 Text(
                     text = movieDetail.ratingKinopoisk.toString(),
-                    color = MaterialTheme.colorScheme.onSecondary
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Text(
                     modifier = Modifier.padding(top = 25.dp),
                     text = "Рейтинг Кинопоиска",
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 14.sp
                 )
             }
@@ -845,7 +849,8 @@ private fun CardFunctionMovieComponent(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp)
+            .padding(start = 20.dp, end = 20.dp),
+        backgroundColor = MaterialTheme.colorScheme.tertiary
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -869,12 +874,12 @@ private fun CardFunctionMovieComponent(
                     Icon(
                         imageVector = MyIcons.Heart_plus,
                         contentDescription = "",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         modifier = Modifier.padding(top = 45.dp),
                         text = "Сохранить",
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.primary
                     )
                     if (showDialogIfUserNotRegistered) {
                         ShowAlertDialogIfUserNotRegistered(
@@ -889,24 +894,24 @@ private fun CardFunctionMovieComponent(
                     Icon(
                         imageVector = MyIcons.Heart_minus,
                         contentDescription = "",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         modifier = Modifier.padding(top = 45.dp),
                         text = "Удалить из избранных",
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 if (!checkMovieInFavorite) {
                     Icon(
                         imageVector = MyIcons.Heart_plus,
                         contentDescription = "",
-                        tint = Color.Black
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         modifier = Modifier.padding(top = 45.dp),
                         text = "Сохранить",
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -919,7 +924,7 @@ private fun CardFunctionMovieComponent(
                 Icon(
                     imageVector = MyIcons.Star,
                     contentDescription = "",
-                    tint = Color.Black
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 if (showDialog.value) {
                     AlertDialogEstimateMovie(
@@ -936,7 +941,7 @@ private fun CardFunctionMovieComponent(
                 Text(
                     modifier = Modifier.padding(top = 45.dp),
                     text = "Оценить",
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }

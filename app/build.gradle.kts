@@ -47,6 +47,12 @@ android {
             name = "FLAVI_API_KEY_KINOPOISK_DEV",
             value = apiKeyKinopoiskDev
         )
+
+        javaCompileOptions {
+            ksp {
+                arg("room.schemaLocation", "$projectDir/schemasFlaviDatabase")
+            }
+        }
     }
 
     buildTypes {
@@ -77,6 +83,9 @@ android {
 dependencies {
     implementation(libs.core.ktx)
     implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     debugImplementation(libs.leakcanary.android)
     implementation(libs.compose)
     implementation(libs.glide)
