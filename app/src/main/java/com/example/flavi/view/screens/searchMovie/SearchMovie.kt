@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,6 +30,7 @@ import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExpandedFullScreenSearchBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,6 +89,7 @@ import com.example.flavi.view.screens.components.CheckFavoriteMovieList
 import com.example.flavi.view.state.SearchMovieState
 import com.example.flavi.view.ui.theme.MyIcons
 import com.example.flavi.viewmodel.SearchMovieViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("CoroutineCreationDuringComposition")
@@ -576,7 +579,7 @@ fun AlertDialogEstimateMovie(
                 Text(
                     text = "Ваша оценка: ${item.intValue}",
                     fontSize = 17.sp,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         },
@@ -584,7 +587,7 @@ fun AlertDialogEstimateMovie(
             Text(
                 text = "Оценка фильма",
                 fontSize = 17.sp,
-                color = Color.Black
+                color = MaterialTheme.colorScheme.primary
             )
         },
         buttons = {
@@ -598,7 +601,7 @@ fun AlertDialogEstimateMovie(
                 ) {
                     Text(
                         text = "Оценить",
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }

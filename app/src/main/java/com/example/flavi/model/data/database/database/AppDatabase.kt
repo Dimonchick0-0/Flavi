@@ -1,5 +1,6 @@
 package com.example.flavi.model.data.database.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -17,8 +18,14 @@ import com.example.flavi.model.data.database.entitydb.UserDbModel
         HistorySearchDb::class,
         MovieDetailDb::class
     ],
-    version = 46,
-    exportSchema = false
+    version = 48,
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(
+            from = 47,
+            to = 48
+        )
+    ]
 )
 @TypeConverters(FlaviConverter::class)
 abstract class AppDatabase : RoomDatabase() {

@@ -185,6 +185,7 @@ class SearchMovieViewModel @Inject constructor(
                     searchActor = listActor.value
                 )
             )
+
         }
     }
 
