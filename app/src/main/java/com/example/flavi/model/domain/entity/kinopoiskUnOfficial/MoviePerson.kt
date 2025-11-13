@@ -11,6 +11,10 @@ data class MoviePerson(
 enum class ProfessionKey {
     NOT_SELECTED,
 
+    OPERATOR,
+
+    EDITOR,
+
     DIRECTOR,
 
     WRITER,

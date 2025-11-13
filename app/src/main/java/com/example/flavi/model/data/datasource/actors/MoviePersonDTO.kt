@@ -16,6 +16,10 @@ data class MoviePersonDTO(
 enum class ProfessionKeyDTO {
     NOT_SELECTED,
 
+    @SerialName("OPERATOR") OPERATOR,
+
+    @SerialName("EDITOR") EDITOR,
+
     @SerialName("DIRECTOR") DIRECTOR,
 
     @SerialName("WRITER") WRITER,

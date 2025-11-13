@@ -28,7 +28,6 @@ import javax.inject.Singleton
 class GoogleAuthAccount @Inject constructor() {
 
     private var checkRegistered by mutableStateOf(false)
-    var exceptionDataUser by mutableStateOf(false)
     private lateinit var auth: FirebaseAuth
     private val executor = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val scope = CoroutineScope(executor)

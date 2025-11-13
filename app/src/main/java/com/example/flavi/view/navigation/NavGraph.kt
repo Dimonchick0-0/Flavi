@@ -114,7 +114,12 @@ fun NavGraph() {
 
         composable(Screens.Person.route) {
             val id = getArgumentsPerson(it)
-            PersonsScreen(personId = id)
+            PersonsScreen(
+                personId = id,
+                goToMoviePerson = { filmId ->
+                    navController.navigate(Screens.MovieDetail.createRoute(filmId = filmId))
+                }
+            )
         }
 
         composable(Screens.Poster.route) {

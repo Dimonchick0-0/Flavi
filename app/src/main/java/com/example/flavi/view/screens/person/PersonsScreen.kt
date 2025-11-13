@@ -46,6 +46,7 @@ import com.example.flavi.viewmodel.PersonsScreenViewModel
 fun PersonsScreen(
     modifier: Modifier = Modifier,
     viewModel: PersonsScreenViewModel = hiltViewModel(),
+    goToMoviePerson: (Int) -> Unit,
     personId: Int
 ) {
 
@@ -64,6 +65,9 @@ fun PersonsScreen(
             item {
                 ActorDetail(
                     person = state.value.person,
+                    goToMoviePerson = {
+                        goToMoviePerson(it)
+                    },
                     viewModel = viewModel
                 )
             }
@@ -77,6 +81,7 @@ fun PersonsScreen(
 private fun ActorDetail(
     modifier: Modifier = Modifier,
     viewModel: PersonsScreenViewModel,
+    goToMoviePerson: (Int) -> Unit,
     person: Person
 ) {
     Log.d("Auth", person.personId.toString())
@@ -159,8 +164,14 @@ private fun ActorDetail(
                 .forEach { movies ->
                     if (movies.nameRu != null && movies.rating != null) {
                         item {
-                            Card {
+                            Card(
+                                modifier = Modifier
+                                    .size(width = 200.dp, height = 40.dp)
+                                    .clickable { goToMoviePerson(movies.filmId) }
+
+                            ) {
                                 Text(
+                                    modifier = Modifier.padding(start = 8.dp, top = 8.dp),
                                     text = movies.nameRu,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -212,6 +223,8 @@ private fun FilterPersonMovie(
                 ProfessionKey.HRONO_TITR_FEMALE -> "В титрах не указан"
                 ProfessionKey.HERSELF -> "Играл себя"
                 ProfessionKey.NOT_SELECTED -> ""
+                ProfessionKey.EDITOR -> "Редактор"
+                ProfessionKey.OPERATOR -> "Оператор"
             }
 
             Text(
