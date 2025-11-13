@@ -44,6 +44,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.flavi.view.state.AuthUserState
 import com.example.flavi.view.ui.theme.MyIcons
+import com.example.flavi.view.ui.theme.Orange
 import com.example.flavi.viewmodel.AuthUserViewModel
 
 @Composable
@@ -254,9 +255,16 @@ fun AuthUser(
                             )
                         }
                     }
-                    if (viewModel.exceptionDataUser) {
-                        ShowAlertDialogIfAnErrorOccurred()
+                    viewModel.apply {
+                        if (exceptionDataUser) {
+                            ShowAlertDialogIfAnErrorOccurred(
+                                closeDialogClick = {
+                                    exceptionDataUser = false
+                                }
+                            )
+                        }
                     }
+
                 }
             }
 
@@ -268,7 +276,9 @@ fun AuthUser(
 }
 
 @Composable
-private fun ShowAlertDialogIfAnErrorOccurred() {
+private fun ShowAlertDialogIfAnErrorOccurred(
+    closeDialogClick: () -> Unit
+) {
     var showDialog by remember { mutableStateOf(false) }
     AlertDialog(
         onDismissRequest = {
@@ -277,13 +287,14 @@ private fun ShowAlertDialogIfAnErrorOccurred() {
         buttons = {
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    showDialog = false
-                }
+                onClick = closeDialogClick,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Orange
+                )
             ) {
                 Text(
                     text = "Закрыть информацию об ошибке",
-                    color = MaterialTheme.colorScheme.primary
+                    color = Color.White
                 )
             }
         },
@@ -293,13 +304,13 @@ private fun ShowAlertDialogIfAnErrorOccurred() {
                     .fillMaxWidth()
                     .wrapContentWidth(align = Alignment.CenterHorizontally),
                 text = "Ошибка",
-                color = MaterialTheme.colorScheme.primary
+                color = Color.Black
             )
         },
         text = {
             Text(
                 text = "Не удалось получить учетные данные пользователя. Попробуйте ещё раз",
-                color = MaterialTheme.colorScheme.primary
+                color = Color.Black
             )
         }
     )

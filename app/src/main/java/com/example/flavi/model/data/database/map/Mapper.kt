@@ -63,6 +63,8 @@ fun List<PosterDTO>.toListPosterEntity(): List<Poster> {
 
 private fun ProfessionKeyDTO.toProfessionKey(): ProfessionKey {
     return when(this) {
+        ProfessionKeyDTO.OPERATOR -> ProfessionKey.OPERATOR
+        ProfessionKeyDTO.EDITOR -> ProfessionKey.EDITOR
         ProfessionKeyDTO.DIRECTOR -> ProfessionKey.DIRECTOR
         ProfessionKeyDTO.WRITER -> ProfessionKey.WRITER
         ProfessionKeyDTO.ACTOR -> ProfessionKey.ACTOR
